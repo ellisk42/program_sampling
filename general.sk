@@ -12,9 +12,10 @@ struct Guard {
 
 
 bit run_guard(Guard g, int z) {
-  if (g.o == O_EQ) return g.z == z;
-  if (g.o == O_LT) return g.z > z;
-  return g.z < z;
+  if (g.o == O_EQ) return z == g.z;
+  if (g.o == O_LT) return z < g.z;
+  if (g.o == O_GT) return z > g.z;
+  assert 0;
 }
 
 bit flip() {
@@ -40,6 +41,15 @@ struct Array{
   int [s] A;
 }
 
+ 
+bit array_equal(Array a,Array b) {
+  if (a.s != b.s) return 0;
+  for (int j = 0; j < a.s; j++)
+    if (a.A[j] != b.A[j]) return 0;
+  return 1;
+}
+
+
 Array concatenate(Array a1,Array a2) {
   Array a = new Array(s = a1.s + a2.s,A = a1.A);
   a.A[a1.s :: a2.s] = a2.A;
@@ -47,10 +57,15 @@ Array concatenate(Array a1,Array a2) {
 }
 
 Array concatenate3(Array a1,Array a2,Array a3) {
-  Array a = new Array(s = a1.s + a2.s + a3.s,A = a1.A);
-  a.A[a1.s :: a2.s] = a2.A;
-  a.A[(a2.s+a1.s) :: a3.s] = a3.A;
-  return a;
+  /*assert a1 != null;
+  assert a2 != null;
+  assert a3 != null;
+  assert a1.s + a2.s + a3.s >= 0;*/
+  int[a1.s + a2.s + a3.s] x;
+  x[0 :: a1.s] = a1.A;
+  x[a1.s :: a2.s] = a2.A;
+  x[(a2.s+a1.s) :: a3.s] = a3.A;
+  return new Array(s = a1.s + a2.s + a3.s,A = x);
 }
 
 Array cdr(Array a,ref bit success) {
@@ -88,19 +103,20 @@ Array empty_list() {
   return new Array(s = 0,A = {});
 }
 
+
 Guard guard_expression(Array a,int d,ref bit success) {
   assert d > 1; // integer expression needs at least 1
 
-  bit zs;
-  int z = integer_expression(a,d-1,zs);
-  success = zs;
-  int o;
   bit c1 = flip();
   bit c2 = flip();
-
+  int o;
   if (c1) o = O_EQ;
   if (!c1 && c2) o = O_LT;
   if (!c1 && !c2) o = O_GT;
+  
+  bit zs;
+  int z = integer_expression(a,d-1,zs);
+  success = zs;
 
   return new Guard(z = z, o = o);
 }
@@ -108,6 +124,7 @@ Guard guard_expression(Array a,int d,ref bit success) {
 Array array_expression(Array a,int d,ref bit success) {
   assert d > 0;
 
+  bit shallow = d > 2;
 
   bit c1 = flip();
   if (d == 1) { // only terminals allowed
@@ -120,43 +137,44 @@ Array array_expression(Array a,int d,ref bit success) {
   
 
   bit c2 = flip();
+  bit c3;
+  if (!shallow) c3 = flip();
 
   bit array_success;
   Array lp = array_expression(a,d-1,array_success);
   bit integer_success;
   int z = integer_expression(a,d-1,integer_success);
   bit cdr_success;
+  bit guard_success;
+  Guard g;
+  if (!shallow) g = guard_expression(a,d-1,guard_success);
+
   
-  if (d > 2) {
-    bit c3 = flip();
-    bit guard_success;
-    Guard g = guard_expression(a,d-1,guard_success);
-    if (c1 && c2 && c3) { success = 1;  return empty_list(); }
-    if (c1 && c2 && !c3) { success = 1; return a; }
-    if (c1 && !c2 && c3) {
-      if (array_success) {
-	Array r = cdr(lp,cdr_success);
-	success = cdr_success;
-	return r;
-      }
-      success = 0;
-      return lp;
+
+  if ((shallow && c1 && c2) || (!shallow && c1 && c2 && c3)) {
+    success = 1;
+    return empty_list();
+  }
+  if ((shallow && c1 && !c2) || (!shallow && c1 && c2 && !c3)) {
+    success = 1;
+    return a;
+  }
+  if ((shallow && !c1 && c2) || (!shallow && c1 && !c2 && c3)) {
+    if (array_success) {
+      Array r = cdr(lp,cdr_success);
+      success = cdr_success;
+      return r;
     }
-    if (c1 && !c2 && !c3) { success = integer_success; return singleton(z); }
-    if (!c1 && c2 && c3) { success = guard_success && array_success; return filter(g,lp); }
-  } else {
-    if (c2 && c1) { success = 1; return empty_list(); }
-    if (c2 && !c1) { success = 1; return a; }
-    if (!c2 && c1) {
-      if (array_success) {
-	Array r = cdr(lp,cdr_success);
-	success = cdr_success;
-	return r;
-      }
-      success = 0;
-      return lp;
-    }
-    if (!c2 && !c1) { success = integer_success; return singleton(z); }
+    success = 0;
+    return lp;
+  }
+  if ((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3)) {
+    success = integer_success;
+    return singleton(z);
+  }
+  if (!shallow && !c1 && c2 && c3) {
+    success = guard_success && array_success;
+    return filter(g,lp);
   }
 
   assert 0;
@@ -165,14 +183,15 @@ Array array_expression(Array a,int d,ref bit success) {
 int integer_expression(Array a,int d,ref bit success) {
   assert d > 0;
   if (d == 1) { success = 1; return 0; }
-  bit integer_success;
-  int zp = integer_expression(a,d-1,integer_success);
-  bit array_success;
-  Array l = array_expression(a,d-1,array_success);
 
   bit c1 = flip();
   bit c2 = flip();
   bit c3 = flip();
+
+  bit integer_success;
+  int zp = integer_expression(a,d-1,integer_success);
+  bit array_success;
+  Array l = array_expression(a,d-1,array_success);
 
   if (c1&&c2) { success = 1; return 0; }
   if (c1&&!c2) { success = integer_success; return zp+1; }
@@ -193,7 +212,6 @@ int integer_expression(Array a,int d,ref bit success) {
 
 Array recursive_expression(Array a, int bnd) {
   tape_index = 0;
-  if (bnd < 1) return null;
   bit s1,s2,s3,s4,s5,s6;
   
   Guard g = guard_expression(a,3,s1);
@@ -201,14 +219,17 @@ Array recursive_expression(Array a, int bnd) {
   int target = integer_expression(a,3,s2);
   assert tape_index == 16; // 16
   Array b = array_expression(a,4,s3);
+
+  assert s1 && s2 && s3;
+  if (run_guard(g,target)) return b;
+
+  if (bnd < 1) return null;
+  
   //  assert tape_index == ??(10); // 47
   Array x = array_expression(a,4,s4); bit rx = flip();
   Array y = array_expression(a,4,s5); bit ry = flip();
   Array z = array_expression(a,4,s6); bit rz = flip();
 
-  assert s1 && s2 && s3;
-  if (run_guard(g,target)) return b;
-  
   assert s4 && s5 && s6;
 
   //  if (rz || ry || rx) assert bnd > 0;
@@ -233,6 +254,9 @@ Array specification(Array a) {
 
   Array y = singleton(car(a,s));
 
+  x = specification(x);
+  z = specification(z);
+
   return concatenate3(x,y,z);
 }
 
@@ -242,6 +266,7 @@ Array constant_array([int n],int [n] a) {
 }
 void test_case([int n],int [n] a, int [n] b, int bnd) {
   Array o = recursive_expression(constant_array(a), bnd);
+
   assert o.s == n;
   assert o.A[0::n] == b;
 }
@@ -250,16 +275,18 @@ void test_case([int n],int [n] a, int [n] b, int bnd) {
 
 /*
 harness void l2() {
-  test_case({1,2},{1,2});
-  }*/
-/*harness void l3() {
+  test_case({1,2},{1,2},4);
+  }
+harness void l3() {
   test_case({4,5,3},{3,4,5},3);
 }
 
 harness void l4() {
-  test_case({5,3,4},{3,4,5},3);
-  }*/
-harness void l5() {
+  test_case({5,3,4},{3,4,5},4);
+  }
+*/
+
+/*harness void l5() {
   test_case({5,4,3},{3,4,5},3);
 }
 
@@ -267,4 +294,41 @@ harness void l6() {
   test_case({1,3,2},{1,2,3},3);
 }
 
+*/
+harness void l0() {
+  test_case({},{},2);
+}
+  
 
+
+/*
+harness void pieces(int[4] a, int s) {
+  assume s >= 0 && s < 5;
+  Array x = new Array(s = s, A = a[0::s]);
+  
+  tape_index = 0;
+  tape = {1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0};
+
+  bit u;
+  Guard g = guard_expression(x,3,u);
+  assert u;
+  int target = integer_expression(x,3,u);
+  assert u;
+
+  assert run_guard(g,target) == (x.s == 0);
+
+  Array b = array_expression(x,4,u);
+  assert u;
+  assert b.s == 0;
+
+  if (x.s > 0) {
+    Array p1 = array_expression(x,4,u);
+    assert u;
+    Guard g1 = new Guard(z = car(x,u), o = O_GT);
+    assert u;
+    Array p1p = filter(g1,x);
+    assert array_equal(p1, p1p);
+
+  }
+}
+*/
