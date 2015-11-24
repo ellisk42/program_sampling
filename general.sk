@@ -194,7 +194,7 @@ int integer_expression(Array a,int d,ref bit success) {
   bit array_success;
   Array l = array_expression(a,d-1,array_success);
 
-  int constant = random_integer();
+  //  int constant = random_integer();
 
   if (c1 && c2 && c3) { success = 1; return 0; }
   if (c1 && c2 && !c3) { success = integer_success; return zp+1; }
@@ -213,7 +213,7 @@ int integer_expression(Array a,int d,ref bit success) {
     success = array_success;
     return l.s;
   }
-  if (!c1 && c2 && !c3) { success = 1; return constant; }
+  //  if (!c1 && c2 && !c3) { success = 1; return constant; }
   assert 0;
 }
 
