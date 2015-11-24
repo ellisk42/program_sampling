@@ -1,4 +1,4 @@
-#define BOUND 143
+#define BOUND 200
 bit[BOUND] tape = ??;
 int tape_index = 0;
 
@@ -9,7 +9,6 @@ struct Guard {
   int z;
   int o;
 }
-
 
 bit run_guard(Guard g, int z) {
   if (g.o == O_EQ) return z == g.z;
@@ -180,6 +179,8 @@ Array array_expression(Array a,int d,ref bit success) {
   assert 0;
 }
 
+
+  
 int integer_expression(Array a,int d,ref bit success) {
   assert d > 0;
   if (d == 1) { success = 1; return 0; }
@@ -193,10 +194,12 @@ int integer_expression(Array a,int d,ref bit success) {
   bit array_success;
   Array l = array_expression(a,d-1,array_success);
 
-  if (c1&&c2) { success = 1; return 0; }
-  if (c1&&!c2) { success = integer_success; return zp+1; }
-  if (!c1&&c2) { success = integer_success; return zp-1; }
-  if (c3) {
+  int constant = random_integer();
+
+  if (c1 && c2 && c3) { success = 1; return 0; }
+  if (c1 && c2 && !c3) { success = integer_success; return zp+1; }
+  if (c1 && !c2 && c3) { success = integer_success; return zp-1; }
+  if (c1 && !c2 && !c3) {
     if (array_success) {
       bit car_success;
       int r = car(l,car_success);
@@ -206,8 +209,12 @@ int integer_expression(Array a,int d,ref bit success) {
     success = 0;
     return 0;
   }
-  success = array_success;
-  return l.s;
+  if (!c1 && c2 && c3) {
+    success = array_success;
+    return l.s;
+  }
+  if (!c1 && c2 && !c3) { success = 1; return constant; }
+  assert 0;
 }
 
 Array recursive_expression(Array a, int bnd) {
@@ -217,18 +224,22 @@ Array recursive_expression(Array a, int bnd) {
   Guard g = guard_expression(a,3,s1);
   //  assert ?? == tape_index; // 6
   int target = integer_expression(a,3,s2);
-  assert tape_index == 16; // 16
+  //  assert tape_index == 16; // 16
   Array b = array_expression(a,4,s3);
+
 
   assert s1 && s2 && s3;
   if (run_guard(g,target)) return b;
 
   if (bnd < 1) return null;
-  
-  //  assert tape_index == ??(10); // 47
+
   Array x = array_expression(a,4,s4); bit rx = flip();
   Array y = array_expression(a,4,s5); bit ry = flip();
   Array z = array_expression(a,4,s6); bit rz = flip();
+
+
+  
+  //  assert tape_index == ??(10); // 47
 
   assert s4 && s5 && s6;
 
