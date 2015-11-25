@@ -1,4 +1,4 @@
-#define BOUND 200
+#define BOUND 143
 bit[BOUND] tape = ??;
 int tape_index = 0;
 
@@ -12,8 +12,8 @@ struct Guard {
 
 bit run_guard(Guard g, int z) {
   if (g.o == O_EQ) return z == g.z;
-  if (g.o == O_LT) return z < g.z;
-  if (g.o == O_GT) return z > g.z;
+  if (g.o == O_LT) return z <= g.z;
+  if (g.o == O_GT) return z >= g.z;
   assert 0;
 }
 
@@ -56,10 +56,10 @@ Array concatenate(Array a1,Array a2) {
 }
 
 Array concatenate3(Array a1,Array a2,Array a3) {
-  /*assert a1 != null;
+  assert a1 != null;
   assert a2 != null;
   assert a3 != null;
-  assert a1.s + a2.s + a3.s >= 0;*/
+  /*  assert a1.s + a2.s + a3.s >= 0;*/
   int[a1.s + a2.s + a3.s] x;
   x[0 :: a1.s] = a1.A;
   x[a1.s :: a2.s] = a2.A;
@@ -307,7 +307,7 @@ harness void l6() {
 
 
 harness void l0() {
-  test_case({},{},2);
+  test_case({},{},1);
 }
   
 
