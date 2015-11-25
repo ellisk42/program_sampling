@@ -22,6 +22,7 @@ def guard_expression(d):
 
 def array_expression(d):
     assert d > 0
+    shallow = not (d > 2)
 
     c1 = flip()
 
@@ -31,27 +32,22 @@ def array_expression(d):
     
     c2 = flip()
     c3 = None
-    if d > 2: c3 = flip()
+    if not shallow: c3 = flip()
 
     lp = array_expression(d - 1)
     z = integer_expression(d - 1)
+    g = None
+    if not shallow:
+        g = guard_expression(d - 1)
 
-    if d == 2:
-        if c1 and c2: return 'nil'
-        if c1 and (not c2): return 'a'
-        if (not c1) and c2:
-            return '(cdr %s)' % lp
-        if (not c1) and (not c2):
-            return '(list %s)' % z
-        assert False
-    
-    assert d > 2
-    g = guard_expression(d - 1)
-    if c1 and c2 and c3: return 'nil'
-    if c1 and c2 and (not c3): return 'a'
-    if c1 and (not c2) and c3: return '(cdr %s)' % lp
-    if c1 and (not c2) and (not c3): return '(list %s)' % z
-    if (not c1) and c2 and c3: return '(filter %s %s)' % (g,lp)
+    if (shallow and c1 and c2) or ((not shallow) and c1 and c2 and c3): return 'nil'
+    if (shallow and c1 and (not c2)) or ((not shallow) and c1 and c2 and (not c3)): return 'a'
+    if (shallow and (not c1) and c2) or ((not shallow) and c1 and (not c2) and c3):
+        return '(cdr %s)' % lp
+    if (shallow and (not c1) and (not c2)) or ((not shallow) and c1 and (not c2) and (not c3)):
+        return '(list %s)' % z
+    if (not shallow) and (not c1) and c2 and c3:
+        return '(filter %s %s)' % (g,lp)
 
     assert False
 
@@ -66,11 +62,11 @@ def integer_expression(d):
     zp = integer_expression(d - 1)
     l = array_expression(d - 1)
 
-    if c1 and c2: return '0'
-    if c1 and (not c2): return '(+1 %s)' % zp
-    if (not c1) and c2: return '(-1 %s)' % zp
-    if c3: return '(car %s)' % l
-    return '(length %s)' % l
+    if c1 and c2 and c3: return '0'
+    if c1 and c2 and (not c3): return '(+1 %s)' % zp
+    if c1 and (not c2) and c3: return '(-1 %s)' % zp
+    if c1 and (not c2) and (not c3): return '(car %s)' % l
+    if (not c1) and c2 and c3: return '(length %s)' % l
 
 def main(t):
     global tape
@@ -93,7 +89,6 @@ def main(t):
     if rz: z = '(sort %s)' % z
 
     return '(if (%s %s)\n%s\n(append\n%s\n%s\n%s))' % (g,target,b,x,y,z)
-    
-#print main([0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,1,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1,0,0,0,1,0,1,1,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,1,0,1,0,0,0,0,0,0,0])
-#print main([0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,1,0,1,0,1,0,0,0,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0,1,0,0,0,0,0,1,1,0,1,0,1,0,1,0,0,1,0,1,1,0,0,0,0,1,1,0,0,0,1,0,0,1,0,1,0,0,1,0,0,0,1,0,1,1,0,0,0,1,1,1,1,0,0,0,1,0,0,1,1,0,0,0,0,1,0,1,0,0,0,0,1,0,1,1,0,0,1,0,0,0,0,1,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0])
-print main([0,1,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,0,0,0,1,0,0,0,0,1,0,0,0,1,1,0,1,1,0,1,0,1,0,0,0,1,0,1,1,0,1,1,0,1,0,0,1,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,1,0,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,1,0,0])
+
+
+print main([0,0,0,1,1,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,0,1,0,0,1,0,1,1,0,1,1,0,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,1,0,1,0,0,1,0,1,1,0,1,1,0,0,0,0,1,0,1,1,0,0,1,0,1,1,0,1,1,0,1,0,1,1,0,0,0,0,1,1,0,1,0,1,0,0,0,0,0,0,1,1,0,0,1,0,1,1,1,0,0,1,1,0,1,0,0,0,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0])

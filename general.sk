@@ -165,7 +165,7 @@ Array array_expression(Array a,int d,ref bit success) {
       return r;
     }
     success = 0;
-    return lp;
+    return empty_list();
   }
   if ((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3)) {
     success = integer_success;
@@ -244,7 +244,7 @@ Array recursive_expression(Array a, int bnd) {
   assert s4 && s5 && s6;
 
   //  if (rz || ry || rx) assert bnd > 0;
-  if (rz) { assert x.s < a.s; x = recursive_expression(x, bnd-1); }
+  if (rx) { assert x.s < a.s; x = recursive_expression(x, bnd-1); }
   if (ry) { assert y.s < a.s; y = recursive_expression(y, bnd-1); }
   if (rz) { assert z.s < a.s; z = recursive_expression(z, bnd-1); }
 
