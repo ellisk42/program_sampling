@@ -298,7 +298,7 @@ harness void l6() {
 }
 
 harness void l1() {
-  test_case({8},{8});
+  test_case({8},{8},1);
 }
 
 harness void l0() {
