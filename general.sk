@@ -106,6 +106,8 @@ Array empty_list() {
 Guard guard_expression(Array a,int d,ref bit success) {
   assert d > 1; // integer expression needs at least 1
 
+  bit ignore1,ignore2;
+
   bit c1 = flip();
   bit c2 = flip();
   int o;
@@ -114,13 +116,16 @@ Guard guard_expression(Array a,int d,ref bit success) {
   if (!c1 && !c2) o = O_GT;
   
   bit zs;
-  int z = integer_expression(a,d-1,zs);
+  int z = integer_expression(a,d-1,zs,ignore1,ignore2);
   success = zs;
 
   return new Guard(z = z, o = o);
 }
 
-Array array_expression(Array a,int d,ref bit success) {
+Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empty) {
+  single = 0;
+  empty = 0;
+  
   assert d > 0;
 
   bit shallow = !(d > 2);
@@ -128,10 +133,12 @@ Array array_expression(Array a,int d,ref bit success) {
   bit c1 = flip();
   if (d == 1) { // only terminals allowed
     success = 1;
-    if (c1)
+    if (c1) {
+      empty = 1;
       return empty_list();
-    else
+    } else {
       return a;
+    }
   }
   
 
@@ -139,10 +146,11 @@ Array array_expression(Array a,int d,ref bit success) {
   bit c3;
   if (!shallow) c3 = flip();
 
-  bit array_success;
-  Array lp = array_expression(a,d-1,array_success);
-  bit integer_success;
-  int z = integer_expression(a,d-1,integer_success);
+  bit array_success,array_single,array_empty;
+  
+  Array lp = array_expression(a,d-1,array_success,array_single,array_empty);
+  bit integer_success,integer_increment,integer_decrement;
+  int z = integer_expression(a,d-1,integer_success,integer_increment,integer_decrement);
   bit cdr_success;
   bit guard_success;
   Guard g;
@@ -151,6 +159,7 @@ Array array_expression(Array a,int d,ref bit success) {
   
 
   if ((shallow && c1 && c2) || (!shallow && c1 && c2 && c3)) {
+    empty = 1;
     success = 1;
     return empty_list();
   }
@@ -159,6 +168,7 @@ Array array_expression(Array a,int d,ref bit success) {
     return a;
   }
   if ((shallow && !c1 && c2) || (!shallow && c1 && !c2 && c3)) {
+    assert !array_single;
     if (array_success) {
       Array r = cdr(lp,cdr_success);
       success = cdr_success;
@@ -168,11 +178,13 @@ Array array_expression(Array a,int d,ref bit success) {
     return empty_list();
   }
   if ((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3)) {
+    single = 1;
     success = integer_success;
     return singleton(z);
   }
   if (!shallow && !c1 && c2 && c3) {
-    success = guard_success && array_success;
+    assert !array_empty;
+    success = array_success && guard_success;
     return filter(g,lp);
   }
 
@@ -181,7 +193,10 @@ Array array_expression(Array a,int d,ref bit success) {
 
 
   
-int integer_expression(Array a,int d,ref bit success) {
+int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit decremented) {
+  incremented = 0;
+  decremented = 0;
+  
   assert d > 0;
   if (d == 1) { success = 1; return 0; }
 
@@ -189,43 +204,44 @@ int integer_expression(Array a,int d,ref bit success) {
   bit c2 = flip();
   bit c3 = flip();
 
-  bit integer_success;
-  int zp = integer_expression(a,d-1,integer_success);
-  bit array_success;
-  Array l = array_expression(a,d-1,array_success);
+  bit integer_success,integer_incremented,integer_decremented;
+  int zp = integer_expression(a,d-1,integer_success,integer_incremented,integer_decremented);
+  bit array_success,array_empty,array_single;
+  Array l = array_expression(a,d-1,array_success,array_empty,array_single);
 
   //  int constant = random_integer();
 
   if (c1 && c2 && c3) { success = 1; return 0; }
-  if (c1 && c2 && !c3) { success = integer_success; return zp+1; }
-  if (c1 && !c2 && c3) { success = integer_success; return zp-1; }
+  if (c1 && c2 && !c3) { success = integer_success; assert !integer_decremented; return zp+1; }
+  if (c1 && !c2 && c3) { success = integer_success; assert !integer_incremented; return zp-1; }
   if (c1 && !c2 && !c3) {
+    assert !array_single && !array_empty;
     if (array_success) {
       bit car_success;
       int r = car(l,car_success);
-      success = car_success;
+      success = car_success; 
       return r;
     }
     success = 0;
     return 0;
   }
   if (!c1 && c2 && c3) {
+    assert !array_single && !array_empty;
     success = array_success;
     return l.s;
   }
-  //  if (!c1 && c2 && !c3) { success = 1; return constant; }
   assert 0;
 }
 
 Array recursive_expression(Array a, int bnd) {
   tape_index = 0;
-  bit s1,s2,s3,s4,s5,s6;
+  bit s1,s2,s3,s4,s5,s6,ignore1,ignore2;
   
   Guard g = guard_expression(a,3,s1);
   //  assert ?? == tape_index; // 6
-  int target = integer_expression(a,3,s2);
+  int target = integer_expression(a,3,s2,ignore1,ignore2);
   //  assert tape_index == 16; // 16
-  Array b = array_expression(a,4,s3);
+  Array b = array_expression(a,4,s3,ignore1,ignore2);
 
   assert b.s == 0;
 
@@ -235,9 +251,9 @@ Array recursive_expression(Array a, int bnd) {
 
   if (bnd < 1) return null;
 
-  Array x = array_expression(a,4,s4); bit rx = flip();
-  Array y = array_expression(a,4,s5); bit ry = flip();
-  Array z = array_expression(a,4,s6); bit rz = flip();
+  Array x = array_expression(a,4,s4,ignore1,ignore2); bit rx = flip();
+  Array y = array_expression(a,4,s5,ignore1,ignore2); bit ry = flip();
+  Array z = array_expression(a,4,s6,ignore1,ignore2); bit rz = flip();
 
 
   

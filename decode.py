@@ -15,11 +15,11 @@ def guard_expression(d):
     z = integer_expression(d - 1)
 
     o = None
-    if c1: o = '='
-    if not c1 and c2: o = '>'
-    if not c2 and not c2: o = '<'
+    if c1: o = 'eq'
+    if not c1 and c2: o = 'gt'
+    if not c2 and not c2: o = 'lt'
 
-    return "(%s %s)" % (o,z)
+    return "('%s', %s)" % (o,z)
 
 def array_expression(d):
     assert d > 0
@@ -28,8 +28,8 @@ def array_expression(d):
     c1 = flip()
 
     if d == 1:
-        if c1: return 'nil'
-        return "a"
+        if c1: return "'nil'"
+        return "'a'"
     
     c2 = flip()
     c3 = None
@@ -41,14 +41,14 @@ def array_expression(d):
     if not shallow:
         g = guard_expression(d - 1)
 
-    if (shallow and c1 and c2) or ((not shallow) and c1 and c2 and c3): return 'nil'
-    if (shallow and c1 and (not c2)) or ((not shallow) and c1 and c2 and (not c3)): return 'a'
+    if (shallow and c1 and c2) or ((not shallow) and c1 and c2 and c3): return "'nil'"
+    if (shallow and c1 and (not c2)) or ((not shallow) and c1 and c2 and (not c3)): return "'a'"
     if (shallow and (not c1) and c2) or ((not shallow) and c1 and (not c2) and c3):
-        return '(cdr %s)' % lp
+        return "('cdr', %s)'" % lp
     if (shallow and (not c1) and (not c2)) or ((not shallow) and c1 and (not c2) and (not c3)):
-        return '(list %s)' % z
+        return "('list', %s)'" % z
     if (not shallow) and (not c1) and c2 and c3:
-        return '(filter %s %s)' % (g,lp)
+        return "('filter', %s, %s)" % (g,lp)
 
     assert False
 
@@ -64,10 +64,10 @@ def integer_expression(d):
     l = array_expression(d - 1)
 
     if c1 and c2 and c3: return '0'
-    if c1 and c2 and (not c3): return '(+1 %s)' % zp
-    if c1 and (not c2) and c3: return '(-1 %s)' % zp
-    if c1 and (not c2) and (not c3): return '(car %s)' % l
-    if (not c1) and c2 and c3: return '(length %s)' % l
+    if c1 and c2 and (not c3): return "('+1', %s)" % zp
+    if c1 and (not c2) and c3: return "('-1', %s)" % zp
+    if c1 and (not c2) and (not c3): return "('car', %s)" % l
+    if (not c1) and c2 and c3: return "('length', %s)" % l
 
 def main(t):
     global tape
@@ -94,5 +94,3 @@ def main(t):
 
 input_tape = "[%s]" % sys.argv[1]
 print main(eval(input_tape))
-#print main([0,1,1,1,0,0,1,1,0,0,1,1,0,0,1,0,1,1,1,1,1,0,1,1,0,1,1,0,0,0,0,1,0,0,1,0,1,0,1,1,0,1,0,1,1,0,0,0,1,1,1,0,0,0,0,0,1,1,0,0,1,1,1,1,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,1,1,1,0,0,1,1,0,0,0,0,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,1,0,0,0,0,1,1,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0])
-#print main([0,0,0,1,1,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,0,1,0,0,1,0,1,1,0,1,1,0,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,1,0,1,0,0,1,0,1,1,0,1,1,0,0,0,0,1,0,1,1,0,0,1,0,1,1,0,1,1,0,1,0,1,1,0,0,0,0,1,1,0,1,0,1,0,0,0,0,0,0,1,1,0,0,1,0,1,1,1,0,0,1,1,0,1,0,0,0,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0])

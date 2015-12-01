@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <iostream>
+#include <time.h>       /* time */
+
 using namespace std;
 #include "vops.h"
 #include "general.h"
@@ -435,6 +437,7 @@ void filter(Guard* g, Array* a, Array*& _out) {
 
 using namespace ANONYMOUS;
 int main(int ac,char **av) {
+  srand (time(NULL));
   
   int n = 6;
   int input[n] = {5,9,2,1,8,3};
