@@ -4,7 +4,7 @@ import random #from random import randint
 import os
 import re
 
-SKETCHOPTIONS = ' --bnd-inline-amnt 4 '
+SKETCHOPTIONS = '  -V10 --bnd-inline-amnt 4 '
 
 source = None
 with open(sys.argv[1]) as h:
@@ -54,11 +54,12 @@ while samples < 1 and attempts < 20:
     print "k = ",k
     projection = "\nharness void projection() { assert %s; }" % random_projection()
     r = run_with_suffix(projection,"projection_output.sk")
-    print r
-#    print "output = ",r
+#    print r
+    print "output = ",r
     if '*** Rejected' in r:
         print 'Constraints rejected',r
-#        k -= 1
+        if adaptive:
+            k -= 1
         continue
     continue
     different = "\nharness void different() { assert %s; }" % tape_values(r)
@@ -70,5 +71,6 @@ while samples < 1 and attempts < 20:
         with open('sample%d.sk'%samples,'w') as h:
             h.write(r)
     else:
-        print 'duplicate,rd' #,rd
-#        k += 1
+        print 'duplicate'
+        if adaptive:
+            k += 1
