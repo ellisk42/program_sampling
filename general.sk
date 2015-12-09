@@ -313,6 +313,14 @@ harness void l6() {
   test_case({1,3,2},{1,2,3},3);
 }
 
+harness void l2() {
+    test_case({4,5},{4,5},2);
+}
+
+harness void l3() {
+    test_case({6,1},{1,6},2);
+}
+
 harness void l1() {
   test_case({8},{8},1);
 }
