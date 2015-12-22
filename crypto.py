@@ -57,5 +57,21 @@ def try_sampling():
             print "Sample rejected"
         else:
             print "Unique so sample accepted"
+
+def adaptive_sample():
+    global subspace_dimension
+    result = try_solving()
+    if result:
+        print "Formula satisfied"
+        for j in range(subspace_dimension):
+            random_projection()
+        while try_solving():
+            print "Satisfied %d constraints" % subspace_dimension
+            random_projection()
+            subspace_dimension += 1
+        print "Rejected %d projections" % subspace_dimension
+
+        
             
-try_sampling()
+#try_sampling()
+adaptive_sample()

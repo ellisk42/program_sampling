@@ -1,4 +1,4 @@
-pragma options "--slv-randassign --slv-ntimes 100000  --slv-randdegree  50 --bnd-unroll-amnt 16";
+pragma options "--slv-randassign --slv-ntimes 100000  --slv-randdegree  50 --bnd-unroll-amnt 16 --bnd-cbits 4";
 
 
 
@@ -10,7 +10,9 @@ str cstr([int n] , char[n] ch){
     return new str(n=n, ch=ch);
 }
 
-
+// s = ...r1r2...
+// returns  ^ position
+// optionally skip over k occurrences
 int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
     for(int i=0; i<s.n; ++i){
         if(i+ n1 + n2 < s.n){
@@ -37,22 +39,77 @@ str Concat(str s1, str s2){
 }
 
 generator str genExpr(str s){
-    generator str term(){
-        if(??){
-            char[4] r1 = ??;
-            return cstr(r1[0::??]); }
-        else{ 
-            char[3] r1 = ??;
-            char[3] r2 = ??;
-            return SubStr(s, ?? ? ?? : Pos(s, r1[0::??], r2[0::??], ??), ?? ? ?? : Pos(s, r1[0::??], r2[0::??], ??) ); 
-        }
+  generator str term(){
+    char[3] r1 = ??;
+    char[3] r2 = ??;
+    int r1l = ??(2);
+    int r1l_p = ??(2);
+    int r2l = ??(2);
+    int r2l_p = ??(2);
+
+    int p1_k = ??;
+    int p2_k = ??;
+
+    bit k1 = ??;
+    bit k2 = ??;
+
+    int p1_occurrence = ??;
+    int p2_occurrence = ??;
+
+    for (int j = 0; j < 3; j++) {
+      if (j >= r1l && j >= r1l_p) assert r1[j] == '\0';
+      if (j >= r2l && j >= r2l_p) assert r2[j] == '\0';
     }
-    str out = term();
-    int i=0;
+
+    // produce all the holes that once
+    if(??){
+      //      assert r1l == 0;
+      assert r1l_p == 0;
+      assert r2l == 0;
+      assert r2l_p == 0;
+
+      assert p1_k == 0;
+      assert p2_k == 0;
+
+      assert k1 == 0;
+      assert k2 == 0;
+
+      assert p1_occurrence == 0;
+      assert p2_occurrence == 0;
+
+      return cstr(r1[0::r1l]); }
+    else{
+      int p1;
+      if (k1) {
+	assert r1l == 0;
+	assert r2l == 0;
+	assert p1_occurrence == 0;
+	p1 = p1_k;
+      } else {
+	assert p1_k == 0;
+	p1 = Pos(s, r1[0::r1l], r2[0::r2l], p1_occurrence);
+      }
+
+      int p2;
+      if (k2) {
+	assert r1l_p == 0;
+	assert r2l_p == 0;
+	assert p2_occurrence == 0;
+	p2 = p2_k;
+      } else {
+	assert p2_k == 0;
+	p2 = Pos(s, r1[0::r1l_p], r2[0::r2l_p], p2_occurrence);
+      }
+      
+      return SubStr(s, p1, p2); 
+    }
+  }
+    str out = Concat(term(),term());
+    /*int i=0;
     minrepeat{
         out = Concat(out, term());
         assert i++ < 3;
-    }
+	}*/
     return out;
 }
 
@@ -73,11 +130,12 @@ harness void main(){
 */
 
 
-harness void main(){    
+/*harness void main(){    
     assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
-}
+    }*/
 
-harness void main2(){
+harness void main2() {
+  assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
     assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
 }
 
