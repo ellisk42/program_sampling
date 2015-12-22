@@ -1,6 +1,6 @@
 pragma options "--slv-randassign --slv-ntimes 100000  --slv-randdegree  50 --bnd-unroll-amnt 16 --bnd-cbits 4";
 
-bit[101] tape = ??;
+bit[60] tape = ??;
 int tape_index = 0;
 
 bit flip() {
@@ -27,7 +27,7 @@ struct str{
 }
 
 str cstr([int n] , char[n] ch){
-    return new str(n=n, ch=ch);
+  return new str(n=n-1, ch=ch[0::(n-1)]);
 }
 
 // s = ...r1r2...
@@ -46,6 +46,22 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
         }
     }   
 }
+
+str implementation(str s) {
+  int p2 = Pos(s,
+	       {},
+	       {' '},
+	       0);
+  int p1 = 0;
+
+  return SubStr(s,0,3);
+}
+/*
+harness void test() {
+  assert eq(cstr("Tom"), implementation(cstr("Tom and Jerry")) );
+  //  assert eq(cstr("Jack"), implementation(cstr("Jack and Jill")) );
+}
+*/
 
 str SubStr(str s, int p1, int p2){    
     return new str(n=p2-p1, ch=s.ch[p1:p2]);
@@ -124,7 +140,7 @@ generator str genExpr(str s){
       return SubStr(s, p1, p2); 
     }
   }
-    str out = Concat(term(),term());
+  str out = term(); //,term());
     /*int i=0;
     minrepeat{
         out = Concat(out, term());
@@ -141,7 +157,10 @@ str flashToy(str s){
 
 
 bit eq(str s1, str s2){
-    return s1.ch == s2.ch;    
+  if (s1.n != s2.n) return 0;
+  for (int j = 0; j < s1.n; j++)
+    if (s1.ch[j] != s2.ch[j]) return 0;
+  return 1;
 }
 
 /*
@@ -154,6 +173,7 @@ harness void main(){
 /*harness void main(){    
     assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
     }*/
+
 
 harness void main2() {
   assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
