@@ -7,6 +7,7 @@ from pycryptosat import Solver
 
 s = Solver(threads = 3)
 
+tt = 0
 
 hs = [] # holes
 clauses = []
@@ -29,10 +30,13 @@ def random_projection():
     s.add_xor_clause([v for v in hs if random.random() > 0.5 ],random.random() > 0.5)
 
 def try_solving():
+    global tt
     print "About to run solver ==  ==  ==  > "
     start_time = time.time()
     result = s.solve()
-    print "Ran solver in time",(time.time() - start_time)
+    dt = (time.time() - start_time)
+    tt += dt
+    print "Ran solver in time",dt
     if result[0]:
         bindings = {}
         for v in range(len(result[1])):
@@ -75,3 +79,5 @@ def adaptive_sample():
             
 #try_sampling()
 adaptive_sample()
+
+print "total time =",tt
