@@ -1,3 +1,4 @@
+import os
 import time
 import random
 import re
@@ -5,79 +6,139 @@ import sys
 
 from pycryptosat import Solver
 
-s = Solver(threads = 3)
+from decodeFlash import parse_tape
 
-tt = 0
+#subspace_dimension = int(sys.argv[2])
 
-hs = [] # holes
-clauses = []
-with open(sys.argv[1],'r') as f:
-    for l in f:
-        if len(l) > len('c hole ') and l[:len('c hole ')] == 'c hole ':
-            ms = re.findall(r'(\d+) \- (\d+)', l)[0]
-            ms = range(int(ms[0]),int(ms[1])+1)
-            hs = hs + ms
-        elif len(l) > 0 and not 'c' in l and not 'p' in l:
-            vs = re.findall(r'(\-?\d+)',l)
-            assert vs[-1] == '0'
-            clause = [int(v) for v in vs[:-1] ]
-            clauses.append(clause)
-            s.add_clause(clause)
-print "Loaded",len(clauses),"clauses with",len(hs),"holes"
-subspace_dimension = int(sys.argv[2])
+class ProgramSolver():
+    def __init__(self,filename):
+        self.s = Solver(threads = 3)
+        self.tt = 0
+        # converts a sat variable to a tape index
+        self.variable2tape = {}
+        # convert the tape index into a sat variable
+        self.tape2variable = {}
+        self.maximum_variable = -1
+        with open(filename,'r') as f:
+            for l in f:
+                if len(l) > len('c hole ') and l[:len('c hole ')] == 'c hole ':
+                    ms = re.findall(r'(\d+) \- (\d+)', l)[0]
+                    assert int(ms[0]) == int(ms[1])
+                    ms = int(ms[0])
+                    n = int(re.findall(r'H__\S+_(\S+)\s',l)[0])
+                    self.variable2tape[ms] = n
+                    self.tape2variable[n] = ms
+                elif len(l) > 0 and not 'c' in l and not 'p' in l:
+                    vs = re.findall(r'(\-?\d+)',l)
+                    assert vs[-1] == '0'
+                    clause = [int(v) for v in vs[:-1] ]
+                    self.maximum_variable = max([self.maximum_variable] +
+                                                [abs(v) for v in clause ])
+                    self.s.add_clause(clause)
+        print "Loaded",filename," with",len(self.variable2tape),"holes"
+        print self.variable2tape
 
-def random_projection():
-    s.add_xor_clause([v for v in hs if random.random() > 0.5 ],random.random() > 0.5)
-
-def try_solving():
-    global tt
-    print "About to run solver ==  ==  ==  > "
-    start_time = time.time()
-    result = s.solve()
-    dt = (time.time() - start_time)
-    tt += dt
-    print "Ran solver in time",dt
-    if result[0]:
-        bindings = {}
-        for v in range(len(result[1])):
-            if v in hs:
-                bindings[v] = result[1][v]
-        print "Satisfiable."
-        return bindings
-    else:
-        print "Unsatisfiable."
-        return False
-
-
-def try_sampling():
-    for j in range(subspace_dimension):
-        random_projection()
-    result = try_solving()
-    if result:
-        print "Random projection satisfied"
-        print result
-        s.add_clause([ (-1 if result[h] else 1)*h for h in result ])
-        if try_solving():
-            print "Sample rejected"
+    def generate_variable(self):
+        self.maximum_variable += 1
+        return self.maximum_variable
+    
+    def random_projection(self):
+        self.s.add_xor_clause([v for v in self.variable2tape if random.random() > 0.5 ],random.random() > 0.5)
+        
+    def try_solving(self,assumptions = None):
+        print "About to run solver ==  ==  ==  > "
+        start_time = time.time()
+        if assumptions != None:
+            result = self.s.solve(assumptions)
         else:
-            print "Unique so sample accepted"
+            result = self.s.solve()
+        dt = (time.time() - start_time)
+        self.tt += dt
+        print "Ran solver in time",dt
+        if result[0]:
+            bindings = {}
+            for v in range(len(result[1])):
+                if v in self.variable2tape:
+                    bindings[v] = result[1][v]
+            print "Satisfiable."
+            return bindings
+        else:
+            print "Unsatisfiable."
+            return False
+    
+    def is_solution_unique(self,tape):
+        p,bit_mask = parse_tape(tape)
+        d = self.generate_variable()
+        clause = [d]
+        tapePosition2variable = sorted(self.tape2variable.items())
+        for j in range(len(tape)):
+            if bit_mask[j] == 1:
+                # jth tape position
+                v = tapePosition2variable[j][1]
+                if tape[j] == 0: v = -v
+                clause += [v]
+        print "uniqueness clause",clause
+        self.s.add_clause(clause)
+        result = self.try_solving([-d])
+        self.s.add_clause([d]) # make the clause documents they satisfied
+        if result:
+            tp = self.holes2tape(result)
+            print "alternative:",parse_tape(tp)
+            print "alternative tape:",tp
+            return False
+        else:
+            return True
+                
 
-def adaptive_sample():
-    global subspace_dimension
-    result = try_solving()
-    if result:
-        print "Formula satisfied"
+    def holes2tape(self,result):
+        tape = []
+        for n,v in sorted(self.tape2variable.items()):
+            tape.append(1 if result[v] else 0)
+        return tape
+
+    def try_sampling(self,subspace_dimension):
         for j in range(subspace_dimension):
-            random_projection()
-        while try_solving():
-            print "Satisfied %d constraints" % subspace_dimension
-            random_projection()
-            subspace_dimension += 1
-        print "Rejected %d projections" % subspace_dimension
+            self.random_projection()
+        result = self.try_solving()
+        if result:
+            print "Random projection satisfied"
+            print result
+            if self.is_solution_unique(self.holes2tape(result)):
+                print "Unique. Accepted."
+            else:
+                print "Sample rejected"
+                #            self.s.add_clause([ (-1 if result[h] else 1)*h for h in result ])
+#            if self.try_solving():
+#                print "Sample rejected"
+#            else:
+#                print "Unique so sample accepted"
+
+    def adaptive_sample(self):
+        subspace_dimension = 1
+        result = self.try_solving()
+        if result:
+            print "Formula satisfied"
+            for j in range(subspace_dimension):
+                self.random_projection()
+            while True:
+                print "\n\niterating:"
+                result = self.try_solving()
+                if result:
+                    print "Satisfied %d constraints" % subspace_dimension
+                    tp = self.holes2tape(result)
+                    print parse_tape(tp)
+                    print "tape = ",tp
+                    if self.is_solution_unique(tp):
+                        print "UNIQUE"
+                        print "<<< ==  ==  == >>>"
+                    self.random_projection()
+                    subspace_dimension += 1
+                else:
+                    print "Rejected %d projections" % subspace_dimension
+                    print "total time = ",self.tt
+                    break
 
         
-            
-#try_sampling()
-adaptive_sample()
-
-print "total time =",tt
+x = ProgramSolver(sys.argv[1])
+x.adaptive_sample()
+#x.try_sampling(int(sys.argv[2]))

@@ -1,7 +1,22 @@
 pragma options "--slv-randassign --slv-ntimes 100000  --slv-randdegree  50 --bnd-unroll-amnt 16 --bnd-cbits 4";
 
-bit[60] tape = ??;
+bit[47] tape = ??;
 int tape_index = 0;
+
+// printed out program
+/*char[51] canonical = ??;
+int canonical_index = 0;
+
+void Canon(char c) {
+  assert canonical[canonical_index++] == c;
+}
+
+void ks([int n], char[n] s) {
+  for (int j = 0; j < n; j++) {
+    Canon(s[j]);
+  }
+}
+*/
 
 bit flip() {
   return tape[tape_index++];
@@ -34,6 +49,7 @@ str cstr([int n] , char[n] ch){
 // returns  ^ position
 // optionally skip over k occurrences
 int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
+  assert n1 > 0 || n2 > 0;
     for(int i=0; i<s.n; ++i){
         if(i+ n1 + n2 < s.n){
             if(s.ch[i::n1]==r1 && s.ch[(i+n1)::n2] == r2){
@@ -44,9 +60,10 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
                 }
             }
         }
-    }   
+    }
+    assert 0;
 }
-
+/*
 str implementation(str s) {
   int p2 = Pos(s,
 	       {},
@@ -54,12 +71,12 @@ str implementation(str s) {
 	       0);
   int p1 = 0;
 
-  return SubStr(s,0,3);
+  return SubStr(s,0,p2);
 }
-/*
+
 harness void test() {
   assert eq(cstr("Tom"), implementation(cstr("Tom and Jerry")) );
-  //  assert eq(cstr("Jack"), implementation(cstr("Jack and Jill")) );
+  assert eq(cstr("Jack"), implementation(cstr("Jack and Jill")) );
 }
 */
 
@@ -89,18 +106,18 @@ generator str genExpr(str s){
     bit k1 = flip();
     bit k2 = flip();
 
-    int p1_occurrence = random_number();
-    int p2_occurrence = random_number();
+    int p1_occurrence = random_little_number();
+    int p2_occurrence = random_little_number();
 
-    for (int j = 0; j < 3; j++) {
+    /* for (int j = 0; j < 3; j++) {
       if (j >= r1l && j >= r1l_p) assert r1[j] == '\0';
       if (j >= r2l && j >= r2l_p) assert r2[j] == '\0';
-    }
+    } */
 
     // produce all the holes that once
     if(flip()){
       //      assert r1l == 0;
-      assert r1l_p == 0;
+      /*      assert r1l_p == 0;
       assert r2l == 0;
       assert r2l_p == 0;
 
@@ -112,28 +129,32 @@ generator str genExpr(str s){
 
       assert p1_occurrence == 0;
       assert p2_occurrence == 0;
-
-      return cstr(r1[0::r1l]); }
-    else{
+      */
+      /*      Canon('K');
+      Canon(r1l);
+      ks(r1[0::r1l]);*/
+      return cstr(r1[0::r1l]);
+    } else {
       int p1;
       if (k1) {
-	assert r1l == 0;
+	/*	assert r1l == 0;
 	assert r2l == 0;
 	assert p1_occurrence == 0;
+	*/
 	p1 = p1_k;
       } else {
-	assert p1_k == 0;
+	//assert p1_k == 0;
 	p1 = Pos(s, r1[0::r1l], r2[0::r2l], p1_occurrence);
       }
 
       int p2;
       if (k2) {
-	assert r1l_p == 0;
+	/*assert r1l_p == 0;
 	assert r2l_p == 0;
-	assert p2_occurrence == 0;
+	assert p2_occurrence == 0;*/
 	p2 = p2_k;
       } else {
-	assert p2_k == 0;
+	//	assert p2_k == 0;
 	p2 = Pos(s, r1[0::r1l_p], r2[0::r2l_p], p2_occurrence);
       }
       
@@ -157,6 +178,7 @@ str flashToy(str s){
 
 
 bit eq(str s1, str s2){
+  return s1.ch == s2.ch;
   if (s1.n != s2.n) return 0;
   for (int j = 0; j < s1.n; j++)
     if (s1.ch[j] != s2.ch[j]) return 0;
