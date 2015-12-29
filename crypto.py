@@ -14,10 +14,9 @@ class ProgramSolver():
     def __init__(self,filename):
         self.s = Solver(threads = 3)
         self.tt = 0
-        # converts a sat variable to a tape index
-        self.variable2tape = {}
-        # convert the tape index into a sat variable
-        self.tape2variable = {}
+
+        h2v = {} # hole 2 variable
+                
         self.maximum_variable = -1
         with open(filename,'r') as f:
             for l in f:
@@ -26,8 +25,7 @@ class ProgramSolver():
                     assert int(ms[0]) == int(ms[1])
                     ms = int(ms[0])
                     n = int(re.findall(r'H__\S+_(\S+)\s',l)[0])
-                    self.variable2tape[ms] = n
-                    self.tape2variable[n] = ms
+                    h2v[n] = ms
                 elif len(l) > 0 and not 'c' in l and not 'p' in l:
                     vs = re.findall(r'(\-?\d+)',l)
                     assert vs[-1] == '0'
@@ -35,8 +33,14 @@ class ProgramSolver():
                     self.maximum_variable = max([self.maximum_variable] +
                                                 [abs(v) for v in clause ])
                     self.s.add_clause(clause)
-        print "Loaded",filename," with",len(self.variable2tape),"holes"
-        print self.variable2tape
+        print "Loaded",filename," with",len(h2v),"holes"
+        # convert the tape index into a sat variable
+        self.tape2variable = [ v for h,v in sorted(h2v.items()) ]
+        
+        # converts a sat variable to a tape index
+        self.variable2tape = dict([ (v,h) for h,v in h2v.items() ])
+
+
 
     def generate_variable(self):
         self.maximum_variable += 1
@@ -70,12 +74,11 @@ class ProgramSolver():
         p,bit_mask = parse_tape(tape)
         d = self.generate_variable()
         clause = [d]
-        tapePosition2variable = sorted(self.tape2variable.items())
         for j in range(len(tape)):
             if bit_mask[j] == 1:
                 # jth tape position
-                v = tapePosition2variable[j][1]
-                if tape[j] == 0: v = -v
+                v = self.tape2variable[j]
+                if tape[j] == 1: v = -v
                 clause += [v]
         print "uniqueness clause",clause
         self.s.add_clause(clause)
@@ -91,10 +94,7 @@ class ProgramSolver():
                 
 
     def holes2tape(self,result):
-        tape = []
-        for n,v in sorted(self.tape2variable.items()):
-            tape.append(1 if result[v] else 0)
-        return tape
+        return [ (1 if result[v] else 0) for v in self.tape2variable ]
 
     def try_sampling(self,subspace_dimension):
         for j in range(subspace_dimension):
@@ -102,16 +102,12 @@ class ProgramSolver():
         result = self.try_solving()
         if result:
             print "Random projection satisfied"
-            print result
-            if self.is_solution_unique(self.holes2tape(result)):
+            tp = self.holes2tape(result)
+            print parse_tape(tp)[0]
+            if self.is_solution_unique(tp):
                 print "Unique. Accepted."
             else:
                 print "Sample rejected"
-                #            self.s.add_clause([ (-1 if result[h] else 1)*h for h in result ])
-#            if self.try_solving():
-#                print "Sample rejected"
-#            else:
-#                print "Unique so sample accepted"
 
     def adaptive_sample(self):
         subspace_dimension = 1
@@ -140,5 +136,7 @@ class ProgramSolver():
 
         
 x = ProgramSolver(sys.argv[1])
-x.adaptive_sample()
-#x.try_sampling(int(sys.argv[2]))
+#x.adaptive_sample()
+
+x.try_sampling(int(sys.argv[2]))
+print "total time = ",x.tt
