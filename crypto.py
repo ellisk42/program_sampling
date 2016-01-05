@@ -136,7 +136,7 @@ class ProgramSolver():
 
         
 x = ProgramSolver(sys.argv[1])
-#x.adaptive_sample()
+x.adaptive_sample()
 
-x.try_sampling(int(sys.argv[2]))
+#x.try_sampling(int(sys.argv[2]))
 print "total time = ",x.tt

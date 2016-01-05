@@ -1,6 +1,8 @@
 pragma options "--slv-randassign --slv-ntimes 100000  --slv-randdegree  50 --bnd-unroll-amnt 16 --bnd-cbits 4";
 
-bit[47] tape = ??;
+#define PIECES 2
+
+bit[47*PIECES + PIECES - 1] tape = ??;
 int tape_index = 0;
 
 // printed out program
@@ -41,58 +43,63 @@ struct str{
     int n; char[n] ch;    
 }
 
-str cstr([int n] , char[n] ch){
-  return new str(n=n-1, ch=ch[0::(n-1)]);
-}
+  str cstr([int n] , char[n] ch){
+    return new str(n=n-1, ch=ch[0::(n-1)]);
+  }
 
 // s = ...r1r2...
 // returns  ^ position
 // optionally skip over k occurrences
 int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
   assert n1 > 0 || n2 > 0;
-    for(int i=0; i<s.n; ++i){
-        if(i+ n1 + n2 < s.n){
-            if(s.ch[i::n1]==r1 && s.ch[(i+n1)::n2] == r2){
-                if(k==0){
-                    return i+ n1;
-                }else{
-                    return Pos(cstr(s.ch[i+1:s.n]), r1, r2, k-1);
-                }
-            }
-        }
+  for(int i=0; i<s.n; ++i){
+    if(i+ n1 + n2 < s.n){
+      if(s.ch[i::n1]==r1 && s.ch[(i+n1)::n2] == r2){
+	if(k==0){
+	  return i+ n1;
+	}else{
+	  return Pos(cstr(s.ch[i+1:s.n]), r1, r2, k-1);
+	}
+      }
     }
-    assert 0;
+  }
+  assert 0;
 }
 /*
-str implementation(str s) {
+  str implementation(str s) {
   int p2 = Pos(s,
-	       {},
-	       {' '},
-	       0);
+  {},
+  {' '},
+  0);
   int p1 = 0;
 
   return SubStr(s,0,p2);
-}
+  }
 
-harness void test() {
+  harness void test() {
   assert eq(cstr("Tom"), implementation(cstr("Tom and Jerry")) );
   assert eq(cstr("Jack"), implementation(cstr("Jack and Jill")) );
-}
+  }
 */
 
-str SubStr(str s, int p1, int p2){    
-    return new str(n=p2-p1, ch=s.ch[p1:p2]);
+str SubStr(str s, int p1, int p2){
+  assert p2 > p1;
+  return new str(n=p2-p1, ch=s.ch[p1:p2]);
 }
+/*
+  harness void sanity() {
+  assert eq(cstr(""),SubStr(cstr("this is a test"),1,1));
+  }*/
 
 str Concat(str s1, str s2){
-    char[s1.n + s2.n] ch;
-    ch[0::s1.n] = s1.ch;
-    ch[s1.n::s2.n] = s2.ch;
-    return cstr(ch);
+  char[s1.n + s2.n] ch;
+  ch[0::s1.n] = s1.ch;
+  ch[s1.n::s2.n] = s2.ch;
+  return new str(n = s1.n+s2.n, ch = ch);
 }
 
-generator str genExpr(str s){
-  generator str term(){
+str genExpr(str s){
+  str term(){
     char[3] r1 = {random_number(),random_number(),random_number()};
     char[3] r2 = {random_number(),random_number(),random_number()};
     int r1l = random_little_number();
@@ -109,70 +116,39 @@ generator str genExpr(str s){
     int p1_occurrence = random_little_number();
     int p2_occurrence = random_little_number();
 
-    /* for (int j = 0; j < 3; j++) {
-      if (j >= r1l && j >= r1l_p) assert r1[j] == '\0';
-      if (j >= r2l && j >= r2l_p) assert r2[j] == '\0';
-    } */
-
     // produce all the holes that once
     if(flip()){
-      //      assert r1l == 0;
-      /*      assert r1l_p == 0;
-      assert r2l == 0;
-      assert r2l_p == 0;
-
-      assert p1_k == 0;
-      assert p2_k == 0;
-
-      assert k1 == 0;
-      assert k2 == 0;
-
-      assert p1_occurrence == 0;
-      assert p2_occurrence == 0;
-      */
-      /*      Canon('K');
-      Canon(r1l);
-      ks(r1[0::r1l]);*/
-      return cstr(r1[0::r1l]);
+      assert r1l > 0;
+      return new str(n = r1l, ch = r1[0::r1l]);
     } else {
       int p1;
       if (k1) {
-	/*	assert r1l == 0;
-	assert r2l == 0;
-	assert p1_occurrence == 0;
-	*/
 	p1 = p1_k;
       } else {
-	//assert p1_k == 0;
 	p1 = Pos(s, r1[0::r1l], r2[0::r2l], p1_occurrence);
       }
 
       int p2;
       if (k2) {
-	/*assert r1l_p == 0;
-	assert r2l_p == 0;
-	assert p2_occurrence == 0;*/
 	p2 = p2_k;
       } else {
-	//	assert p2_k == 0;
 	p2 = Pos(s, r1[0::r1l_p], r2[0::r2l_p], p2_occurrence);
       }
       
       return SubStr(s, p1, p2); 
     }
   }
-  str out = term(); //,term());
-    /*int i=0;
-    minrepeat{
-        out = Concat(out, term());
-        assert i++ < 3;
-	}*/
-    return out;
+  str out = term();
+  if (flip()) return out;
+  out = Concat(out,term());
+  //  if (flip()) return out;
+  //  out = Concat(out,term());
+  return out;
 }
 
 str flashToy(str s){
   tape_index = 0;
-    return genExpr(s);
+  return genExpr(s);
 }
 
 
@@ -186,31 +162,52 @@ bit eq(str s1, str s2){
 }
 
 /*
-harness void main(){    
-    assert eq(cstr("Singh"), flashToy(cstr("Rishabh Singh")) );    
-}
+  harness void main(){    
+  assert eq(cstr("Singh"), flashToy(cstr("Rishabh Singh")) );    
+  }
 */
 
 
 /*harness void main(){    
-    assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
-    }*/
+  assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
+  }*/
 
 
 harness void main2() {
   assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
-    assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
+  assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
 }
 
 
 
 /*
-harness void foo() {
+  harness void foo() {
   char f = ??;
   assert f == random_number();
-}
-void check(char[2] f,int x) {
+  }
+  void check(char[2] f,int x) {
   assert f[1] == f[0];
   assert f[0] == x;
+  }
+*/
+
+/*
+char characterIdentity(char x) { return x; }
+int numberIdentity(int x) {
+  int c = ??;
+  assert c < 3;
+  assert c > 0;
+  return x+c;
 }
+  
+harness void getCharacters(){
+  char[30] dictionary = ??;
+
+  for (int j = 0; j < 14; j++) {
+    assert characterIdentity(dictionary[j]) == numberIdentity(j);
+  }
+}
+
+  
+  
 */
