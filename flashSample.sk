@@ -1,4 +1,4 @@
-pragma options "--slv-randassign --slv-ntimes 100000  --slv-randdegree  50 --bnd-unroll-amnt 16 --bnd-cbits 4";
+pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
 
 #define PIECES 2
 
@@ -43,9 +43,9 @@ struct str{
     int n; char[n] ch;    
 }
 
-  str cstr([int n] , char[n] ch){
-    return new str(n=n-1, ch=ch[0::(n-1)]);
-  }
+str cstr([int n] , char[n] ch){
+  return new str(n=n-1, ch=ch[0::(n-1)]);
+}
 
 // s = ...r1r2...
 // returns  ^ position
@@ -58,7 +58,7 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
 	if(k==0){
 	  return i+ n1;
 	}else{
-	  return Pos(cstr(s.ch[i+1:s.n]), r1, r2, k-1);
+	  return Pos(new str(n = (s.n-(i+1)), ch = s.ch[i+1:s.n]), r1, r2, k-1);
 	}
       }
     }
@@ -210,4 +210,10 @@ harness void getCharacters(){
 
   
   
+*/
+/*
+harness void test(){
+  str s = cstr("testing");
+  assert s.ch[0:2] == {'t','e'};
+}
 */

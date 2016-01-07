@@ -69,17 +69,21 @@ class ProgramSolver():
         else:
             print "Unsatisfiable."
             return False
-    
-    def is_solution_unique(self,tape):
+
+    def uniqueness_clause(self,tape):
         p,bit_mask = parse_tape(tape)
-        d = self.generate_variable()
-        clause = [d]
+        clause = []
         for j in range(len(tape)):
             if bit_mask[j] == 1:
                 # jth tape position
                 v = self.tape2variable[j]
                 if tape[j] == 1: v = -v
                 clause += [v]
+        return clause
+        
+    def is_solution_unique(self,tape):
+        d = self.generate_variable()
+        clause = [d] + self.uniqueness_clause(tape)
         print "uniqueness clause",clause
         self.s.add_clause(clause)
         result = self.try_solving([-d])
@@ -134,9 +138,24 @@ class ProgramSolver():
                     print "total time = ",self.tt
                     break
 
+
+    def enumerate_solutions(self):
+        solutions = []
+        result = self.try_solving()
+        d = self.generate_variable()
+        while result:
+            tp = self.holes2tape(result)
+            program,mask = parse_tape(tp)
+            solutions = solutions + [program]
+            print "Enumerated program", program
+            self.s.add_clause([d] + self.uniqueness_clause(tp))
+            result = self.try_solving([-d])
+        return solutions
+            
+            
         
 x = ProgramSolver(sys.argv[1])
-x.adaptive_sample()
-
+#x.adaptive_sample()
+x.enumerate_solutions()
 #x.try_sampling(int(sys.argv[2]))
 print "total time = ",x.tt
