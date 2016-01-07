@@ -1,6 +1,6 @@
 pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
 
-#define PIECES 2
+#define PIECES 3
 
 bit[47*PIECES + PIECES - 1] tape = ??;
 int tape_index = 0;
@@ -141,8 +141,8 @@ str genExpr(str s){
   str out = term();
   if (flip()) return out;
   out = Concat(out,term());
-  //  if (flip()) return out;
-  //  out = Concat(out,term());
+  if (flip()) return out;
+  out = Concat(out,term()); 
   return out;
 }
 

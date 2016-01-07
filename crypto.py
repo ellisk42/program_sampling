@@ -1,3 +1,4 @@
+import math
 import os
 import time
 import random
@@ -7,6 +8,10 @@ import sys
 from pycryptosat import Solver
 
 from decodeFlash import parse_tape
+
+def lse(x,y):
+    if x < y: return lse(y,x)
+    return x + math.log(1 + math.exp(y - x))
 
 #subspace_dimension = int(sys.argv[2])
 
@@ -143,13 +148,17 @@ class ProgramSolver():
         solutions = []
         result = self.try_solving()
         d = self.generate_variable()
+        logZ = float('-inf')
         while result:
             tp = self.holes2tape(result)
             program,mask = parse_tape(tp)
             solutions = solutions + [program]
-            print "Enumerated program", program
+            specified = sum(mask)
+            logZ = lse(logZ, -specified * 0.693)
+            print "Enumerated program", program, "with", specified, "specified bits."
             self.s.add_clause([d] + self.uniqueness_clause(tp))
             result = self.try_solving([-d])
+        print "log(z) = ",logZ, "\t1/p = ", math.exp(-logZ)
         return solutions
             
             
