@@ -1,24 +1,16 @@
 pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
 
-#define PIECES 3
+#define PIECES 2
+#define TAPELENGTH (53*PIECES+PIECES-1)
 
-bit[47*PIECES + PIECES - 1] tape = ??;
+bit[TAPELENGTH] tape = ??;
+//bit[TAPELENGTH] auxiliary = ??;
+
 int tape_index = 0;
 
-// printed out program
-/*char[51] canonical = ??;
-int canonical_index = 0;
-
-void Canon(char c) {
-  assert canonical[canonical_index++] == c;
+int max(int a,int b) {
+  return a > b ? a : b;
 }
-
-void ks([int n], char[n] s) {
-  for (int j = 0; j < n; j++) {
-    Canon(s[j]);
-  }
-}
-*/
 
 bit flip() {
   return tape[tape_index++];
@@ -33,6 +25,18 @@ int random_number() {
   return 8*b1 + 4*b2 + 2*b3 + 1*b4;
 }
 
+char random_character() {
+  bit b1 = flip();
+  bit b2 = flip();
+  bit b3 = flip();
+  bit b4 = flip();
+  bit b5 = flip();
+  
+  return 16*b1 + 8*b2 + 4*b3 + 2*b4 + 1*b5;
+}
+
+
+  
 int random_little_number() {
   bit b1 = flip();
   bit b2 = flip();
@@ -100,8 +104,8 @@ str Concat(str s1, str s2){
 
 str genExpr(str s){
   str term(){
-    char[3] r1 = {random_number(),random_number(),random_number()};
-    char[3] r2 = {random_number(),random_number(),random_number()};
+    char[3] r1 = {random_character(),random_character(),random_character()};
+    char[3] r2 = {random_character(),random_character(),random_character()};
     int r1l = random_little_number();
     int r1l_p = random_little_number();
     int r2l = random_little_number();
@@ -119,30 +123,67 @@ str genExpr(str s){
     // produce all the holes that once
     if(flip()){
       assert r1l > 0;
+
+      assert r2[0] == 0 && r2[1] == 0 && r2[2] == 0;
+      if (r1l < 3) assert r1[2] == 0;
+      if (r1l < 2) assert r1[1] == 0;
+      assert r1l_p == 0;
+      assert r2l == 0;
+      assert r2l_p == 0;
+      assert p1_k == 0;
+      assert p2_k == 0;
+      assert k1 == 0;
+      assert k2 == 0;
+      assert p1_occurrence == 0;
+      assert p2_occurrence == 0;
+      
       return new str(n = r1l, ch = r1[0::r1l]);
     } else {
+      int effective_r1l = 0;
+      int effective_r2l = 0;
+      
       int p1;
       if (k1) {
+	assert r1l == 0 && r2l == 0 && p1_occurrence == 0;
 	p1 = p1_k;
       } else {
+	assert p1_k == 0;
+	effective_r1l = max(effective_r1l,r1l);
+	effective_r2l = max(effective_r2l,r2l);
 	p1 = Pos(s, r1[0::r1l], r2[0::r2l], p1_occurrence);
       }
 
       int p2;
       if (k2) {
+	assert r1l_p == 0 && r2l_p == 0 && p2_occurrence == 0;
 	p2 = p2_k;
       } else {
+	assert p2_k == 0;
+	effective_r1l = max(effective_r1l,r1l_p);
+	effective_r2l = max(effective_r2l,r2l_p);
 	p2 = Pos(s, r1[0::r1l_p], r2[0::r2l_p], p2_occurrence);
       }
+
+
+      if (effective_r1l < 3) assert r1[2] == 0;
+      if (effective_r1l < 2) assert r1[1] == 0;
+      if (effective_r1l < 1) assert r1[0] == 0;
+
+      if (effective_r2l < 3) assert r2[2] == 0;
+      if (effective_r2l < 2) assert r2[1] == 0;
+      if (effective_r2l < 1) assert r2[0] == 0;
       
       return SubStr(s, p1, p2); 
     }
   }
   str out = term();
-  if (flip()) return out;
+  if (flip()) {
+    repeat (TAPELENGTH - 53*1 - 1) { assert flip() == 0; }
+    return out;
+  }
   out = Concat(out,term());
-  if (flip()) return out;
-  out = Concat(out,term()); 
+  //if (flip()) return out;
+  //  out = Concat(out,term()); 
   return out;
 }
 
@@ -168,15 +209,15 @@ bit eq(str s1, str s2){
 */
 
 
-/*harness void main(){    
+harness void main(){    
   assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
-  }*/
+}
 
 
-harness void main2() {
+/*harness void main2() {
   assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
   assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
-}
+  }*/
 
 
 

@@ -17,7 +17,7 @@ def lse(x,y):
 
 class ProgramSolver():
     def __init__(self,filename):
-        self.s = Solver(threads = 3)
+        self.s = Solver(threads = 1,verbose = 0)
         self.tt = 0
 
         h2v = {} # hole 2 variable
@@ -79,7 +79,7 @@ class ProgramSolver():
         p,bit_mask = parse_tape(tape)
         clause = []
         for j in range(len(tape)):
-            if bit_mask[j] == 1:
+            if bit_mask[j] == 1 or True:
                 # jth tape position
                 v = self.tape2variable[j]
                 if tape[j] == 1: v = -v
@@ -144,7 +144,9 @@ class ProgramSolver():
                     break
 
 
-    def enumerate_solutions(self):
+    def enumerate_solutions(self,subspace_dimension = 0):
+        for j in range(subspace_dimension):
+            self.random_projection()
         solutions = []
         result = self.try_solving()
         d = self.generate_variable()
@@ -152,19 +154,24 @@ class ProgramSolver():
         while result:
             tp = self.holes2tape(result)
             program,mask = parse_tape(tp)
+            if program in solutions:
+                print "DUPLICATEPROGRAM",tp
+                print mask
+                break
             solutions = solutions + [program]
             specified = sum(mask)
             logZ = lse(logZ, -specified * 0.693)
             print "Enumerated program", program, "with", specified, "specified bits."
-            self.s.add_clause([d] + self.uniqueness_clause(tp))
-            result = self.try_solving([-d])
-        print "log(z) = ",logZ, "\t1/p = ", math.exp(-logZ)
+            #self.s.add_clause([d] + self.uniqueness_clause(tp))
+            self.s.add_clause(self.uniqueness_clause(tp))
+            result = self.try_solving()
+        print "|s| =",len(solutions), "\tlog(z) =",logZ, "\t1/p =", math.exp(-logZ)
         return solutions
             
             
         
 x = ProgramSolver(sys.argv[1])
 #x.adaptive_sample()
-x.enumerate_solutions()
+x.enumerate_solutions(int(sys.argv[2]))
 #x.try_sampling(int(sys.argv[2]))
 print "total time = ",x.tt
