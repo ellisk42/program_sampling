@@ -21,6 +21,7 @@ class ProgramSolver():
         self.tt = 0
 
         h2v = {} # hole 2 variable
+        a2v = {} # auxiliary 2 variable
                 
         self.maximum_variable = -1
         with open(filename,'r') as f:
@@ -29,8 +30,11 @@ class ProgramSolver():
                     ms = re.findall(r'(\d+) \- (\d+)', l)[0]
                     assert int(ms[0]) == int(ms[1])
                     ms = int(ms[0])
-                    n = int(re.findall(r'H__\S+_(\S+)\s',l)[0])
-                    h2v[n] = ms
+                    n = re.findall(r'H__(\S+)_(\S+)\s',l)[0]
+                    if n[0] == '0': # tape
+                        h2v[int(n[1])] = ms
+                    elif n[0] == '1': # auxiliary
+                        a2v[int(n[1])] = ms
                 elif len(l) > 0 and not 'c' in l and not 'p' in l:
                     vs = re.findall(r'(\-?\d+)',l)
                     assert vs[-1] == '0'
@@ -38,13 +42,14 @@ class ProgramSolver():
                     self.maximum_variable = max([self.maximum_variable] +
                                                 [abs(v) for v in clause ])
                     self.s.add_clause(clause)
-        print "Loaded",filename," with",len(h2v),"holes"
+        print "Loaded",filename," with",len(h2v),"holes and",len(a2v),"auxiliary variables"
         # convert the tape index into a sat variable
         self.tape2variable = [ v for h,v in sorted(h2v.items()) ]
+        self.auxiliary2variable = [ v for h,v in sorted(a2v.items()) ]
         
         # converts a sat variable to a tape index
         self.variable2tape = dict([ (v,h) for h,v in h2v.items() ])
-
+        self.variable2auxiliary = dict([ (v,h) for h,v in a2v.items() ])
 
 
     def generate_variable(self):
@@ -52,7 +57,9 @@ class ProgramSolver():
         return self.maximum_variable
     
     def random_projection(self):
-        self.s.add_xor_clause([v for v in self.variable2tape if random.random() > 0.5 ],random.random() > 0.5)
+        self.s.add_xor_clause([v for v in self.variable2auxiliary if random.random() > 0.5 ] + 
+                              [v for v in self.variable2tape if random.random() > 0.5 ],
+                              random.random() > 0.5)
         
     def try_solving(self,assumptions = None):
         print "About to run solver ==  ==  ==  > "

@@ -4,9 +4,10 @@ pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
 #define TAPELENGTH (53*PIECES+PIECES-1)
 
 bit[TAPELENGTH] tape = ??;
-//bit[TAPELENGTH] auxiliary = ??;
+bit[TAPELENGTH] auxiliary = ??;
 
 int tape_index = 0;
+int auxiliary_index = 0;
 
 int max(int a,int b) {
   return a > b ? a : b;
@@ -16,6 +17,11 @@ bit flip() {
   return tape[tape_index++];
 }
 
+void stamp(bit used) {
+  if (used) assert auxiliary[auxiliary_index];
+  auxiliary_index++;
+}
+
 int random_number() {
   bit b1 = flip();
   bit b2 = flip();
@@ -23,6 +29,10 @@ int random_number() {
   bit b4 = flip();
 
   return 8*b1 + 4*b2 + 2*b3 + 1*b4;
+}
+
+void stamp_number(bit used) {
+  repeat (4) { stamp(used); }
 }
 
 char random_character() {
@@ -35,13 +45,20 @@ char random_character() {
   return 16*b1 + 8*b2 + 4*b3 + 2*b4 + 1*b5;
 }
 
-
+void stamp_character(bit used) {
+  repeat (5) { stamp(used); }
+}
   
 int random_little_number() {
   bit b1 = flip();
   bit b2 = flip();
   return 2*b1 + 1*b2;
 }
+
+void stamp_little_number(bit used) {
+  repeat (2) { stamp(used); }
+}
+
 
 struct str{    
     int n; char[n] ch;    
@@ -122,6 +139,22 @@ str genExpr(str s){
 
     // produce all the holes that once
     if(flip()){
+      stamp_character(1); // r1[0]
+      stamp_character(r1l > 1); // r1[1]
+      stamp_character(r1l > 2); // r1[2]
+      stamp_character(0); stamp_character(0); stamp_character(0); // r2
+      stamp_little_number(1); // r1l
+      stamp_little_number(0);
+      stamp_little_number(0);
+      stamp_little_number(0);
+      stamp_number(0);
+      stamp_number(0);
+      stamp(0);
+      stamp(0);
+      stamp_little_number(0);
+      stamp_little_number(0);
+      stamp(1);
+      
       assert r1l > 0;
 
       assert r2[0] == 0 && r2[1] == 0 && r2[2] == 0;
@@ -136,7 +169,7 @@ str genExpr(str s){
       assert k2 == 0;
       assert p1_occurrence == 0;
       assert p2_occurrence == 0;
-      
+
       return new str(n = r1l, ch = r1[0::r1l]);
     } else {
       int effective_r1l = 0;
@@ -172,6 +205,20 @@ str genExpr(str s){
       if (effective_r2l < 3) assert r2[2] == 0;
       if (effective_r2l < 2) assert r2[1] == 0;
       if (effective_r2l < 1) assert r2[0] == 0;
+      
+      stamp_character(effective_r1l > 0); stamp_character(effective_r1l > 1); stamp_character(effective_r1l > 2);
+      stamp_character(effective_r2l > 0); stamp_character(effective_r2l > 1); stamp_character(effective_r2l > 2);
+      stamp_little_number(!k1);
+      stamp_little_number(!k2);
+      stamp_little_number(!k1);
+      stamp_little_number(!k2);
+      stamp_number(k1);
+      stamp_number(k2);
+      stamp(1);
+      stamp(1);
+      stamp_little_number(!k1);
+      stamp_little_number(!k2);
+      stamp(1);
       
       return SubStr(s, p1, p2); 
     }
