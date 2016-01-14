@@ -171,6 +171,7 @@ class ProgramSolver():
         result = self.try_solving()
         d = self.generate_variable()
         logZ = float('-inf')
+        adjustedNormalizer = float('-inf')
         while result:
             tp = self.holes2tape(result)
             program,mask = parse_tape(tp)
@@ -179,17 +180,19 @@ class ProgramSolver():
                 print mask
                 break
             specified = sum(mask)
-            solutions = solutions + [(specified,program)]
+            adjusted_specified = min(self.alpha,specified)
+            solutions = solutions + [(adjusted_specified,program)]
             shortest = min(shortest,specified)
             logZ = lse(logZ, -specified * 0.693)
+            adjustedNormalizer = lse(adjustedNormalizer, -adjusted_specified*0.693)
             print "Enumerated program", program, "with", specified, "specified bits."
             #self.s.add_clause([d] + self.uniqueness_clause(tp))
             self.s.add_clause(self.uniqueness_clause(tp))
             result = self.try_solving()
         print "|s| =",len(solutions), "\tlog(z) =",logZ, "\t1/p =", math.exp(-logZ), "\tshortest =",shortest,"bits"
         # sample a solution
-        distribution = [(math.exp(-l * 0.693 - logZ), (l,x)) for l,x in solutions ]
-        print distribution
+        distribution = [(math.exp(-l * 0.693 - adjustedNormalizer), (l,x)) for l,x in solutions ]
+        #print distribution
         print sum([ y[0] for y in distribution ])
         print "Samples:"
         for j in range(100):
