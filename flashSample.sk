@@ -3,11 +3,14 @@ pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
 #define PIECES 2
 #define TAPELENGTH (53*PIECES+PIECES-1)
 
+#define SHORTEST 12
+#define EMBEDDINGLENGTH (40-SHORTEST)
+
 bit[TAPELENGTH] tape = ??;
-bit[TAPELENGTH] auxiliary = ??;
+bit[EMBEDDINGLENGTH] auxiliary = ??;
 
 int tape_index = 0;
-int auxiliary_index = 0;
+//int auxiliary_index = 0;
 
 int max(int a,int b) {
   return a > b ? a : b;
@@ -17,10 +20,6 @@ bit flip() {
   return tape[tape_index++];
 }
 
-void stamp(bit used) {
-  if (used) assert auxiliary[auxiliary_index];
-  auxiliary_index++;
-}
 
 int random_number() {
   bit b1 = flip();
@@ -31,9 +30,6 @@ int random_number() {
   return 8*b1 + 4*b2 + 2*b3 + 1*b4;
 }
 
-void stamp_number(bit used) {
-  repeat (4) { stamp(used); }
-}
 
 char random_character() {
   bit b1 = flip();
@@ -45,9 +41,6 @@ char random_character() {
   return 16*b1 + 8*b2 + 4*b3 + 2*b4 + 1*b5;
 }
 
-void stamp_character(bit used) {
-  repeat (5) { stamp(used); }
-}
   
 int random_little_number() {
   bit b1 = flip();
@@ -55,9 +48,6 @@ int random_little_number() {
   return 2*b1 + 1*b2;
 }
 
-void stamp_little_number(bit used) {
-  repeat (2) { stamp(used); }
-}
 
 
 struct str{    
@@ -119,7 +109,13 @@ str Concat(str s1, str s2){
   return new str(n = s1.n+s2.n, ch = ch);
 }
 
-str genExpr(str s){
+str genExpr(str s, ref int mdl){
+  mdl = 0;
+
+  void spend(int b) {
+    mdl += b;
+  }
+  
   str term(){
     char[3] r1 = {random_character(),random_character(),random_character()};
     char[3] r2 = {random_character(),random_character(),random_character()};
@@ -138,24 +134,10 @@ str genExpr(str s){
     int p2_occurrence = random_little_number();
 
     // produce all the holes that once
+    spend(1);
     if(flip()){
-      stamp_character(1); // r1[0]
-      stamp_character(r1l > 1); // r1[1]
-      stamp_character(r1l > 2); // r1[2]
-      stamp_character(0); stamp_character(0); stamp_character(0); // r2
-      stamp_little_number(1); // r1l
-      stamp_little_number(0);
-      stamp_little_number(0);
-      stamp_little_number(0);
-      stamp_number(0);
-      stamp_number(0);
-      stamp(0);
-      stamp(0);
-      stamp_little_number(0);
-      stamp_little_number(0);
-      stamp(1);
-      
       assert r1l > 0;
+      spend(r1l*5);
 
       assert r2[0] == 0 && r2[1] == 0 && r2[2] == 0;
       if (r1l < 3) assert r1[2] == 0;
@@ -172,14 +154,19 @@ str genExpr(str s){
 
       return new str(n = r1l, ch = r1[0::r1l]);
     } else {
+      spend(2 + 4 + 4); // choices k1,k2, inevitable 4 bits for each branch
+      
       int effective_r1l = 0;
       int effective_r2l = 0;
       
       int p1;
       if (k1) {
 	assert r1l == 0 && r2l == 0 && p1_occurrence == 0;
+	//spend(4);
 	p1 = p1_k;
       } else {
+	spend(2);
+	//spend(2+2+2); // r1l,r2l,p1_occurrence
 	assert p1_k == 0;
 	effective_r1l = max(effective_r1l,r1l);
 	effective_r2l = max(effective_r2l,r2l);
@@ -188,9 +175,12 @@ str genExpr(str s){
 
       int p2;
       if (k2) {
+	//spend(4);
 	assert r1l_p == 0 && r2l_p == 0 && p2_occurrence == 0;
 	p2 = p2_k;
       } else {
+	//spend(6);
+	spend(2);
 	assert p2_k == 0;
 	effective_r1l = max(effective_r1l,r1l_p);
 	effective_r2l = max(effective_r2l,r2l_p);
@@ -206,24 +196,15 @@ str genExpr(str s){
       if (effective_r2l < 2) assert r2[1] == 0;
       if (effective_r2l < 1) assert r2[0] == 0;
       
-      stamp_character(effective_r1l > 0); stamp_character(effective_r1l > 1); stamp_character(effective_r1l > 2);
-      stamp_character(effective_r2l > 0); stamp_character(effective_r2l > 1); stamp_character(effective_r2l > 2);
-      stamp_little_number(!k1);
-      stamp_little_number(!k2);
-      stamp_little_number(!k1);
-      stamp_little_number(!k2);
-      stamp_number(k1);
-      stamp_number(k2);
-      stamp(1);
-      stamp(1);
-      stamp_little_number(!k1);
-      stamp_little_number(!k2);
-      stamp(1);
+      spend(effective_r1l*5);
+      spend(effective_r2l*5);
       
       return SubStr(s, p1, p2); 
     }
   }
+
   str out = term();
+  spend(1);
   if (flip()) {
     repeat (TAPELENGTH - 53*1 - 1) { assert flip() == 0; }
     return out;
@@ -235,8 +216,17 @@ str genExpr(str s){
 }
 
 str flashToy(str s){
+  int mdl;
   tape_index = 0;
-  return genExpr(s);
+  str o =  genExpr(s,mdl);
+
+  int embedding_index = 0;
+  repeat (EMBEDDINGLENGTH) {
+    if ((mdl-SHORTEST) > embedding_index) assert auxiliary[embedding_index];
+    embedding_index++;
+  }
+
+  return o;
 }
 
 

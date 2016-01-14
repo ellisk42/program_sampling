@@ -13,6 +13,14 @@ def lse(x,y):
     if x < y: return lse(y,x)
     return x + math.log(1 + math.exp(y - x))
 
+def sample_distribution(d):
+    r = random.random()
+    a = 0
+    for p,x in d:
+        a += p
+        if r < a: return x
+    assert False
+        
 #subspace_dimension = int(sys.argv[2])
 
 class ProgramSolver():
@@ -28,7 +36,9 @@ class ProgramSolver():
             for l in f:
                 if len(l) > len('c hole ') and l[:len('c hole ')] == 'c hole ':
                     ms = re.findall(r'(\d+) \- (\d+)', l)[0]
-                    assert int(ms[0]) == int(ms[1])
+                    if not (int(ms[0]) == int(ms[1])):
+                        print l
+                        assert False
                     ms = int(ms[0])
                     n = re.findall(r'H__(\S+)_(\S+)\s',l)[0]
                     if n[0] == '0': # tape
@@ -50,6 +60,8 @@ class ProgramSolver():
         # converts a sat variable to a tape index
         self.variable2tape = dict([ (v,h) for h,v in h2v.items() ])
         self.variable2auxiliary = dict([ (v,h) for h,v in a2v.items() ])
+
+        self.alpha = len(self.auxiliary2variable)
 
 
     def generate_variable(self):
@@ -154,6 +166,7 @@ class ProgramSolver():
     def enumerate_solutions(self,subspace_dimension = 0):
         for j in range(subspace_dimension):
             self.random_projection()
+        shortest = float('inf')
         solutions = []
         result = self.try_solving()
         d = self.generate_variable()
@@ -165,14 +178,32 @@ class ProgramSolver():
                 print "DUPLICATEPROGRAM",tp
                 print mask
                 break
-            solutions = solutions + [program]
             specified = sum(mask)
+            solutions = solutions + [(specified,program)]
+            shortest = min(shortest,specified)
             logZ = lse(logZ, -specified * 0.693)
             print "Enumerated program", program, "with", specified, "specified bits."
             #self.s.add_clause([d] + self.uniqueness_clause(tp))
             self.s.add_clause(self.uniqueness_clause(tp))
             result = self.try_solving()
-        print "|s| =",len(solutions), "\tlog(z) =",logZ, "\t1/p =", math.exp(-logZ)
+        print "|s| =",len(solutions), "\tlog(z) =",logZ, "\t1/p =", math.exp(-logZ), "\tshortest =",shortest,"bits"
+        # sample a solution
+        distribution = [(math.exp(-l * 0.693 - logZ), (l,x)) for l,x in solutions ]
+        print distribution
+        print sum([ y[0] for y in distribution ])
+        print "Samples:"
+        for j in range(100):
+            l,x = sample_distribution(distribution)
+            print x,l
+            if l > self.alpha:
+                # possibly reject
+                acceptance = 2 ** (self.alpha - l)
+                if random.random() < acceptance:
+                    print "Rejected."
+                else:
+                    print "Accepted."
+            else:
+                print "Length bounded by alpha, so accepted."
         return solutions
             
             
