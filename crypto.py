@@ -25,6 +25,7 @@ def sample_distribution(d):
 
 class ProgramSolver():
     def __init__(self,filename):
+        self.verbose = True
         self.s = Solver(threads = 1,verbose = 0)
         self.tt = 0
 
@@ -74,7 +75,8 @@ class ProgramSolver():
                               random.random() > 0.5)
         
     def try_solving(self,assumptions = None):
-        print "About to run solver ==  ==  ==  > "
+        if self.verbose:
+            print "About to run solver ==  ==  ==  > "
         start_time = time.time()
         if assumptions != None:
             result = self.s.solve(assumptions)
@@ -82,16 +84,16 @@ class ProgramSolver():
             result = self.s.solve()
         dt = (time.time() - start_time)
         self.tt += dt
-        print "Ran solver in time",dt
+        if self.verbose: print "Ran solver in time",dt
         if result[0]:
             bindings = {}
             for v in range(len(result[1])):
                 if v in self.variable2tape:
                     bindings[v] = result[1][v]
-            print "Satisfiable."
+            if self.verbose: print "Satisfiable."
             return bindings
         else:
-            print "Unsatisfiable."
+            if self.verbose: print "Unsatisfiable."
             return False
 
     def uniqueness_clause(self,tape):
@@ -163,6 +165,7 @@ class ProgramSolver():
                     break
 
 
+    # WARNING: possible bug in the sampler
     def enumerate_solutions(self,subspace_dimension = 0):
         for j in range(subspace_dimension):
             self.random_projection()
@@ -185,10 +188,11 @@ class ProgramSolver():
             shortest = min(shortest,specified)
             logZ = lse(logZ, -specified * 0.693)
             adjustedNormalizer = lse(adjustedNormalizer, -adjusted_specified*0.693)
-            print "Enumerated program", program, "with", specified, "specified bits."
+            if self.verbose: print "Enumerated program", program, "with", specified, "specified bits."
             #self.s.add_clause([d] + self.uniqueness_clause(tp))
             self.s.add_clause(self.uniqueness_clause(tp))
             result = self.try_solving()
+            if self.verbose or len(solutions)%1000 == 0: print self.tt,"cumulative solver time"
         print "|s| =",len(solutions), "\tlog(z) =",logZ, "\t1/p =", math.exp(-logZ), "\tshortest =",shortest,"bits"
         # sample a solution
         distribution = [(math.exp(-l * 0.693 - adjustedNormalizer), (l,x)) for l,x in solutions ]
@@ -211,8 +215,9 @@ class ProgramSolver():
             
             
         
-x = ProgramSolver(sys.argv[1])
+x = ProgramSolver("sat_SYN_PREVIEW_1.cnf")
+x.verbose = False
 #x.adaptive_sample()
-x.enumerate_solutions(int(sys.argv[2]))
+x.enumerate_solutions(int(sys.argv[1]))
 #x.try_sampling(int(sys.argv[2]))
 print "total time = ",x.tt

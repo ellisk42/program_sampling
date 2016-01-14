@@ -1,10 +1,10 @@
 pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
 
-#define PIECES 2
+#define PIECES 3
 #define TAPELENGTH (53*PIECES+PIECES-1)
 
 #define SHORTEST 0
-#define EMBEDDINGLENGTH (40-SHORTEST)
+#define EMBEDDINGLENGTH (20-SHORTEST)
 
 bit[TAPELENGTH] tape = ??;
 bit[EMBEDDINGLENGTH] auxiliary = ??;
@@ -210,8 +210,12 @@ str genExpr(str s, ref int mdl){
     return out;
   }
   out = Concat(out,term());
-  //if (flip()) return out;
-  //  out = Concat(out,term()); 
+  spend(1);
+  if (flip()) {
+    repeat (TAPELENGTH - 53*2 - 2) { assert flip() == 0; }
+    return out;
+  }
+  out = Concat(out,term()); 
   return out;
 }
 
