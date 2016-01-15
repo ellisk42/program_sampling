@@ -9,7 +9,7 @@ from pycryptosat import Solver
 
 from rank import binary_rank
 
-from decodeFlash import parse_tape
+#from decodeFlash import parse_tape
 
 def log2(x):
     return math.log(x)/math.log(2)
@@ -38,7 +38,7 @@ def sample_log2_distribution(d):
         
         
 class ProgramSolver():
-    def __init__(self,filename):
+    def __init__(self,filename = "sat_SYN_PREVIEW_1.cnf"):
         self.verbose = True
         self.s = Solver(threads = 1,verbose = 0)
         self.tt = 0
@@ -81,6 +81,10 @@ class ProgramSolver():
         self.auxiliary_rows = []
 
 
+    def parse_tape(self,tp):
+        print "They should never be called"
+        assert False
+        
     def generate_variable(self):
         self.maximum_variable += 1
         return self.maximum_variable
@@ -125,7 +129,7 @@ class ProgramSolver():
             return False
 
     def uniqueness_clause(self,tape):
-        p,bit_mask = parse_tape(tape)
+        p,bit_mask = self.parse_tape(tape)
         clause = []
         for j in range(len(tape)):
             if bit_mask[j] == 1 or True:
@@ -144,7 +148,7 @@ class ProgramSolver():
         self.s.add_clause([d]) # make the clause documents they satisfied
         if result:
             tp = self.holes2tape(result)
-            print "alternative:",parse_tape(tp)
+            print "alternative:",self.parse_tape(tp)
             print "alternative tape:",tp
             return False
         else:
@@ -161,7 +165,7 @@ class ProgramSolver():
         if result:
             print "Random projection satisfied"
             tp = self.holes2tape(result)
-            print parse_tape(tp)[0]
+            print self.parse_tape(tp)[0]
             if self.is_solution_unique(tp):
                 print "Unique. Accepted."
             else:
@@ -180,7 +184,7 @@ class ProgramSolver():
                 if result:
                     print "Satisfied %d constraints" % subspace_dimension
                     tp = self.holes2tape(result)
-                    print parse_tape(tp)
+                    print self.parse_tape(tp)
                     print "tape = ",tp
                     if self.is_solution_unique(tp):
                         print "UNIQUE"
@@ -193,7 +197,6 @@ class ProgramSolver():
                     break
 
 
-    # WARNING: possible bug in the sampler
     def enumerate_solutions(self,subspace_dimension = 0):
         for j in range(subspace_dimension):
             self.random_projection()
@@ -203,7 +206,7 @@ class ProgramSolver():
         result = self.try_solving()
         while result:
             tp = self.holes2tape(result)
-            program,mask = parse_tape(tp)
+            program,mask = self.parse_tape(tp)
             description_length = sum(mask)
             if program in solutions:
                 print "DUPLICATEPROGRAM",tp
@@ -246,9 +249,7 @@ class ProgramSolver():
             
             
         
-x = ProgramSolver("sat_SYN_PREVIEW_1.cnf")
-x.verbose = True
-#x.adaptive_sample()
-x.enumerate_solutions(int(sys.argv[1]))
+#x = ProgramSolver()
+#x.enumerate_solutions(int(sys.argv[1]))
 #x.try_sampling(int(sys.argv[2]))
-print "total time = ",x.tt
+#print "total time = ",x.tt
