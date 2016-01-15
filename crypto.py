@@ -7,11 +7,20 @@ import sys
 
 from pycryptosat import Solver
 
+from rank import binary_rank
+
 from decodeFlash import parse_tape
 
-def lse(x,y):
-    if x < y: return lse(y,x)
-    return x + math.log(1 + math.exp(y - x))
+def log2(x):
+    return math.log(x)/math.log(2)
+
+#def lse(x,y):
+#    if x < y: return lse(y,x)
+#    return x + math.log(1 + math.exp(y - x))
+
+def lse2(x,y):
+    if x < y: return lse2(y,x)
+    return x + log2(1 + 2**(y - x))
 
 def sample_distribution(d):
     r = random.random()
@@ -20,9 +29,14 @@ def sample_distribution(d):
         a += p
         if r < a: return x
     assert False
+    
+def sample_log2_distribution(d):
+    lz = float('-inf')
+    for l,_ in d: lz = lse2(lz,l)
+    d = [ (2**(l-lz), x) for l,x in d ]
+    return sample_distribution(d)
         
-#subspace_dimension = int(sys.argv[2])
-
+        
 class ProgramSolver():
     def __init__(self,filename):
         self.verbose = True
@@ -62,7 +76,9 @@ class ProgramSolver():
         self.variable2tape = dict([ (v,h) for h,v in h2v.items() ])
         self.variable2auxiliary = dict([ (v,h) for h,v in a2v.items() ])
 
+        # rewaiting and rejection sampling
         self.alpha = len(self.auxiliary2variable)
+        self.auxiliary_rows = []
 
 
     def generate_variable(self):
@@ -70,9 +86,21 @@ class ProgramSolver():
         return self.maximum_variable
     
     def random_projection(self):
-        self.s.add_xor_clause([v for v in self.variable2auxiliary if random.random() > 0.5 ] + 
+        auxiliary_projection = [v for v in self.variable2auxiliary if random.random() > 0.5 ]
+        self.auxiliary_rows.append([ (1 if v in auxiliary_projection else 0) for v in self.variable2auxiliary ])
+        self.s.add_xor_clause(auxiliary_projection + 
                               [v for v in self.variable2tape if random.random() > 0.5 ],
                               random.random() > 0.5)
+
+    # returns log_2 of the number of satisfying values of A given a description length
+    def satisfying_auxiliaries(self,description_length):
+        if description_length < self.alpha:
+            # for each bit of description length, delete one column of A
+            matrix_rows = [ r[description_length:] for r in self.auxiliary_rows ]
+            r = binary_rank(matrix_rows)
+            return self.alpha - description_length - r
+        else:
+            return 0
         
     def try_solving(self,assumptions = None):
         if self.verbose:
@@ -169,46 +197,49 @@ class ProgramSolver():
     def enumerate_solutions(self,subspace_dimension = 0):
         for j in range(subspace_dimension):
             self.random_projection()
-        shortest = float('inf')
-        solutions = []
+
+        solutions = {}
+
         result = self.try_solving()
-        d = self.generate_variable()
-        logZ = float('-inf')
-        adjustedNormalizer = float('-inf')
         while result:
             tp = self.holes2tape(result)
             program,mask = parse_tape(tp)
+            description_length = sum(mask)
             if program in solutions:
                 print "DUPLICATEPROGRAM",tp
                 print mask
-                break
-            specified = sum(mask)
-            adjusted_specified = min(self.alpha,specified)
-            solutions = solutions + [(adjusted_specified,program)]
-            shortest = min(shortest,specified)
-            logZ = lse(logZ, -specified * 0.693)
-            adjustedNormalizer = lse(adjustedNormalizer, -adjusted_specified*0.693)
-            if self.verbose: print "Enumerated program", program, "with", specified, "specified bits."
-            #self.s.add_clause([d] + self.uniqueness_clause(tp))
+                print program
+                assert False
+
+            logNumberSolutions = self.satisfying_auxiliaries(description_length)
+            solutions[program] = (logNumberSolutions, description_length)
+
+            if self.verbose:
+                print "Enumerated program", program, "with |x| =", description_length, "and",logNumberSolutions,"log satisfying auxiliary variables"
+            if self.verbose or len(solutions)%1000 == 0: print self.tt,"cumulative solver time"
+
             self.s.add_clause(self.uniqueness_clause(tp))
             result = self.try_solving()
-            if self.verbose or len(solutions)%1000 == 0: print self.tt,"cumulative solver time"
-        print "|s| =",len(solutions), "\tlog(z) =",logZ, "\t1/p =", math.exp(-logZ), "\tshortest =",shortest,"bits"
+
+        # summary statistics
+        logZ = float("-inf")
+        for _,mdl in solutions.values(): logZ = lse2(logZ,-mdl)
+        shortest = min([mdl for _,mdl in solutions.values() ])
+        print "|s| =",len(solutions), "\tlog_2(z) =",logZ, "\t1/p =", 2**(-logZ), "\tshortest =",shortest,"bits"
+        
         # sample a solution
-        distribution = [(math.exp(-l * 0.693 - adjustedNormalizer), (l,x)) for l,x in solutions ]
-        #print distribution
-        print sum([ y[0] for y in distribution ])
+        logDistribution = [ (logNumberSolutions, (p,mdl)) for p,(logNumberSolutions,mdl) in solutions.iteritems() ]
         print "Samples:"
-        for j in range(100):
-            l,x = sample_distribution(distribution)
-            print x,l
-            if l > self.alpha:
+        for j in range(10):
+            p,mdl = sample_log2_distribution(logDistribution)
+            print p,mdl
+            if mdl > self.alpha:
                 # possibly reject
-                acceptance = 2 ** (self.alpha - l)
-                if random.random() < acceptance:
-                    print "Rejected."
-                else:
+                acceptance_ratio = 2 ** (self.alpha - mdl)
+                if random.random() < acceptance_ratio:
                     print "Accepted."
+                else:
+                    print "Rejected."
             else:
                 print "Length bounded by alpha, so accepted."
         return solutions
@@ -216,7 +247,7 @@ class ProgramSolver():
             
         
 x = ProgramSolver("sat_SYN_PREVIEW_1.cnf")
-x.verbose = False
+x.verbose = True
 #x.adaptive_sample()
 x.enumerate_solutions(int(sys.argv[1]))
 #x.try_sampling(int(sys.argv[2]))
