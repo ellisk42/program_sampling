@@ -9,14 +9,9 @@ from pycryptosat import Solver
 
 from rank import binary_rank
 
-#from decodeFlash import parse_tape
-
 def log2(x):
     return math.log(x)/math.log(2)
 
-#def lse(x,y):
-#    if x < y: return lse(y,x)
-#    return x + math.log(1 + math.exp(y - x))
 
 def lse2(x,y):
     if x < y: return lse2(y,x)
@@ -82,7 +77,7 @@ class ProgramSolver():
 
 
     def parse_tape(self,tp):
-        print "They should never be called"
+        print "This should never be called"
         assert False
         
     def generate_variable(self):
@@ -229,6 +224,11 @@ class ProgramSolver():
         for _,mdl in solutions.values(): logZ = lse2(logZ,-mdl)
         shortest = min([mdl for _,mdl in solutions.values() ])
         print "|s| =",len(solutions), "\tlog_2(z) =",logZ, "\t1/p =", 2**(-logZ), "\tshortest =",shortest,"bits"
+
+        # How many solver queries did we save by the rank trick?
+        implicitSolutionsEnumerated = sum([ 2**logNumberSolutions
+                                            for p,(logNumberSolutions,mdl) in solutions.iteritems() ])
+        print "Implicitly enumerated %d satisfying solutions" % implicitSolutionsEnumerated
         
         # sample a solution
         logDistribution = [ (logNumberSolutions, (p,mdl)) for p,(logNumberSolutions,mdl) in solutions.iteritems() ]
@@ -247,7 +247,46 @@ class ProgramSolver():
                 print "Length bounded by alpha, so accepted."
         return solutions
             
+
+    def analyze_problem(self):
+        # enumerate all solutions and their mdl
+        # do an analysis of acceptance probability as a function of alpha
+        solutions = {}
+        result = self.try_solving()
+        while result:
+            tp = self.holes2tape(result)
+            program,mask = self.parse_tape(tp)
+            description_length = sum(mask)
+            if program in solutions:
+                print "DUPLICATEPROGRAM",tp
+                print mask
+                print program
+                assert False
+            solutions[program] = description_length
+            self.s.add_clause(self.uniqueness_clause(tp))
+            result = self.try_solving()
+        print "|S| =",len(solutions)
+        logz = float('-inf')
+        for _,mdl in solutions.iteritems(): logz = lse2(logz,-mdl)
+        print "log_2 Z =",logz,"\t1/p =",2**(-logz),"\tshortest =",min([solutions[p] for p in solutions ])
+
+        def count(a):
+            k = 0
+            for p in solutions:
+                if solutions[p] > a: k += 1
+            return k
+        def pa(a):
+            lp = float('-inf')
+            for p in solutions:
+                if solutions[p] > a:
+                    lp = lse2(lp,-solutions[p])
+            return 2**(lp - logz)
+
+        for a in range(150):
+            et = 1 + count(a)*(2**(-a-logz)) + pa(a)
+            print "a =",a,"\t\t<T> =",et
             
+
         
 #x = ProgramSolver()
 #x.enumerate_solutions(int(sys.argv[1]))

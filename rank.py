@@ -15,11 +15,13 @@ def binary_rank(m):
     for j in range(r):
         for k in range(c):
             message += "%d " % int(m[j,k])
-    print message
+#    print message
 
     p = Popen(["./rank"], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate(message)
-    print stdout
+#    print stdout
     if "ERROR" in stdout:
-        return None
+        print passage
+        print stdout
+        assert False
     return int(stdout)

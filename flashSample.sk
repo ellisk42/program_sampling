@@ -76,31 +76,11 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
   }
   assert 0;
 }
-/*
-  str implementation(str s) {
-  int p2 = Pos(s,
-  {},
-  {' '},
-  0);
-  int p1 = 0;
-
-  return SubStr(s,0,p2);
-  }
-
-  harness void test() {
-  assert eq(cstr("Tom"), implementation(cstr("Tom and Jerry")) );
-  assert eq(cstr("Jack"), implementation(cstr("Jack and Jill")) );
-  }
-*/
 
 str SubStr(str s, int p1, int p2){
   assert p2 > p1;
   return new str(n=p2-p1, ch=s.ch[p1:p2]);
 }
-/*
-  harness void sanity() {
-  assert eq(cstr(""),SubStr(cstr("this is a test"),1,1));
-  }*/
 
 str Concat(str s1, str s2){
   char[s1.n + s2.n] ch;
@@ -113,7 +93,7 @@ str genExpr(str s, ref int mdl){
   mdl = 0;
 
   void spend(int b) {
-    mdl += b;
+    //    mdl += b;
   }
   
   str term(){
@@ -243,22 +223,29 @@ bit eq(str s1, str s2){
   return 1;
 }
 
-/*
-  harness void main(){    
-  assert eq(cstr("Singh"), flashToy(cstr("Rishabh Singh")) );    
-  }
+
+// First demo: prior probability of the program is ~7*10^13, enumeration or sampling are infeasible
+/*harness void main0(){
+  assert eq(cstr("Hi Eyal!"), flashToy(cstr("Eyal Dechter")) );    
+  assert eq(cstr("Hi Rishabh!"), flashToy(cstr("Rishabh Singh")) );
+  
+}
 */
 
-
-harness void main(){    
-  assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
+// Second demo: Can sample from extremely large program spaces
+harness void main1(){    
+  assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );
+  assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
 }
 
 
-/*harness void main2() {
-  assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );    
-  assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
-  }*/
+
+// Third demo: Can handle ambiguity. TODO
+/*harness void main1(){    
+  assert eq(cstr("J"), flashToy(cstr("Jack and Jill")) );
+  //assert eq(cstr("T"), flashToy(cstr("Tom and Jerry")) );
+}
+*/
 
 
 
