@@ -1,7 +1,7 @@
-pragma options "--bnd-unroll-amnt 4 --bnd-int-range 3";
+pragma options "--bnd-unroll-amnt 3"; // --bnd-int-range 1";
 
 #define BOUND 143
-bit[BOUND] tape = ??; //{1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1};
+bit[BOUND] tape = ??;
 int tape_index = 0;
 
 #define O_EQ 0
@@ -23,17 +23,6 @@ bit flip() {
   bit b = tape[tape_index];
   tape_index++;
   return b;
-}
-
-int random_integer() {
-  //  return ??;
-  int r = 0;
-  int f = 1;
-  for (int p = 0; p <= 2; p++) {
-    r = r + flip()*f;
-    f = f*2;
-  }
-  return r;
 }
 
 
@@ -105,7 +94,7 @@ Array empty_list() {
 }
 
 
-Guard guard_expression(Array a,int d,ref bit success) {
+Guard guard_expression(Array a,int d,ref bit success,ref int mdl) {
   assert d > 1; // integer expression needs at least 1
 
   bit ignore1,ignore2;
@@ -118,13 +107,15 @@ Guard guard_expression(Array a,int d,ref bit success) {
   if (!c1 && !c2) o = O_GT;
   
   bit zs;
-  int z = integer_expression(a,d-1,zs,ignore1,ignore2);
+  int z = integer_expression(a,d-1,zs,ignore1,ignore2,mdl);
   success = zs;
+
+  mdl += 2; // choice of operator
 
   return new Guard(z = z, o = o);
 }
 
-Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empty) {
+Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empty,ref int mdl) {
   single = 0;
   empty = 0;
   
@@ -134,6 +125,7 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
 
   bit c1 = flip();
   if (d == 1) { // only terminals allowed
+    mdl++;
     success = 1;
     if (c1) {
       empty = 1;
@@ -149,16 +141,21 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
   if (!shallow) c3 = flip();
 
   bit array_success,array_single,array_empty;
+  int array_mdl = 0;
+  Array lp = array_expression(a,d-1,array_success,array_single,array_empty,array_mdl);
   
-  Array lp = array_expression(a,d-1,array_success,array_single,array_empty);
   bit integer_success,integer_increment,integer_decrement;
-  int z = integer_expression(a,d-1,integer_success,integer_increment,integer_decrement);
+  int integer_mdl = 0;
+  int z = integer_expression(a,d-1,integer_success,integer_increment,integer_decrement,integer_mdl);
   bit cdr_success;
-  bit guard_success;
-  Guard g;
-  if (!shallow) g = guard_expression(a,d-1,guard_success);
-
   
+  bit guard_success;
+  int guard_mdl = 0;
+  Guard g;
+  if (!shallow) g = guard_expression(a,d-1,guard_success,guard_mdl);
+
+  // pay for the choice
+  mdl += (shallow ? 2 : 3);
 
   if ((shallow && c1 && c2) || (!shallow && c1 && c2 && c3)) {
     empty = 1;
@@ -169,6 +166,13 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
     success = 1;
     return a;
   }
+  if ((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3)) {
+    single = 1;
+    mdl += integer_mdl;
+    success = integer_success;
+    return singleton(z);
+  }
+  mdl += array_mdl;
   if ((shallow && !c1 && c2) || (!shallow && c1 && !c2 && c3)) {
     assert !array_single;
     if (array_success) {
@@ -179,12 +183,9 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
     success = 0;
     return empty_list();
   }
-  if ((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3)) {
-    single = 1;
-    success = integer_success;
-    return singleton(z);
-  }
+  
   if (!shallow && !c1 && c2 && c3) {
+    mdl += guard_mdl;
     assert !array_empty;
     success = array_success && guard_success;
     return filter(g,lp);
@@ -195,7 +196,7 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
 
 
   
-int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit decremented) {
+int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit decremented,ref int mdl) {
   incremented = 0;
   decremented = 0;
   
@@ -205,17 +206,20 @@ int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit
   bit c1 = flip();
   bit c2 = flip();
   bit c3 = flip();
+  mdl += 3;
 
   bit integer_success,integer_incremented,integer_decremented;
-  int zp = integer_expression(a,d-1,integer_success,integer_incremented,integer_decremented);
+  int integer_mdl = 0;
+  int zp = integer_expression(a,d-1,integer_success,integer_incremented,integer_decremented,integer_mdl);
+  
   bit array_success,array_empty,array_single;
-  Array l = array_expression(a,d-1,array_success,array_empty,array_single);
-
-  //  int constant = random_integer();
+  int array_mdl = 0;
+  Array l = array_expression(a,d-1,array_success,array_empty,array_single,array_mdl);
 
   if (c1 && c2 && c3) { success = 1; return 0; }
-  if (c1 && c2 && !c3) { success = integer_success; assert !integer_decremented; return zp+1; }
-  if (c1 && !c2 && c3) { success = integer_success; assert !integer_incremented; return zp-1; }
+  if (c1 && c2 && !c3) { mdl += integer_mdl; success = integer_success; assert !integer_decremented; return zp+1; }
+  if (c1 && !c2 && c3) { mdl += integer_mdl; success = integer_success; assert !integer_incremented; return zp-1; }
+  mdl += array_mdl;
   if (c1 && !c2 && !c3) {
     assert !array_single && !array_empty;
     if (array_success) {
@@ -235,27 +239,25 @@ int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit
   assert 0;
 }
 
-Array recursive_expression(Array a, int bnd) {
+Array recursive_expression(Array a, int bnd, int mdl) {
+  mdl = 0;
+  
   tape_index = 0;
   bit s1,s2,s3,s4,s5,s6,ignore1,ignore2;
   
-  Guard g = guard_expression(a,3,s1);
-  //  assert ?? == tape_index; // 6
-  int target = integer_expression(a,3,s2,ignore1,ignore2);
-  //  assert tape_index == 16; // 16
-  Array b = array_expression(a,4,s3,ignore1,ignore2);
-
-  assert b.s == 0;
-
+  Guard g = guard_expression(a,3,s1,mdl);
+  int target = integer_expression(a,3,s2,ignore1,ignore2,mdl);
+  Array b = array_expression(a,4,s3,ignore1,ignore2,mdl);
 
   assert s1 && s2 && s3;
   if (run_guard(g,target)) return b;
 
   if (bnd < 1) return null;
 
-  Array x = array_expression(a,4,s4,ignore1,ignore2); bit rx = flip();
-  Array y = array_expression(a,4,s5,ignore1,ignore2); bit ry = flip();
-  Array z = array_expression(a,4,s6,ignore1,ignore2); bit rz = flip();
+  Array x = array_expression(a,4,s4,ignore1,ignore2,mdl); bit rx = flip();
+  Array y = array_expression(a,4,s5,ignore1,ignore2,mdl); bit ry = flip();
+  Array z = array_expression(a,4,s6,ignore1,ignore2,mdl); bit rz = flip();
+  
 
 
   
@@ -266,19 +268,27 @@ Array recursive_expression(Array a, int bnd) {
   //  if (rz || ry || rx) assert bnd > 0;
   if (rx) {
     assert x.s < a.s;
-    x = recursive_expression(x, bnd-1);
+    int ignore_length = 0;
+    x = recursive_expression(x, bnd-1,ignore_length);
   }
-  if (ry) { assert y.s < a.s; y = recursive_expression(y, bnd-1); }
-  if (rz) { assert z.s < a.s; z = recursive_expression(z, bnd-1); }
-
-  
+  if (ry) {
+    assert y.s < a.s;
+    int ignore_length = 0;
+    y = recursive_expression(y, bnd-1,ignore_length);
+  }
+  if (rz) {
+    assert z.s < a.s;
+    int ignore_length = 0;
+    z = recursive_expression(z, bnd-1,ignore_length);
+  }
 
   return concatenate3(x,y,z);
 }
 
 
-Array specification(Array a) {
+Array specification(Array a,int bnd) {
   if (a.s == 0) return empty_list();
+  if (bnd < 1) return null;
 
   bit s;
   Guard g1 = new Guard(z = car(a,s), o = O_LT);
@@ -288,8 +298,8 @@ Array specification(Array a) {
 
   Array y = singleton(car(a,s));
 
-  x = specification(x);
-  z = specification(z);
+  x = specification(x,bnd-1);
+  z = specification(z,bnd-1);
 
   return concatenate3(x,y,z);
 }
@@ -299,8 +309,9 @@ Array constant_array([int n],int [n] a) {
   return new Array(s = n,A = a);
 }
 void test_case([int n],int [n] a, int [n] b, int bnd) {
+  int mdl = 0;
   Array k_a = constant_array(a);
-  Array o = recursive_expression(k_a, bnd);
+  Array o = recursive_expression(k_a, bnd,mdl);
 
   assert o.s == n;
   assert o.A[0::n] == b;
@@ -310,9 +321,9 @@ harness void main(){
   test_case({5,4,3},{3,4,5},3);
   // test_case({1,3,2},{1,2,3},3);
   //test_case({4,5},{4,5},2);
-  test_case({6,1},{1,6},2);
+  /*  test_case({6,1},{1,6},2);
   test_case({5},{5},1);
-  test_case({},{},0);
+  test_case({},{},0); */
 }
   
 
