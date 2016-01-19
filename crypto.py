@@ -9,7 +9,9 @@ from pycryptosat import Solver
 
 from rank import binary_rank
 
+
 def log2(x):
+    if x <= 0: return float('-inf')
     return math.log(x)/math.log(2)
 
 
@@ -30,10 +32,31 @@ def sample_log2_distribution(d):
     for l,_ in d: lz = lse2(lz,l)
     d = [ (2**(l-lz), x) for l,x in d ]
     return sample_distribution(d)
+
+
+
+# h = # unused bits
+# k = # random constraints
+def exact_survival_probability(h,k):
+    # how many mxn matrices have rank r?
+    def count_matrices(m,n,r):
+        if r == 0: return 1
+        p = 1.0
+        for i in range(r):
+            p = p*(2.0**m - 2.0**i)*(2.0**n - 2.0**i)/(2.0**r - 2.0**i)
+        return p
+
+    s = 0 # summation accumulator
+    for r in range(min(h,k)+1):
+        rank_probability = 2**(-h*k) * count_matrices(h,k,r)
+        s += rank_probability*2**(r-k)
+    return s
+
+
         
         
 class ProgramSolver():
-    def __init__(self,filename = "sat_SYN_PREVIEW_1.cnf"):
+    def __init__(self,fakeAlpha = None,filename = "sat_SYN_PREVIEW_1.cnf"):
         self.verbose = True
         self.s = Solver(threads = 1,verbose = 0)
         self.tt = 0
@@ -63,17 +86,29 @@ class ProgramSolver():
                                                 [abs(v) for v in clause ])
                     self.s.add_clause(clause)
         print "Loaded",filename," with",len(h2v),"holes and",len(a2v),"auxiliary variables"
+
+        # see if we are artificially decreasing alpha
+        if fakeAlpha:
+            if fakeAlpha > len(a2v):
+                print "Attempting to fake an alpha value of",fakeAlpha,"which is larger than the actual",len(a2v)
+                print "Increase maximum alpha within the sketch"
+                assert False
+        else:
+            fakeAlpha = len(a2v)
+        
         # convert the tape index into a sat variable
         self.tape2variable = [ v for h,v in sorted(h2v.items()) ]
-        self.auxiliary2variable = [ v for h,v in sorted(a2v.items()) ]
+        self.auxiliary2variable = [ v for h,v in sorted(a2v.items()) if h < fakeAlpha ]
         
         # converts a sat variable to a tape index
         self.variable2tape = dict([ (v,h) for h,v in h2v.items() ])
-        self.variable2auxiliary = dict([ (v,h) for h,v in a2v.items() ])
+        self.variable2auxiliary = dict([ (v,h) for h,v in a2v.items() if h < fakeAlpha ])
 
         # rewaiting and rejection sampling
         self.alpha = len(self.auxiliary2variable)
         self.auxiliary_rows = []
+
+        print "alpha =",self.alpha
 
 
     def parse_tape(self,tp):
@@ -166,33 +201,9 @@ class ProgramSolver():
             else:
                 print "Sample rejected"
 
-    def adaptive_sample(self):
-        subspace_dimension = 1
-        result = self.try_solving()
-        if result:
-            print "Formula satisfied"
-            for j in range(subspace_dimension):
-                self.random_projection()
-            while True:
-                print "\n\niterating:"
-                result = self.try_solving()
-                if result:
-                    print "Satisfied %d constraints" % subspace_dimension
-                    tp = self.holes2tape(result)
-                    print self.parse_tape(tp)
-                    print "tape = ",tp
-                    if self.is_solution_unique(tp):
-                        print "UNIQUE"
-                        print "<<< ==  ==  == >>>"
-                    self.random_projection()
-                    subspace_dimension += 1
-                else:
-                    print "Rejected %d projections" % subspace_dimension
-                    print "total time = ",self.tt
-                    break
-
 
     def enumerate_solutions(self,subspace_dimension = 0):
+        print "K =",subspace_dimension
         for j in range(subspace_dimension):
             self.random_projection()
 
@@ -268,7 +279,8 @@ class ProgramSolver():
         print "|S| =",len(solutions)
         logz = float('-inf')
         for _,mdl in solutions.iteritems(): logz = lse2(logz,-mdl)
-        print "log_2 Z =",logz,"\t1/p =",2**(-logz),"\tshortest =",min([solutions[p] for p in solutions ])
+        shortestLength = min([solutions[p] for p in solutions ])
+        print "log_2 Z =",logz,"\t1/p =",2**(-logz),"\tshortest =",shortestLength
 
         def count(a):
             k = 0
@@ -281,10 +293,45 @@ class ProgramSolver():
                 if solutions[p] > a:
                     lp = lse2(lp,-solutions[p])
             return 2**(lp - logz)
+        def full_satisfying_solutions(a):
+            c = 0
+            for p in solutions:
+                if solutions[p] > a: c += 1
+                else: c += 2**(a-solutions[p])
+            return c
 
-        for a in range(150):
-            et = 1 + count(a)*(2**(-a-logz)) + pa(a)
-            print "a =",a,"\t\t<T> =",et
+        print "["
+        for a in range(shortestLength,shortestLength+21):
+            # probability that a sample from Q is accepted
+            p_acceptance = 1.0/(1 + count(a)*(2**(-a-logz)) - pa(a))
+            
+            print "#a =",a
+            print "[ # (k,<mc>,<T>,(1+mc)<T>,P(no survivors))"
+
+            for k in range(20):
+                # expected number of surviving solutions
+                mu = 2**(-k) * full_satisfying_solutions(a)
+                # upper bound on probability of no survivors
+                epsilon = 0.001
+                p_no_survivors = min(1,mu/((epsilon-mu)**2)) if mu > epsilon else 1
+
+                # upper bound on expected number of trials to get a sample
+                et = 1.0/(p_acceptance - p_no_survivors)
+#                p_acceptance / (1 - p_no_survivors if p_no_survivors < 1 else float('inf'))
+
+                mc = 2**(-k)*count(a) # expected number of surviving programs
+                for s in solutions:
+                    ls = solutions[s]
+                    if not (ls > a): # has auxiliary bits
+                        mc += exact_survival_probability(a-ls,k)
+                print "(%s,%s,%s,%s,%s)," % (k,mc,et,et*(1+mc),p_no_survivors)
+                #print "k =",k,"mc =",mc,"<T> =",et,"<tt> =",et*(1+mc),"||   ",
+                #print " p_no_survivors", p_no_survivors
+            print "],"
+        print "]"
+#            if et < 1.00001: break
+
+        
             
 
         

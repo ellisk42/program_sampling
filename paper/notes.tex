@@ -1,0 +1,147 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\section{High-level overview}
+
+We want to sample programs from a description length prior.
+Let $x$ be a program. Sample from
+\begin{equation}
+  P(x) = \frac{2^{-|x|}}{Z}
+\end{equation}
+Assume $|x|\leq n$ always, where $n$ is the number of SAT variables encoding the structure of the program.
+
+The approach will draw from two techniques: (1) constraint-solving techniques for program synthesis; and (2) uniform solution sampling using XOR constraints.
+
+The two most obvious approaches to this problem don't work in practice:
+
+\begin{itemize}
+\item{Prefix codes}: Write down a prefix code for the space of allowed programs.
+  Uniformly sample values of all $n$ SAT variables encoding the program structure;
+  then the probability of sampling $x$ is proportional to $2^{n-|x|}$.
+\item{Embed \& Project}: Introduce $n$ auxiliary variables, $A$,
+  and add constraints $|x| > j\implies A_{j+1}$.
+  Uniformly sample solutions to $(x,A)$.
+  This is the technique introduced in ``Embed and Project'' (Stefano Ermon, NIPS 2013)
+\end{itemize}
+
+The problem with these approaches is that
+they dramatically increase the number of satisfyable solutions to the underlying SAT formula by a factor of $O(2^n)$,
+and so require at least about $n$ random constraints;
+for large $n$, the solver scales exponentially with the number of random constraints (empirically observed for even CryptoMiniSAT).
+The body of work on sampling with random constraints has previously restricted itself to cases where the number of satisfiable solutions is relatively small ($ < 600$ in the original Gomes et al. NIPS paper; on the order of tens of thousands in later work, by the authors of UniGen).
+
+Our idea is to use auxiliary variables as in ``Embed and Project,'' but reduce the dimensionality of the embedding
+by only hashing the first $\alpha$ bits of $A$.
+If we put $\alpha = n$ then our samples come from $P$; otherwise they come from a different distribution $Q$:
+\begin{equation}
+  Q(x) \propto 2^{-\min (\alpha,|x| )}
+  \end{equation}
+We can correct for this proposal distribution by accepting a sample $x$ from $Q$ with probability $A(|x|,\alpha) = 2^{\min(0,\alpha - |x|)}$.
+So we accept any sample whose description length is bounded by $\alpha$ and accept longer samples with probability $2^{\alpha - |x|}$.
+This satisfies $Q(x)A(|x|,\alpha)\propto P(x)$.
+
+The only reason that this works in the general case is because of the assumption that $|x|\leq n$,
+which allows us to make $Q$ arbitrarily close to $P$ (and thus arbitrarily decrease the rejection rate),
+but at the expense of needing more random constraints.
+The rest of this document analyzes the trade-off between increasing $\alpha$ and increasing $K$ (the number of random constraints),
+and then presents some experimental results.
+
+\section{Algorithmic details}
+\subsection{The algorithm}
+Let $X$ be a set of programs satisfying some specification, such as agreeing with certain input-output pairs.
+We want to sample from
+\begin{equation}
+  P(x\in X) = \frac{2^{-|x|}}{Z}
+\end{equation}
+where $Z = \sum_{x\in X}2^{-|x|}$.
+
+Let $\alpha$ be the dimensionality of the embedding.
+The set $E$ of programs in the embedded space is
+\begin{equation}
+  E = \{(x,A) : x\in X, |x|> j \implies A_{j+1}\text{ when } j<\alpha \}
+\end{equation}
+
+In each iteration of the algorithm we sample a random projection from $n+\alpha$ to $K$ variables, setting it equal to a random $K$ dimensional vector.
+Let  $h(x,A)$ be true if $(x,A)\in E$ satisfies this random constraint.
+Let $S = \{ e\in E : h(e)\}$.
+If $S$ is empty, reject this attempt at sampling.
+Otherwise draw uniformly from $S$ to obtain $(x,A)$,
+and reject this attempt at sampling with probability $1 - A(|x|,\alpha) = 1 - 2^{\min(0,\alpha - |x|)}$.
+
+The embedding introduces many symmetries (lots of $e$'s that have the same $x$),
+and we can break this symmetry by only enumerating unique values of $x$.
+For a given $x$, the number of $(x,A)\in S$ can be calculated without further calls to the solver:
+it is $2^{\alpha - |x| - \text{rank}(H_{>n+|x|})}$ where $H$ is the matrix used for the random hash.
+
+\subsection{Algorithm analysis}
+First, what is the probability that a sample from $Q$ is accepted?
+Call this $P(\text{accepted})$:
+\begin{eqnarray}
+  P(\text{accepted}) &=& \sum_x Q(x)A(|x|,\alpha)\\
+  & = &\sum_x \frac{2^{-|x|}}{\sum_{x'}Q(x')}\\
+  & = &\frac{Z}{\sum_{|x|>\alpha}2^{-\alpha} + \sum_{|x|\leq\alpha}2^{-|x|}}\\
+  & = &\frac{Z}{Z - Z_\alpha + 2^{-\alpha}C_\alpha}\\
+  & = &\frac{1}{1 + 2^{-\alpha}C_\alpha/Z - P(|x|>\alpha)}
+\end{eqnarray}
+where $C_\alpha = |\{x\in X : |x|>\alpha\}|$ and $Z_\alpha = \sum_{|x|>\alpha}2^{-|x|} $.
+
+Second, what is the probability that we get a sample from $Q$?
+Let $mc$ be the model count (members of $E$ that survived the hashing constraint).
+Then $E[mc] = \mu = 2^{-K}|E|$ and $\text{Variance}[mc] = \sigma^2 = |E|2^{-K}(1 - 2^{-K})$.
+We fail to get a sample if $mc<1$, equivalently, $mc\leq \epsilon$ for $0<\epsilon < \min (\mu,1)$.
+\begin{eqnarray}
+  P(mc\leq \epsilon)&<& P(|mc-\mu |\geq \mu -  \epsilon)\\
+  &\leq&\frac{\sigma^2}{(\mu - \epsilon)^2}\text{, Chebyshev 's inequality}\\
+  &\leq&\frac{\mu}{(\mu - \epsilon)^2}.
+\end{eqnarray}
+
+Put these together to bound the probability of failing to get a sample:
+\begin{eqnarray}
+  P(\text{fail to get sample})& = &P(mc = 0) + P(mc > 0)(1 - P(\text{accepted}))\\
+  &<&\frac{\mu}{(\mu - \epsilon)^2} + 1 - \frac{1}{1 + 2^{-\alpha}C_\alpha/Z - P(|x|>\alpha)}\\
+  P(\text{get sample})&>& \frac{1}{1 + 2^{-\alpha}C_\alpha/Z - P(|x|>\alpha)} - \frac{\mu}{(\mu - \epsilon)^2}\\
+\end{eqnarray}
+
+Now that we have a bound on the probability of getting a sample (and thus abound on the expected number of attempts needed to get a sample),
+we want to analyze how much work we expect to do on each attempt at sampling.
+A reasonable proxy for this is the number of invocations made to the solver,
+which is just the number of programs in $E$ that survived the constraints (\emph{not} the number of surviving solutions).
+Let $x$ be a program.
+If $|x|>\alpha$ then the probability that it survives is just $2^{-K}$.
+Otherwise it's more complicated.
+Let $|x|\leq \alpha$, $H$ be the random matrix and $b$ the random vector.
+The hashing constraint reads
+\begin{equation}
+  b_i = \sum_{j = 1}^n H_{ij}x_j + \sum_{j = n+1}^{n+|x|}H_{ij}A_{j-n} + \sum_{j = n + |x| + 1}^{n + \alpha}H_{ij}A_{j-n}
+\end{equation}
+The first two sums can be folded into $b_i$, giving
+\begin{equation}
+  b'_i = \sum_{j = n + |x| + 1}^{n + \alpha}H_{ij}A_{j-n}
+\end{equation}
+So $x$ survives if $b'\in\text{range}(H_{j\geq n + |x| + 1})$.
+The matrix $H_{j\geq n + |x| + 1}$ is $K$ by $\alpha - |x|$; call it $G$.
+\begin{eqnarray}
+  P(x \text{ survives})& = &\sum_{r = 0}^{\min(K,\alpha - |x|)}P(b'\in\text{range}(G) | \text{rank}(G) = r)P(\text{rank}(G) = r)\\
+  & = &\sum_r 2^{r - K}2^{-K(\alpha - |x|)}\prod_{0\leq i<r}\frac{(2^K - 2^i)(2^{\alpha - |x|} - 2^i)}{2^r - 2^i}\\
+  &<&\min (1,2^{\alpha - |x| - K})
+\end{eqnarray}
+where the last inequality is not derived from the former inequality but from applying the union bound to the original statement.
+
+What is the total expected work to get one sample?
+Let $s_i(x)$ be an indicator variable for whether $x$ survives the $i$th sampling attempt,
+and $f_i$ be an indicator variable for whether the $i$th sampling attempt failed.
+the number of solver invocations is
+\begin{eqnarray*}
+  &&1 + \sum_x s_1(x)\\
+  &+&f_1 + \sum_xs_2(x)f_1\\
+  &+&f_1f_2 + \sum_xs_3(x)f_1f_2\\
+  &+&\cdots
+\end{eqnarray*}
+which has the expectation
+\begin{equation}
+  \frac{1 + \sum_x P(x \text{ survives})}{1 - P(\text{get sample})}
+  \end{equation}
+\end{document}

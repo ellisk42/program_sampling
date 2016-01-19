@@ -4,13 +4,13 @@ pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
 #define TAPELENGTH (53*PIECES+PIECES-1)
 
 #define SHORTEST 0
-#define EMBEDDINGLENGTH 21 //(30-SHORTEST)
+#define EMBEDDINGLENGTH (19+13) //(30-SHORTEST)
 
 bit[TAPELENGTH] tape = ??;
 bit[EMBEDDINGLENGTH] auxiliary = ??;
 
 int tape_index = 0;
-//int auxiliary_index = 0;
+
 
 int max(int a,int b) {
   return a > b ? a : b;
@@ -93,7 +93,7 @@ str genExpr(str s, ref int mdl){
   mdl = 0;
 
   void spend(int b) {
-    //    mdl += b;
+    mdl += b;
   }
   
   str term(){
@@ -228,9 +228,8 @@ bit eq(str s1, str s2){
 /*harness void main0(){
   assert eq(cstr("Hi Eyal!"), flashToy(cstr("Eyal Dechter")) );    
   assert eq(cstr("Hi Rishabh!"), flashToy(cstr("Rishabh Singh")) );
-  
-}
-*/
+  }*/
+
 
 // Second demo: Can sample from extremely large program spaces
 harness void main1(){    
@@ -240,7 +239,7 @@ harness void main1(){
 
 
 
-// Third demo: Can handle ambiguity. TODO
+// Third demo: Can handle ambiguity.
 /*harness void main1(){    
   assert eq(cstr("J"), flashToy(cstr("Jack and Jill")) );
   //assert eq(cstr("T"), flashToy(cstr("Tom and Jerry")) );

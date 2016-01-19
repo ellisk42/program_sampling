@@ -124,9 +124,15 @@ if __name__ == "__main__" and False:
     print p
     print m
 
-x = FlashSolver()
-if len(sys.argv) > 0:
-    x.enumerate_solutions(int(sys.argv[1]))
+if len(sys.argv) > 1:
+    random_projections = int(sys.argv[1])
+    a = None
+    if len(sys.argv) > 2:
+        a = int(sys.argv[2])
+    x = FlashSolver(fakeAlpha = a)
+    x.enumerate_solutions(random_projections)
+    print "total time = ",x.tt
 else:
+    x = FlashSolver()
     x.analyze_problem()
-print "total time = ",x.tt
+    print "total time = ",x.tt

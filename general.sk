@@ -102,9 +102,11 @@ Guard guard_expression(Array a,int d,ref bit success,ref int mdl) {
   bit c1 = flip();
   bit c2 = flip();
   int o;
-  if (c1) o = O_EQ;
+  if (c1 && c2) o = O_EQ;
+  if (c1 && !c2) assert 0;
   if (!c1 && c2) o = O_LT;
   if (!c1 && !c2) o = O_GT;
+
   
   bit zs;
   int z = integer_expression(a,d-1,zs,ignore1,ignore2,mdl);
