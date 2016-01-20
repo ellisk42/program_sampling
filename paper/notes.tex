@@ -1,5 +1,5 @@
 \documentclass{article}
-
+\usepackage{graphicx}
 \usepackage{amsmath}
 
 \begin{document}
@@ -142,6 +142,181 @@ the number of solver invocations is
 \end{eqnarray*}
 which has the expectation
 \begin{equation}
-  \frac{1 + \sum_x P(x \text{ survives})}{1 - P(\text{get sample})}
-  \end{equation}
+  \frac{1 + \sum_x P(x \text{ survives})}{P(\text{get sample})}
+\end{equation}
+
+We can upper bound this quantity using the previously bounded quantities.
+The only approximation comes in here:
+\begin{equation}
+  p(\text{no survivors}) < \frac{\mu}{(\mu - \epsilon)^2}
+\end{equation}
+Thus by enumerating all of the solutions to a program synthesis problem we can compute fairly tight bounds on the performance of the proposed algorithm,
+as the next section details.
+
+In practice we want to sample without enumerating all of the solutions.
+What does this bound tell us?
+
+\begin{eqnarray}
+  E[\text{invocations}]& =&   \frac{1 + \sum_x P(x \text{ survives})}{P(\text{get sample})}\\
+  &<& \frac{1 + \sum_x P(x \text{ survives})}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z - P(|x|>\alpha)} - \frac{\mu}{(\mu - \epsilon)^2}}\\
+  &<& \frac{1 + \sum_x P(x \text{ survives})}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z} - \frac{1}{\mu}}\\
+  &<& \frac{1 + C_\alpha 2^{-K} + 2^{\alpha-K}\sum_{\alpha\geq |x|\geq \alpha-K}2^{-|x|} + \sum_{|x|<\alpha-K} 1}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z} - \frac{1}{\mu}}\\
+  &<& \frac{1 + C_\alpha 2^{-K} + C_{\leq\alpha}}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z} - \frac{2^{K}}{|E|}}\\
+  &<& \frac{|E|(1 + 2^{-\alpha}C_\alpha/Z)(1 + C_\alpha 2^{-K} + C_{\leq\alpha})}{|E| - 2^K(1 + 2^{-\alpha}C_\alpha/Z)}\\
+\end{eqnarray}
+We probably want $\alpha>K + |x_*|$, so that the best solution probably survives.
+Also probably a bound is given on $K$
+so introduce $\alpha - |x_*| = k+d$.
+
+\begin{eqnarray}
+  E[tt]& < &\frac{1 + C_\alpha 2^{-K} + 2^{\alpha-K}\sum_{\alpha\geq |x|\geq \alpha-K}2^{-|x|} + \sum_{|x|<\alpha-K} 1}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z} - \frac{1}{\mu}}\\
+  & < &\frac{1 + C_\alpha 2^{-\alpha + |x_*| + d} + \sum_{\alpha\geq |x|}1}{\frac{1}{1 + 2^{-\alpha+|x_*|}C_\alpha} - \frac{1}{\mu}}\\
+\end{eqnarray}
+
+
+%We can lower bound $Z>2^{-|x_*|}$, 
+
+\section{Experimental results}
+
+\subsection{Flashfill}
+This is a domain of toy flash fill problems.
+
+\subsubsection{Small solution set regime}
+Problem:
+\begin{verbatim}
+Tom and Jerry      ---> Tom
+Jack and Jill      ---> Jack
+\end{verbatim}
+There are 12 satisfying solutions to this problem within the program space.
+Thus we are trying to beat enumeration, which would take 13 calls to the solver.
+Below is a heat map of the upper bound upon the numeber of solver invocations as a function of $\alpha$ and $K$:
+\begin{figure}
+  \includegraphics[width = 10cm]{heat.png}
+\end{figure}
+What if we sample at the beginning of the dark region ($\alpha = 27,K = 5$)? Below is the output of the sampler:
+\begin{verbatim}
+|s| = 1 	log_2(z) = -19.0 	1/p = 524288.0 	shortest = 19 bits
+Implicitly enumerated 8 satisfying solutions
+Samples:
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+total time =  7.25420975685
+\end{verbatim}
+So we were able to get away with only 5 random constraints. What if we go into the lighter region at $\alpha = 26$,$K = 2$? We observe that there are more programs enumerated and that some of them are rejected:
+\begin{verbatim}
+|s| = 5 	log_2(z) = -18.955264207 	1/p = 508280.094574 	shortest = 19 bits
+Implicitly enumerated 36 satisfying solutions
+Samples:
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '", "'U'"],0)) 24
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,1)++SubString(1,2)++SubString(2,pos([],["' '"],0)) 42
+Rejected.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '", "'U'"],0)) 24
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+total time =  7.45482897758
+\end{verbatim}
+Lastly, does this scheme for reducing the number of constraints you need help for this problem?
+Put $\alpha = 52$ and $K = 31$.
+\begin{verbatim}
+|s| = 1 	log_2(z) = -19.0 	1/p = 524288.0 	shortest = 19 bits
+Implicitly enumerated 8 satisfying solutions
+Samples:
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+SubString(0,pos([],["' '"],0)) 19
+Length bounded by alpha, so accepted.
+total time =  155.674251795
+\end{verbatim}
+So without picking a small value of $K$ we are actually slower than just enumerating all of the programs.
+Empirically the solver time seems to be blowing up around $K = 31$,
+thus we have good reason to not set $\alpha$ to $n$, which is about 150 bits for this program space.
+
+\subsubsection{Large solution set regime}
+If we remove the second training example, the correct program becomes highly ambiguous:
+\begin{verbatim}
+Tom and Jerry     -> Tom
+\end{verbatim}
+There are 55434 possible programs in the space, and once we apply the embedding this number grows exponentially in $\alpha$.
+It takes about 2300 seconds to enumerate these programs, but we can sample them much more efficiently with $K=15$, $\alpha = 32$:
+\begin{verbatim}
+|s| = 7 	log_2(z) = -11.9887727446 	1/p = 4064.24806201 	shortest = 12 bits
+Implicitly enumerated 38 satisfying solutions
+Samples:
+SubString(0,3) 12
+Length bounded by alpha, so accepted.
+SubString(0,3) 12
+Length bounded by alpha, so accepted.
+SubString(0,3) 12
+Length bounded by alpha, so accepted.
+SubString(0,3) 12
+Length bounded by alpha, so accepted.
+SubString(0,3) 12
+Length bounded by alpha, so accepted.
+Const["'U'", 25, 23] 19
+Length bounded by alpha, so accepted.
+SubString(0,3) 12
+Length bounded by alpha, so accepted.
+Const["'U'", 25, 23] 19
+Length bounded by alpha, so accepted.
+SubString(0,3) 12
+Length bounded by alpha, so accepted.
+SubString(0,3) 12
+Length bounded by alpha, so accepted.
+total time =  17.3803441525
+\end{verbatim}
+Notice that this is on a log scale due to the very large number of solutions.
+\begin{figure}
+  \includegraphics[width = 10cm]{ambiguous.png}  
+\end{figure}
+
+\subsubsection{High description length programs}
+One benefit of using a solver is that it is sometimes easy to find programs even if they have a high description length,
+which can be caused by having some long constant in them.
+For example, consider the following training data:
+\begin{verbatim}
+Eyal Dechter     -> Hi Eyal!
+Rishabh Singh    -> Hi Rishabh!
+\end{verbatim}
+
+With only the first example, the performance curve looks like:
+\begin{figure}
+  \includegraphics[width = 10cm]{long1.png}  
+\end{figure}
+
+With two examples, there is only one satisfying solution (the program is uniquely determined).
+\begin{figure}
+  \includegraphics[width = 10cm]{long2.png}  
+\end{figure}
+
+
 \end{document}

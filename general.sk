@@ -3,6 +3,7 @@ pragma options "--bnd-unroll-amnt 3"; // --bnd-int-range 1";
 #define BOUND 143
 bit[BOUND] tape = ??;
 int tape_index = 0;
+int force_index = 0;
 
 #define O_EQ 0
 #define O_LT 1
@@ -25,6 +26,15 @@ bit flip() {
   return b;
 }
 
+void force_zero(int n) {
+  assert n < 5;
+  
+  int j = 0;
+  repeat (5) {
+    if (j < n) assert tape[force_index++] == 0;
+    j++;
+  }
+}
 
 struct Array{
   int s;
@@ -93,28 +103,49 @@ Array empty_list() {
   return new Array(s = 0,A = {});
 }
 
+void force_zero_guard(int d) {
+  assert d > 1;
+  force_zero(2);
+  force_zero_integer(d-1);
+}
 
 Guard guard_expression(Array a,int d,ref bit success,ref int mdl) {
   assert d > 1; // integer expression needs at least 1
+
+  success = 1;
 
   bit ignore1,ignore2;
 
   bit c1 = flip();
   bit c2 = flip();
-  int o;
+  int o = O_EQ; // do I need to set this?
   if (c1 && c2) o = O_EQ;
-  if (c1 && !c2) assert 0;
+  if (c1 && !c2) success = 0;
   if (!c1 && c2) o = O_LT;
   if (!c1 && !c2) o = O_GT;
 
   
   bit zs;
   int z = integer_expression(a,d-1,zs,ignore1,ignore2,mdl);
-  success = zs;
+  success = zs && success;
 
   mdl += 2; // choice of operator
 
   return new Guard(z = z, o = o);
+}
+
+void force_zero_array(int d) {
+  assert d > 0;
+  assert flip() == 0;
+  if (d == 1) return;
+  bit shallow = !(d > 2);
+
+  if (shallow) force_zero(1);
+  force_zero(2);
+
+  force_zero_array(d-1);
+  force_zero_integer(d-1);
+  if (!shallow) force_zero_guard(d-1);
 }
 
 Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empty,ref int mdl) {
@@ -144,17 +175,33 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
 
   bit array_success,array_single,array_empty;
   int array_mdl = 0;
+  /*  if (!((shallow && !c1 && c2) || (!shallow && c1 && !c2 && c3) || (!shallow && !c1 && c2 && c3))) {
+    force_index = tape_index;
+    force_zero_array(d-1);
+    }*/
   Array lp = array_expression(a,d-1,array_success,array_single,array_empty,array_mdl);
+  
   
   bit integer_success,integer_increment,integer_decrement;
   int integer_mdl = 0;
+  /*  if (!((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3))) {
+    force_index = tape_index;
+    force_zero_integer(d-1);
+    }*/
   int z = integer_expression(a,d-1,integer_success,integer_increment,integer_decrement,integer_mdl);
+
   bit cdr_success;
   
   bit guard_success;
   int guard_mdl = 0;
   Guard g;
-  if (!shallow) g = guard_expression(a,d-1,guard_success,guard_mdl);
+  if (!shallow) {
+    /*    if (!(!c1 && c2 && c3)) {
+      force_index = tape_index;
+      force_zero_guard(d-1);
+      }*/
+    g = guard_expression(a,d-1,guard_success,guard_mdl);
+  }
 
   // pay for the choice
   mdl += (shallow ? 2 : 3);
@@ -176,10 +223,11 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
   }
   mdl += array_mdl;
   if ((shallow && !c1 && c2) || (!shallow && c1 && !c2 && c3)) {
-    assert !array_single;
+    //assert !array_single;
+    //success = !array_single;
     if (array_success) {
       Array r = cdr(lp,cdr_success);
-      success = cdr_success;
+      success = cdr_success && !array_single;
       return r;
     }
     success = 0;
@@ -188,16 +236,25 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
   
   if (!shallow && !c1 && c2 && c3) {
     mdl += guard_mdl;
-    assert !array_empty;
-    success = array_success && guard_success;
+    //    assert !array_empty;
+    success = array_success && guard_success && !array_empty;
     return filter(g,lp);
   }
+  success = 0;
+  return empty_list();
+}
 
-  assert 0;
+void force_zero_integer(int d) {
+  assert d > 0;
+  if (d == 1) return;
+
+  force_zero(3);
+
+  force_zero_integer(d-1);
+  force_zero_array(d-1);
 }
 
 
-  
 int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit decremented,ref int mdl) {
   incremented = 0;
   decremented = 0;
@@ -212,33 +269,43 @@ int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit
 
   bit integer_success,integer_incremented,integer_decremented;
   int integer_mdl = 0;
+  /*  if (!((c1 && c2 && !c3) || (c1 && !c2 && c3))) {
+    force_index = tape_index;
+    force_zero_integer(d-1);
+    }*/
   int zp = integer_expression(a,d-1,integer_success,integer_incremented,integer_decremented,integer_mdl);
   
   bit array_success,array_empty,array_single;
   int array_mdl = 0;
+  /*  if (!((c1 && !c2 && !c3) || (!c1 && c2 && c3))) {
+    force_index = tape_index;
+    force_zero_array(d-1);
+    }*/
   Array l = array_expression(a,d-1,array_success,array_empty,array_single,array_mdl);
 
+
   if (c1 && c2 && c3) { success = 1; return 0; }
-  if (c1 && c2 && !c3) { mdl += integer_mdl; success = integer_success; assert !integer_decremented; return zp+1; }
-  if (c1 && !c2 && c3) { mdl += integer_mdl; success = integer_success; assert !integer_incremented; return zp-1; }
+  if (c1 && c2 && !c3) { mdl += integer_mdl; success = integer_success && !integer_decremented; return zp+1; }
+  if (c1 && !c2 && c3) { mdl += integer_mdl; success = integer_success && !integer_incremented; return zp-1; }
   mdl += array_mdl;
   if (c1 && !c2 && !c3) {
-    assert !array_single && !array_empty;
+    //assert !array_single && !array_empty;
     if (array_success) {
       bit car_success;
       int r = car(l,car_success);
-      success = car_success; 
+      success = car_success && !array_single && !array_empty; 
       return r;
     }
     success = 0;
     return 0;
   }
   if (!c1 && c2 && c3) {
-    assert !array_single && !array_empty;
-    success = array_success;
+    //assert !array_single && !array_empty;
+    success = array_success && !array_single && !array_empty;
     return l.s;
   }
-  assert 0;
+  success = 0;
+  return 0;
 }
 
 Array recursive_expression(Array a, int bnd, int mdl) {

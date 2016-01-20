@@ -316,7 +316,7 @@ class ProgramSolver():
                 p_no_survivors = min(1,mu/((epsilon-mu)**2)) if mu > epsilon else 1
 
                 # upper bound on expected number of trials to get a sample
-                et = 1.0/(p_acceptance - p_no_survivors)
+                et = 1.0/(p_acceptance - p_no_survivors) if (p_acceptance - p_no_survivors) > 0 else -1
 #                p_acceptance / (1 - p_no_survivors if p_no_survivors < 1 else float('inf'))
 
                 mc = 2**(-k)*count(a) # expected number of surviving programs

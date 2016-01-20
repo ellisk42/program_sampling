@@ -60,7 +60,7 @@ def array_expression(d):
     if (not shallow) and (not c1) and c2 and c3:
         return ("(filter %s %s)" % (g,lp)), choiceMask+lp_m+blank(z_m)+g_m
 
-    assert False
+    return "FAILURE_A",[]
 
 def integer_expression(d):
     assert d > 0
@@ -80,7 +80,8 @@ def integer_expression(d):
     if c1 and (not c2) and (not c3): return ("(car %s)" % l),choiceMask+blank(z_m)+l_m
     if (not c1) and c2 and c3: return ("(length %s)" % l),choiceMask+blank(z_m)+l_m
 
-    assert False
+    return "FAILURE_Z",[]
+#    assert False
 
 def main(t):
     global tape

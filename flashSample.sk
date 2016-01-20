@@ -4,7 +4,7 @@ pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
 #define TAPELENGTH (53*PIECES+PIECES-1)
 
 #define SHORTEST 0
-#define EMBEDDINGLENGTH (19+13) //(30-SHORTEST)
+#define EMBEDDINGLENGTH 1 //(19+13) //(30-SHORTEST)
 
 bit[TAPELENGTH] tape = ??;
 bit[EMBEDDINGLENGTH] auxiliary = ??;
@@ -225,17 +225,17 @@ bit eq(str s1, str s2){
 
 
 // First demo: prior probability of the program is ~7*10^13, enumeration or sampling are infeasible
-/*harness void main0(){
+harness void main0(){
   assert eq(cstr("Hi Eyal!"), flashToy(cstr("Eyal Dechter")) );    
-  assert eq(cstr("Hi Rishabh!"), flashToy(cstr("Rishabh Singh")) );
-  }*/
+  // assert eq(cstr("Hi Rishabh!"), flashToy(cstr("Rishabh Singh")) );
+}
 
 
 // Second demo: Can sample from extremely large program spaces
-harness void main1(){    
+/*harness void main1(){    
   assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );
-  assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
-}
+  //  assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
+  }*/
 
 
 
