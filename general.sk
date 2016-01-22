@@ -1,9 +1,15 @@
-pragma options "--bnd-unroll-amnt 3"; // --bnd-int-range 1";
+pragma options "--bnd-unroll-amnt 3 --bnd-int-range 10 --bnd-arr1d-size 3 --bnd-arr-size 3";
 
-#define BOUND 143
+#define BOUND 124 //143
+#define MAXIMUMLENGTH 100 // maximum description length
+#define MAXIMUMNUMBER 10 // maximum number manipulated by program
+
 bit[BOUND] tape = ??;
 int tape_index = 0;
-int force_index = 0;
+// guard length = {?,?,2,6}
+// array length = {?,1,3,12,31}
+// integer l =    {?,0,4,10}
+//{('guard', 3): 6, ('array', 1): 1, ('guard', 2): 2, ('array', 3): 12, ('array', 2): 3, ('integer', 1): 0, ('integer', 2): 4, ('integer', 3): 10, ('array', 4): 31}
 
 #define O_EQ 0
 #define O_LT 1
@@ -26,14 +32,9 @@ bit flip() {
   return b;
 }
 
-void force_zero(int n) {
-  assert n < 5;
-  
-  int j = 0;
-  repeat (5) {
-    if (j < n) assert tape[force_index++] == 0;
-    j++;
-  }
+int validate_number(int x) {
+  assert x >= 0 && x < (MAXIMUMNUMBER+1);
+  return x;
 }
 
 struct Array{
@@ -61,11 +62,12 @@ Array concatenate3(Array a1,Array a2,Array a3) {
   assert a2 != null;
   assert a3 != null;
   /*  assert a1.s + a2.s + a3.s >= 0;*/
-  int[a1.s + a2.s + a3.s] x;
+  int l = validate_number(validate_number(a1.s) + validate_number(a2.s) + validate_number(a3.s));
+  int[l] x;
   x[0 :: a1.s] = a1.A;
   x[a1.s :: a2.s] = a2.A;
   x[(a2.s+a1.s) :: a3.s] = a3.A;
-  return new Array(s = a1.s + a2.s + a3.s,A = x);
+  return new Array(s = l,A = x);
 }
 
 Array cdr(Array a,ref bit success) {
@@ -105,8 +107,11 @@ Array empty_list() {
 
 void force_zero_guard(int d) {
   assert d > 1;
-  force_zero(2);
-  force_zero_integer(d-1);
+
+  int j = 0;
+  if (d == 2) { repeat (2) { assert tape[tape_index + (j++)] == 0; } }
+  else if (d == 3) { repeat (6) { assert tape[tape_index + (j++)] == 0; } }
+  else assert 0;
 }
 
 Guard guard_expression(Array a,int d,ref bit success,ref int mdl) {
@@ -130,22 +135,19 @@ Guard guard_expression(Array a,int d,ref bit success,ref int mdl) {
   success = zs && success;
 
   mdl += 2; // choice of operator
-
+  assert mdl < MAXIMUMLENGTH;
+  
   return new Guard(z = z, o = o);
 }
 
 void force_zero_array(int d) {
   assert d > 0;
-  assert flip() == 0;
-  if (d == 1) return;
-  bit shallow = !(d > 2);
-
-  if (shallow) force_zero(1);
-  force_zero(2);
-
-  force_zero_array(d-1);
-  force_zero_integer(d-1);
-  if (!shallow) force_zero_guard(d-1);
+  int j = 0;
+  if (d == 1) { repeat (1) { assert tape[tape_index + (j++)] == 0; } }
+  else if (d == 2) { repeat (3) { assert tape[tape_index + (j++)] == 0; } }
+  else if (d == 3) { repeat (12) { assert tape[tape_index + (j++)] == 0; } }
+  else if (d == 4) { repeat (31) { assert tape[tape_index + (j++)] == 0; } }
+  else assert 0;
 }
 
 Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empty,ref int mdl) {
@@ -159,6 +161,7 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
   bit c1 = flip();
   if (d == 1) { // only terminals allowed
     mdl++;
+    assert mdl < MAXIMUMLENGTH;
     success = 1;
     if (c1) {
       empty = 1;
@@ -175,19 +178,17 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
 
   bit array_success,array_single,array_empty;
   int array_mdl = 0;
-  /*  if (!((shallow && !c1 && c2) || (!shallow && c1 && !c2 && c3) || (!shallow && !c1 && c2 && c3))) {
-    force_index = tape_index;
+  if (!((shallow && !c1 && c2) || (!shallow && c1 && !c2 && c3) || (!shallow && !c1 && c2 && c3))) {
     force_zero_array(d-1);
-    }*/
+  }
   Array lp = array_expression(a,d-1,array_success,array_single,array_empty,array_mdl);
   
   
   bit integer_success,integer_increment,integer_decrement;
   int integer_mdl = 0;
-  /*  if (!((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3))) {
-    force_index = tape_index;
+  if (!((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3))) {
     force_zero_integer(d-1);
-    }*/
+  }
   int z = integer_expression(a,d-1,integer_success,integer_increment,integer_decrement,integer_mdl);
 
   bit cdr_success;
@@ -196,15 +197,15 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
   int guard_mdl = 0;
   Guard g;
   if (!shallow) {
-    /*    if (!(!c1 && c2 && c3)) {
-      force_index = tape_index;
+    if (!(!c1 && c2 && c3)) {
       force_zero_guard(d-1);
-      }*/
+    }
     g = guard_expression(a,d-1,guard_success,guard_mdl);
   }
 
   // pay for the choice
   mdl += (shallow ? 2 : 3);
+  assert mdl < MAXIMUMLENGTH;
 
   if ((shallow && c1 && c2) || (!shallow && c1 && c2 && c3)) {
     empty = 1;
@@ -218,10 +219,12 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
   if ((shallow && !c1 && !c2) || (!shallow && c1 && !c2 && !c3)) {
     single = 1;
     mdl += integer_mdl;
+    assert mdl < MAXIMUMLENGTH;
     success = integer_success;
     return singleton(z);
   }
   mdl += array_mdl;
+  assert mdl < MAXIMUMLENGTH;
   if ((shallow && !c1 && c2) || (!shallow && c1 && !c2 && c3)) {
     //assert !array_single;
     //success = !array_single;
@@ -248,10 +251,10 @@ void force_zero_integer(int d) {
   assert d > 0;
   if (d == 1) return;
 
-  force_zero(3);
-
-  force_zero_integer(d-1);
-  force_zero_array(d-1);
+  int j = 0;
+  if (d == 2) { repeat (4) { assert tape[tape_index + (j++)] == 0; } }
+  else if (d == 3) { repeat (10) { assert tape[tape_index + (j++)] == 0; } }
+  else assert 0;
 }
 
 
@@ -266,33 +269,32 @@ int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit
   bit c2 = flip();
   bit c3 = flip();
   mdl += 3;
-
+  assert mdl < MAXIMUMLENGTH;
+  
   bit integer_success,integer_incremented,integer_decremented;
   int integer_mdl = 0;
-  /*  if (!((c1 && c2 && !c3) || (c1 && !c2 && c3))) {
-    force_index = tape_index;
+  if (!((c1 && c2 && !c3) || (c1 && !c2 && c3))) {
     force_zero_integer(d-1);
-    }*/
-  int zp = integer_expression(a,d-1,integer_success,integer_incremented,integer_decremented,integer_mdl);
+  }
+  int zp = validate_number(integer_expression(a,d-1,integer_success,integer_incremented,integer_decremented,integer_mdl));
   
   bit array_success,array_empty,array_single;
   int array_mdl = 0;
-  /*  if (!((c1 && !c2 && !c3) || (!c1 && c2 && c3))) {
-    force_index = tape_index;
+  if (!((c1 && !c2 && !c3) || (!c1 && c2 && c3))) {
     force_zero_array(d-1);
-    }*/
+  }
   Array l = array_expression(a,d-1,array_success,array_empty,array_single,array_mdl);
 
 
   if (c1 && c2 && c3) { success = 1; return 0; }
-  if (c1 && c2 && !c3) { mdl += integer_mdl; success = integer_success && !integer_decremented; return zp+1; }
-  if (c1 && !c2 && c3) { mdl += integer_mdl; success = integer_success && !integer_incremented; return zp-1; }
+  if (c1 && c2 && !c3) { assert mdl < MAXIMUMLENGTH; mdl += integer_mdl; success = integer_success && !integer_decremented; return validate_number(zp+1); }
+  if (c1 && !c2 && c3) { assert mdl < MAXIMUMLENGTH; mdl += integer_mdl; success = integer_success && !integer_incremented; return validate_number(zp-1); }
   mdl += array_mdl;
+  assert mdl < MAXIMUMLENGTH;
   if (c1 && !c2 && !c3) {
-    //assert !array_single && !array_empty;
     if (array_success) {
       bit car_success;
-      int r = car(l,car_success);
+      int r = validate_number(car(l,car_success));
       success = car_success && !array_single && !array_empty; 
       return r;
     }
@@ -302,7 +304,7 @@ int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit
   if (!c1 && c2 && c3) {
     //assert !array_single && !array_empty;
     success = array_success && !array_single && !array_empty;
-    return l.s;
+    return validate_number(l.s);
   }
   success = 0;
   return 0;
@@ -316,8 +318,9 @@ Array recursive_expression(Array a, int bnd, int mdl) {
   
   Guard g = guard_expression(a,3,s1,mdl);
   int target = integer_expression(a,3,s2,ignore1,ignore2,mdl);
-  Array b = array_expression(a,4,s3,ignore1,ignore2,mdl);
-
+  Array b = array_expression(a,3,s3,ignore1,ignore2,mdl);
+  
+  assert mdl < MAXIMUMLENGTH;
   assert s1 && s2 && s3;
   if (run_guard(g,target)) return b;
 
@@ -327,11 +330,9 @@ Array recursive_expression(Array a, int bnd, int mdl) {
   Array y = array_expression(a,4,s5,ignore1,ignore2,mdl); bit ry = flip();
   Array z = array_expression(a,4,s6,ignore1,ignore2,mdl); bit rz = flip();
   
-
+  assert mdl < MAXIMUMLENGTH;
 
   
-  //  assert tape_index == ??(10); // 47
-
   assert s4 && s5 && s6;
 
   //  if (rz || ry || rx) assert bnd > 0;
@@ -355,7 +356,7 @@ Array recursive_expression(Array a, int bnd, int mdl) {
 }
 
 
-Array specification(Array a,int bnd) {
+/*Array specification(Array a,int bnd) {
   if (a.s == 0) return empty_list();
   if (bnd < 1) return null;
 
@@ -371,23 +372,29 @@ Array specification(Array a,int bnd) {
   z = specification(z,bnd-1);
 
   return concatenate3(x,y,z);
-}
+  }*/
 
 
 Array constant_array([int n],int [n] a) {
   return new Array(s = n,A = a);
 }
-void test_case([int n],int [n] a, int [n] b, int bnd) {
+void test_case([int n],int [n] a, int [n] b) {
+  int bnd = n;
+  
   int mdl = 0;
   Array k_a = constant_array(a);
   Array o = recursive_expression(k_a, bnd,mdl);
+  assert mdl < MAXIMUMLENGTH;
 
   assert o.s == n;
   assert o.A[0::n] == b;
 }
 
 harness void main(){
-  test_case({5,4,3},{3,4,5},3);
+  test_case({},{});
+  test_case({5},{5});
+  test_case({7,9},{7,9});
+  test_case({5,4,3},{3,4,5});
   // test_case({1,3,2},{1,2,3},3);
   //test_case({4,5},{4,5},2);
   /*  test_case({6,1},{1,6},2);

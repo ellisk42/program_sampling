@@ -154,27 +154,168 @@ Thus by enumerating all of the solutions to a program synthesis problem we can c
 as the next section details.
 
 In practice we want to sample without enumerating all of the solutions.
-What does this bound tell us?
-
+Notice that $\mu = |E|2^{-K} > (|S| - 1 + 2^{\alpha - L})2^{-K}$ where $L = \min_x |x|$.
+So if $K$ is much less than $\log (|S| - 1 + 2^{\alpha - L})$ then $1/\mu$ is close to zero.
+More precisely,
+introduce a parameter $\delta > 0$,
+\begin{eqnarray}
+  K + \delta& = &\log (|S| - 1 + 2^{\alpha - L})\\
+  2^\delta& = &2^{-K}  (|S| - 1 + 2^{\alpha - L}) < \mu\\
+  2^{-\delta}& > &1/\mu
+\end{eqnarray}
+From here on out assume that $K + \delta = \log (|S| - 1 + 2^{\alpha - L})$ (look at the experimental results: you only get good sampling when you are in a region that falls below a diagonal line on the heat maps. This diagonal line corresponds to this constraint)
+and plug the above result into the upper bound:
 \begin{eqnarray}
   E[\text{invocations}]& =&   \frac{1 + \sum_x P(x \text{ survives})}{P(\text{get sample})}\\
-  &<& \frac{1 + \sum_x P(x \text{ survives})}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z - P(|x|>\alpha)} - \frac{\mu}{(\mu - \epsilon)^2}}\\
-  &<& \frac{1 + \sum_x P(x \text{ survives})}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z} - \frac{1}{\mu}}\\
-  &<& \frac{1 + C_\alpha 2^{-K} + 2^{\alpha-K}\sum_{\alpha\geq |x|\geq \alpha-K}2^{-|x|} + \sum_{|x|<\alpha-K} 1}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z} - \frac{1}{\mu}}\\
-  &<& \frac{1 + C_\alpha 2^{-K} + C_{\leq\alpha}}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z} - \frac{2^{K}}{|E|}}\\
-  &<& \frac{|E|(1 + 2^{-\alpha}C_\alpha/Z)(1 + C_\alpha 2^{-K} + C_{\leq\alpha})}{|E| - 2^K(1 + 2^{-\alpha}C_\alpha/Z)}\\
+  &<& \frac{1 + \sum_x P(x \text{ survives})}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z - P(|x|>\alpha)} - 2^{-\delta}}
 \end{eqnarray}
-We probably want $\alpha>K + |x_*|$, so that the best solution probably survives.
-Also probably a bound is given on $K$
-so introduce $\alpha - |x_*| = k+d$.
 
+For large enough $\alpha$, the probability of a sample from $Q$ being accepted has a simple bound.
+Assume from here on out that $\alpha = \log |S| + L + \gamma$ for $\gamma > 0$:
 \begin{eqnarray}
-  E[tt]& < &\frac{1 + C_\alpha 2^{-K} + 2^{\alpha-K}\sum_{\alpha\geq |x|\geq \alpha-K}2^{-|x|} + \sum_{|x|<\alpha-K} 1}{\frac{1}{1 + 2^{-\alpha}C_\alpha/Z} - \frac{1}{\mu}}\\
-  & < &\frac{1 + C_\alpha 2^{-\alpha + |x_*| + d} + \sum_{\alpha\geq |x|}1}{\frac{1}{1 + 2^{-\alpha+|x_*|}C_\alpha} - \frac{1}{\mu}}\\
+  1/P(\text{accepted}) &= &2^{-\alpha}C_\alpha/Z + P(|x|\leq \alpha)\\
+  &  < &2^{-\alpha}|S|2^L + 1\\
+  & = &2^{-\log |S|-L - \gamma}|S|2^L + 1\\
+  & = &1 + 2^{ - \gamma}
 \end{eqnarray}
+So the probability of acceptance approaches 1 exponentially quickly once $\alpha$ gets big enough.
+Looking at the heat maps in the experimental results,
+we see that we don't get good samplers until $\alpha - L$ crosses some threshold that increases as the number of possible programs increases.
+This qualitative feature of the heat maps is reflected in the above analysis.
+
+The last piece of the approximation is to show that $K$ cannot be too small compared to alpha or else the number of programs enumerated in each round of sampling grows two large:
+\begin{eqnarray}
+  \sum_x P(x\text{ survives})& = &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}\min (1,2^{\alpha - |x| - K})\\
+  & < &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}\min (1,2^{\alpha - L - K})\\
+   &= &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}\min (1,2^{\gamma + \log |S| - K})\\
+  &= &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}\min (1,|S| 2^{\gamma - K})
+\end{eqnarray}
+if $K > \alpha - L$:
+\begin{eqnarray}
+  & < &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}|S| 2^{\gamma - K}  
+\end{eqnarray}
+but that bound is terrible and takes us into the white region of the heat maps - don't take this route! If $K < \alpha - L$:
+\begin{eqnarray}
+  & < &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}1 < |S|\text{, equally useless}
+\end{eqnarray}
+Trying something else:
+\begin{eqnarray}
+  \sum_x P(x\text{ survives})& = &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}\min (1,2^{\alpha - |x| - K})\\
+  & < &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha} 2^{\alpha - |x|- K}\\
+   &= &2^{-K}(C_\alpha + \sum_{|x|\leq \alpha}2^{\alpha - |x|}) = 2^{-K}|E|\\
+& < &2^{-K}|S|2^{\alpha - L}
+\end{eqnarray}
+Equally useless. Take a different approach: the top is decreasing in $K$ and the bottom is increasing in $K$.
+What can this tell us about the optimal value of $K$?
+$$
+E[tt] < \frac{1 + \sum_x P(x\text{ survives})}{\frac{1}{1 + 2^{ - \gamma}} - 2^{ - \delta}} = \frac{1 + 2^{ - \gamma}}{1 - 2^{ - \delta} - 2^{ - \delta - \gamma}}(1 + \sum_x P(x\text{ survives}))
+$$
+$\alpha$ is fixed by parameters of the problem and $\gamma$. In contrast $K$ decreases linearly with $\delta$.
+\begin{eqnarray}
+  \partial_K \log E[tt] &<& \frac{\partial_K (2^{-\delta}+2^{ - \delta - \gamma})}{1 - 2^{ - \delta} - 2^{ - \delta - \gamma}}+...\\
+  & = &   \frac{\log 2 \times (2^{-\delta} +2^{ - \delta - \gamma})}{1 - 2^{ - \delta} - 2^{ - \delta - \gamma}}+
+\frac{-C_\alpha 2^{-K}\log 2 }{1 + \sum_x P(x\text{ survives})}
+  \\
+  \end{eqnarray}
+Unfinished. And not looking promising. Return to the horrible bounds, which grossly overestimate $|E|$ and fail to take into account the smarter enumeration strategy:
+\begin{align}
+  E[tt] <& \frac{2^{-K}|S|2^{\alpha - L}(1 - 2^{ - \gamma})}{1 - 2^{ - \delta} - 2^{ - \gamma - \delta}}\\
+  = &\frac{2^{\delta - \log (|S| - 1 + 2^{\alpha - L})}|S|2^{\alpha - L}(1 - 2^{ - \gamma})}{1 - 2^{ - \delta} - 2^{ - \gamma - \delta}}\\
+  = &\frac{2^\delta\frac{|S|2^{\alpha - L}}{|S| - 1 + 2^{\alpha - L}}}{1 - 2^{ - \delta} - 2^{ - \gamma - \delta}}(1 - 2^{ - \gamma})\\
+  \propto &\frac{2^\delta}{1 - 2^{ - \delta}(1 + 2^{ - \gamma})}\text{, as a function of $\delta$}
+\end{align}
+Minimize the above found subject to $\delta > 0$:
+\begin{align}
+  &\partial_\delta \ln\frac{2^\delta}{1 - 2^{ - \delta}(1 + 2^{ - \gamma})}\\
+  = &\ln 2  (2^\delta - 2(1 + 2^{ - \gamma}))/(2^\delta - (1 + 2^{ - \gamma})) =  0\\
+  2^\delta =& 2(1 + 2^{ - \gamma})\\
+  \delta = &1 + \log_2 (1 + 2^{ - \gamma})
+\end{align}
+Substitute this into the really bad bound on the number of solver calls:
+\begin{align}
+  E[tt] < & (1 + \log_2 (1 + 2^{ - \gamma})) \frac{|S|2^{\alpha - L}}{|S| - 1 + 2^{\alpha - L}}(1 - 2^{ - \gamma})2\\
+  = &2(1 + \log_2 (1 + 2^{ - \gamma})) \frac{|S|^2 2^\gamma}{|S| - 1 + |S|2^\gamma}(1 - 2^{ - \gamma})\\
+  = &2(1 + \log_2 (1 + 1/x)) (1 - 1/x) \frac{|S|^2 x}{|S| - 1 + |S|x}\text{, }x = 2^\gamma\\
+   = &2(1 + \log_2 (1 + 1/x)) (1 - 1/x)\frac{|S|x}{x + 1 - 1/|S|}
+\end{align}
+The first part goes to 1 and the second part goes to $|S|$, both exponentially quickly in $\gamma$. This bound is no better than just enumerating all of the solutions!
+
+\subsubsection{Another attack on the upper bound}
+\begin{align}
+\sum_x P(s_x) & = \sum_{\alpha - K\leq |x|}\max (2^{-K},2^{\alpha -K - |x|}) + C_{ < \alpha - K}
+\end{align}
+Suppose that we hold $\alpha - K$ constant, so that we are restricting ourselves to a diagonal line on the heat maps.
+Then the above equation is decreasing in $K$, so as we walk down  the diagonal we get increasingly better samplers (and walking all the way down corresponds to prior work).
+What if we don't restrict ourselves to a diagonal?
+Consider the case of moving $K$ while keeping $\alpha$ constant.
+Number of survivors grows like $2^{-K}\propto 2^\delta$,
+number of iterations grows like $1/(1 - 2^{ - \delta}(1 + 2^{ - \gamma}))$.
+let $w = 2^\delta$, then our loss function looks like $w^2/(w - (1 + 2^{ - \gamma}))$,
+which achieves its minimum at $\delta = 1 +\log (1 + 2^{ - \gamma})$.
+So for large $\gamma$ we expect the optimal $\delta$ to be close to $1$.
+Looking at the heat maps it seems that a better value is $2$, but that $1$ is pretty close.
 
 
-%We can lower bound $Z>2^{-|x_*|}$, 
+Let's simplify things a little bit:
+\begin{align}
+  \alpha& = \log |S| +L + \gamma\\
+  K &= \alpha - L - \delta\\
+  & = \log |S| + \gamma - \delta
+\end{align}
+With these new definitions of the parameters,
+\begin{align}
+  E[tt] =& \frac{1 + \sum_{\alpha - K\leq |x|}\max (2^{-K},2^{\alpha -K - |x|}) + C_{ < \alpha - K}}{1 - 2^{ - \delta}(1 + 2^{ - \gamma})}(1 + 2^{ - \gamma})\\
+   =& \frac{1 + 2^\delta\sum_{|x|\geq L + \delta}\max (2^{ - \gamma}/|S|,2^{L  - |x|}) + C_{ < L + \delta}}{1 - 2^{ - \delta}(1 + 2^{ - \gamma})}(1 + 2^{ - \gamma})\\
+\end{align}
+which is much clearer.
+
+\subsection{KL divergence of the proposal distribution}
+\begin{align}
+  D(P||Q)& = \sum_x P(x)\log P(x)/Q(x)\\
+  & = \sum_{|x|\leq \alpha} P(x)\log \frac{2^{-|x|}Z_Q}{2^{-|x|}Z} + \sum_{|x| > \alpha}P(x)\log \frac{2^{-|x|}Z_Q}{2^{-\alpha}Z}\\
+  & = \log (Z_Q/Z) + \sum_{|x| > \alpha} P(x)(\alpha - |x|)\\
+  & < \log (Z_Q/Z)\\
+  & = \log \frac{Z - Z_\alpha + C_\alpha2^{-\alpha}}{Z}\\
+  & = \log (1 - P(|x| > \alpha) + C_\alpha2^{-\alpha}/Z)\\
+  & < \log (1 + |S|2^{L}2^{ - \alpha})\\
+  & = \log (1 + 2^{ - \gamma})\\
+  & < \frac{2^{-\gamma}}{\ln 2}\\
+  \max_x |P(x) - Q(x)|& < \frac{2^{-\gamma/2}}{\sqrt{\ln 4}}\text{, Pinsker's inequality}
+\end{align}
+and so the kl divergence goes to zero exponentially quickly in $\gamma$, as does the total variation distance.
+This suggests an alternative algorithm in which we never reject samples from $Q$ but instead specify a bound on the KL divergence which in turn gives us a bound on  $\gamma$.
+This tightens the upper bound on expected run time given in the previous section, and makes the math simpler.
+
+\subsection{Fluctuations around $Q$}
+We don't sample exactly from $Q$, because these XOR constraints introduce small fluctuations around the true distribution.
+As shown in prior work, the probability of $(x,A)$ being drawn from $Q$ is at least
+\begin{align}
+  
+\end{align}
+\subsection{Entropy in the program distribution}
+\begin{align}
+  H[P] &=  \sum_x 1/Z2^{-|x|} \log Z2^{|x|}\\
+  & = \sum_x 1/Z 2^{-x} (\log Z + x)\\
+  & = \log Z + \sum_x P(x)|x|\\
+  & = \log Z + E_P[|x|]\\
+\end{align}
+Use the Markov inequality to relate this to $C_\alpha$:
+\begin{align}
+  P(|x| > l) & < E_p[|x|]/l = (H[P] - \log Z)/l %l \sum_{|x| > l}\frac{2^{|x|}}{Z}& < (H[P] - \log Z)/l
+  \\  lP(|x| > l) + \log Z& < H[p]\\
+  Z& < 2^{H[P] - lP(|x| > l)}
+\end{align}
+Let $l > 0$:
+\begin{align}
+  C_{  <  l}& = \sum_{|x| < l}1\\
+  & = \sum 2^l2^{-l}\\
+  &   < Z  2^l\sum_{|x| > l}P(x)\\
+  & = Z2^lP(|x| > l)\\
+  & < 2^H2^{lP(|x|<l)}P(|x|<l)\\
+  & < 2^{H+l}
+\end{align}
+Which thus far seems to be useless, probably because the Markov inequality is super loose in practice.
+
 
 \section{Experimental results}
 

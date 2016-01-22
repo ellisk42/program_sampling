@@ -267,6 +267,7 @@ class ProgramSolver():
         while result:
             tp = self.holes2tape(result)
             program,mask = self.parse_tape(tp)
+            print program, sum(mask)
             description_length = sum(mask)
             if program in solutions:
                 print "DUPLICATEPROGRAM",tp
