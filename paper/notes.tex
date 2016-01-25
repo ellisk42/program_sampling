@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage{graphicx}
 \usepackage{amsmath}
-
+\usepackage{verbatim}
 \begin{document}
 
 \section{High-level overview}
@@ -183,7 +183,8 @@ Looking at the heat maps in the experimental results,
 we see that we don't get good samplers until $\alpha - L$ crosses some threshold that increases as the number of possible programs increases.
 This qualitative feature of the heat maps is reflected in the above analysis.
 
-The last piece of the approximation is to show that $K$ cannot be too small compared to alpha or else the number of programs enumerated in each round of sampling grows two large:
+The last piece of the approximation is to show that $K$ cannot be too small compared to alpha or else the number of programs enumerated in each round of sampling grows two large.
+\begin{comment}
 \begin{eqnarray}
   \sum_x P(x\text{ survives})& = &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}\min (1,2^{\alpha - |x| - K})\\
   & < &C_\alpha 2^{-K} + \sum_{|x|\leq \alpha}\min (1,2^{\alpha - L - K})\\
@@ -239,8 +240,9 @@ Substitute this into the really bad bound on the number of solver calls:
    = &2(1 + \log_2 (1 + 1/x)) (1 - 1/x)\frac{|S|x}{x + 1 - 1/|S|}
 \end{align}
 The first part goes to 1 and the second part goes to $|S|$, both exponentially quickly in $\gamma$. This bound is no better than just enumerating all of the solutions!
+\end{comment}
 
-\subsubsection{Another attack on the upper bound}
+%\subsubsection{Another attack on the upper bound}
 \begin{align}
 \sum_x P(s_x) & = \sum_{\alpha - K\leq |x|}\max (2^{-K},2^{\alpha -K - |x|}) + C_{ < \alpha - K}
 \end{align}
@@ -287,11 +289,54 @@ This suggests an alternative algorithm in which we never reject samples from $Q$
 This tightens the upper bound on expected run time given in the previous section, and makes the math simpler.
 
 \subsection{Fluctuations around $Q$}
-We don't sample exactly from $Q$, because these XOR constraints introduce small fluctuations around the true distribution.
-As shown in prior work, the probability of $(x,A)$ being drawn from $Q$ is at least
+We don't sample exactly from $Q$ but from a related distribution $Q'$, because these XOR constraints introduce small fluctuations around the true distribution.
+Let $x$ temporarily refer to an assignment both of the program and auxiliary variables,
+and let $\mu = 2^{-K}(N - 1) + 1$ the average number of survivors given that $x$ survives:
 \begin{align}
-  
+  p_1(x)& = 2^{-K}\sum_i \frac{1}{i}P(mc = i | x \text{ survives})\\
+  & = 2^{-K} E[\frac{1}{mc} | x \text{ survives}]\\
+  &  >2^{-K}  \frac{1}{E[mc | x \text{ survives}]}\text{, Jensen's inequality}\\
+  & = 2^{-K} 1/\mu\\
+  & = \frac{2^{-K}}{2^{-K}(N - 1) + 1}\\
+  & = \frac{1}{N - 1 + 2^K}\\
+  & = \frac{1}{N} \times \frac{1}{1 + 2^K/N -1/N}\\
+  & > \frac{1}{N}\times  \frac{1}{1 + 2^K/N }\\
+  D(Q||Q')& = \sum_x q(x)\log \frac{q(x)}{q'(x)}\\
+  & = \sum_x q(x)\log \frac{|A_x|(1/N)}{\sum_{A_x}p_1(x,A_x)/P(mc > 0)}\\
+  &  <  \log P(mc > 0) +  \sum_x q(x)\log \frac{|A_x|(1/N)}{\sum_{A_x}(1/N)/(1 + 2^K/N)}\\
+  & = \log P(mc > 0) +  \sum_x q(x)\log \frac{|A_x|}{|A_x|/(1 + 2^K/N)}\\
+  & = \log P(mc > 0) +  \sum_x q(x)\log (1 + 2^K/N)\\
+  & = \log P(mc > 0) +  \log (1 + 2^K/N)\\
+  & < 2^K/N\\
+  & < 2^K/(|S| - 1 + 2^{\alpha - L})\\
+  & = 2^{ - \delta}.
 \end{align}
+
+
+
+\subsubsection{Fluctuations around $P$}
+Of course we actually care about $D(p||q_K)$, where $q_K$ is the distribution sampled by the algorithm.
+The previous two sections were warm-ups for this calculation.
+Let $x$ be a program.
+Then $q_K(x) = p_1(x)A(|x|,\alpha)/W$ (where $W$ is the normalizing constant)
+so:
+\begin{align}
+  D(p||q_K)& = \sum_x p(x)\log \frac{p(x)}{q_K(x)}\\
+  & = \sum_x p(x)\log \frac{q(x)A(x)W}{p_1(x)A(x)Z_q}\text{, as }q(x)A(x)\propto p(x)\\
+  & = \sum_x p(x)\log \frac{q(x)W}{p_1(x)Z_q}\\
+  &  <  \log \frac{W}{Z_q} +\sum_x p(x) \log \frac{q(x)}{cq(x)}\\
+  & < \log \frac{1}{Z_q c}\\
+  & = \log \frac{1}{P(\text{accept})} - \log c\\
+  & < \log (1 + 2^{ - \gamma}) - \log c\\
+  &  =  \log (1 + 2^{ - \gamma}) + \log (1 + 2^K/N)\\
+  &  =  \log (1 + 2^{ - \gamma}) + \log (1 + 2^{ - \delta})\\
+  & < 2^{ - \gamma} + 2^{ - \delta}.
+\end{align}
+And so the KL divergence decreases exponentially in $\gamma$ and $\delta$.
+It is easier to show that the exact same bound holds whenever we don't perform the rejection,
+which is interesting,
+and suggests that the rejection sampling isn't buying us very much.
+
 \subsection{Entropy in the program distribution}
 \begin{align}
   H[P] &=  \sum_x 1/Z2^{-|x|} \log Z2^{|x|}\\

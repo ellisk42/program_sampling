@@ -17,13 +17,11 @@ def flip():
     tape_index += 1
     return tape[tape_index-1]
 
-def guard_expression(d):
+def guard_expression(d,z):
     assert d > 0
 
     c1 = flip()
     c2 = flip()
-
-    z,zm = integer_expression(d - 1)
 
     o = None
     if c1 and c2: o = 'eq'
@@ -31,7 +29,7 @@ def guard_expression(d):
     if not c2 and not c2: o = 'lt'
 
     program = "(%s %s)" % (o,z)
-    mask = [1,1]+zm
+    mask = [1,1]
 
     record_production("guard",d,len(mask))
     
@@ -39,7 +37,6 @@ def guard_expression(d):
 
 def array_expression(d):
     assert d > 0
-    shallow = not (d > 2)
 
     c1 = flip()
 
@@ -48,20 +45,17 @@ def array_expression(d):
         if c1: return "nil",[1]
         return "a",[1]
 
-    choiceMask = [1,1]
-    if not shallow: choiceMask += [1]
+    choiceMask = [1,1,1]
     
     c2 = flip()
-    c3 = None
-    if not shallow: c3 = flip()
+    c3 = flip()
 
     lp,lp_m = array_expression(d - 1)
     z,z_m = integer_expression(d - 1)
-    g,g_m = None,[]
-    if not shallow:
-        g,g_m = guard_expression(d - 1)
+    g,g_m = guard_expression(d - 1,z)
 
     record_production("array",d,len(choiceMask+lp_m+z_m+g_m))
+    shallow = False
 
     if (shallow and c1 and c2) or ((not shallow) and c1 and c2 and c3):
         return "nil",choiceMask+blank(lp_m)+blank(z_m)+blank(g_m)
@@ -72,7 +66,7 @@ def array_expression(d):
     if (shallow and (not c1) and (not c2)) or ((not shallow) and c1 and (not c2) and (not c3)):
         return ("(list %s)" % z), choiceMask+blank(lp_m)+z_m+blank(g_m)
     if (not shallow) and (not c1) and c2 and c3:
-        return ("(filter %s %s)" % (g,lp)), choiceMask+lp_m+blank(z_m)+g_m
+        return ("(filter %s %s)" % (g,lp)), choiceMask+lp_m+z_m+g_m
 
     return "FAILURE_A",[0]*(len(choiceMask+lp_m+z_m+g_m))
 
@@ -106,15 +100,15 @@ def parse_tape(t):
     global tape_index
     tape_index = 0
     tape = [ f == 1 for f in t ]
-    g,g_m = guard_expression(3)
-    target,t_m = integer_expression(3)
-    assert tape_index == 16
-    b,b_m = array_expression(3)
-    x,x_m = array_expression(4)
+    c,c_m = integer_expression(2)
+    g,g_m = guard_expression(2,c)
+    target,t_m = integer_expression(2)
+    b,b_m = array_expression(2)
+    x,x_m = array_expression(3)
     rx = flip()
-    y,y_m = array_expression(4)
+    y,y_m = array_expression(3)
     ry = flip()
-    z,z_m = array_expression(4)
+    z,z_m = array_expression(3)
     rz = flip()
 
     if rx: x = '(recur %s)' % x
@@ -122,7 +116,7 @@ def parse_tape(t):
     if rz: z = '(recur %s)' % z
 
     program = '(if (%s %s)\n    %s\n    (append %s\n            %s\n            %s))' % (g,target,b,x,y,z)
-    mask = g_m+t_m+b_m+x_m+[1]+y_m+[1]+z_m+[1]
+    mask = c_m+g_m+t_m+b_m+x_m+[1]+y_m+[1]+z_m+[1]
 
     return program,mask
 
@@ -131,13 +125,25 @@ class GeneralSolver(ProgramSolver):
         p,m = parse_tape(t)
         return p,m
 
-x = GeneralSolver()
-x.analyze_problem()
-print "total time = ",x.tt
+if len(sys.argv) == 1:
+    x = GeneralSolver()
+    x.analyze_problem()
+    print "total time = ",x.tt
+else:
+    if ',' in sys.argv[1]:
+        input_tape = "[%s]" % sys.argv[1]
+        p,m = parse_tape([ (x == 1) for x in eval(input_tape) ])
+        print p
+        print m
+        print len(m)
+        print production_lengths
+    else:
+        random_projections = int(sys.argv[1])
+        a = None
+        if len(sys.argv) > 2:
+            a = int(sys.argv[2])
+        x = GeneralSolver(fakeAlpha = a)
+        x.enumerate_solutions(random_projections)
+        print "total time = ",x.tt
 
-if False:
-    input_tape = "[%s]" % sys.argv[1]
-    p,m = main(eval(input_tape))
-    print p
-    print m
-    print production_lengths
+        
