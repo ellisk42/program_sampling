@@ -322,18 +322,18 @@ Then $q_K(x) = p_1(x)A(|x|,\alpha)/W$ (where $W$ is the normalizing constant)
 so:
 \begin{align}
   D(p||q_K)& = \sum_x p(x)\log \frac{p(x)}{q_K(x)}\\
-  & = \sum_x p(x)\log \frac{q(x)A(x)W}{p_1(x)A(x)Z_q}\text{, as }q(x)A(x)\propto p(x)\\
-  & = \sum_x p(x)\log \frac{q(x)W}{p_1(x)Z_q}\\
-  &  <  \log \frac{W}{Z_q} +\sum_x p(x) \log \frac{q(x)}{cq(x)}\\
-  & < \log \frac{1}{Z_q c}\\
-  & = \log \frac{1}{P(\text{accept})} - \log c\\
-  & < \log (1 + 2^{ - \gamma}) - \log c\\
-  &  =  \log (1 + 2^{ - \gamma}) + \log (1 + 2^K/N)\\
+  & = \sum_x p(x)\log \frac{A(x)q(x)}{\sum_y A(y)q(y)}\frac{\sum_y A(y)q_k(y)}{A(x)q_k(x)}\text{, as }q(x)A(x)\propto p(x)\\
+  & = \log \frac{\sum_y A(y)q_k(y)}{\sum_y A(y)q(y)}+\sum_x p(x)\log \frac{q(x)P(mc > 0)}{p_1(x)}\\
+  &  <  \log \frac{\sum_y A(y)q_k(y)}{\sum_y A(y)q(y)} + \log \frac{1}{c} + \log P(mc > 0)\\
+  &  <    \log \frac{\sum_y q_k(y)}{\sum_y A(y)q(y)} + \log \frac{1}{c} + \log P(mc > 0)\\
+  & = \log \frac{P(mc > 0)}{P(\text{sample from $Q$ accepted})}+ \log \frac{1}{c} + \log P(mc > 0)\\
+  & = 2\log P(mc > 0) - \log P(\text{sample from $Q$ accepted})  + \log (1 + 2^K/N - 1/N)\label{closeBound}\\
+  & < - \log P(\text{sample from $Q$ accepted})  + \log (1 + 2^K/N - 1/N)\\
   &  =  \log (1 + 2^{ - \gamma}) + \log (1 + 2^{ - \delta})\\
   & < 2^{ - \gamma} + 2^{ - \delta}.
 \end{align}
-And so the KL divergence decreases exponentially in $\gamma$ and $\delta$.
-It is easier to show that the exact same bound holds whenever we don't perform the rejection,
+And so the KL divergence decreases exponentially in $\gamma$ and $\delta$, and can be closely bounded above after enumerating all of the programs by equation~\ref{closeBound}.
+It is easier to show that a bound with the same asymptotics holds whenever we don't perform the rejection,
 which is interesting,
 and suggests that the rejection sampling isn't buying us very much.
 

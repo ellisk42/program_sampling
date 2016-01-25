@@ -243,6 +243,8 @@ class ProgramSolver():
         
         # sample a solution
         logDistribution = [ (logNumberSolutions, (p,mdl)) for p,(logNumberSolutions,mdl) in solutions.iteritems() ]
+        acceptedSamples = []
+        
         print "Samples:"
         for j in range(10):
             p,mdl = sample_log2_distribution(logDistribution)
@@ -252,11 +254,13 @@ class ProgramSolver():
                 acceptance_ratio = 2 ** (self.alpha - mdl)
                 if random.random() < acceptance_ratio:
                     print "Accepted."
+                    acceptedSamples += [p]
                 else:
                     print "Rejected."
             else:
                 print "Length bounded by alpha, so accepted."
-        return solutions
+                acceptedSamples += [p]
+        return solutions,acceptedSamples
             
 
     def analyze_problem(self):
@@ -307,14 +311,14 @@ class ProgramSolver():
             p_acceptance = 1.0/(1 + count(a)*(2**(-a-logz)) - pa(a))
             
             print "#a =",a
-            print "[ # (k,<mc>,<T>,(1+mc)<T>,P(no survivors))"
+            print "[ # (k,<mc>,<T>,(1+mc)<T>,P(no survivors),P(acceptance from Q),|E|)"
 
             for k in range(20):
                 # expected number of surviving solutions
-                mu = 2**(-k) * full_satisfying_solutions(a)
+                ne = full_satisfying_solutions(a) # number of solutions in the embedding
+                mu = 2**(-k) * ne
                 # upper bound on probability of no survivors
-                epsilon = 0.001
-                p_no_survivors = min(1,mu/((epsilon-mu)**2)) if mu > epsilon else 1
+                p_no_survivors = min(1,1/mu)
 
                 # upper bound on expected number of trials to get a sample
                 et = 1.0/(p_acceptance - p_no_survivors) if (p_acceptance - p_no_survivors) > 0 else -1
@@ -325,7 +329,7 @@ class ProgramSolver():
                     ls = solutions[s]
                     if not (ls > a): # has auxiliary bits
                         mc += exact_survival_probability(a-ls,k)
-                print "(%s,%s,%s,%s,%s)," % (k,mc,et,et*(1+mc),p_no_survivors)
+                print "(%s,%s,%s,%s,%s,%s,%s)," % (k,mc,et,et*(1+mc),p_no_survivors,p_acceptance,ne)
                 #print "k =",k,"mc =",mc,"<T> =",et,"<tt> =",et*(1+mc),"||   ",
                 #print " p_no_survivors", p_no_survivors
             print "],"
