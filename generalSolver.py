@@ -1,5 +1,9 @@
+import random
 import sys
 from crypto import ProgramSolver
+from subprocess import Popen, PIPE
+from itertools import permutations
+
 
 production_lengths = {}
 def record_production(p,d,l):
@@ -87,8 +91,8 @@ def integer_expression(d):
     record_production("integer",d,len(choiceMask+z_m+l_m))
 
     if c1 and c2 and c3: return '0',choiceMask+blank(z_m)+blank(l_m)
-    if c1 and c2 and (not c3): return ("(+1 %s)" % zp),choiceMask+z_m+blank(l_m)
-    if c1 and (not c2) and c3: return ("(-1 %s)" % zp),choiceMask+z_m+blank(l_m)
+    if c1 and c2 and (not c3): return ("(p1 %s)" % zp),choiceMask+z_m+blank(l_m)
+    if c1 and (not c2) and c3: return ("(m1 %s)" % zp),choiceMask+z_m+blank(l_m)
     if c1 and (not c2) and (not c3): return ("(car %s)" % l),choiceMask+blank(z_m)+l_m
     if (not c1) and c2 and c3: return ("(length %s)" % l),choiceMask+blank(z_m)+l_m
 
@@ -125,6 +129,31 @@ class GeneralSolver(ProgramSolver):
         p,m = parse_tape(t)
         return p,m
 
+def marginal_sort(p,n):
+    l = list(range(1,n+1))
+    for lp in permutations(l):
+        print "sorting",lp
+        lp = "(list %s)" % (str(list(lp)).replace(',',' ').replace(']','').replace('[',''))
+        for pp in p:
+            po = Popen(["./evaluateGeneral.scm",pp.replace("\n"," "),lp], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = po.communicate()
+            print stdout
+        print " ==  ==  == "
+
+
+if False:
+    samples = [ '(if ((eq (length a)) 0)    nil    (append (filter (eq (p1 0)) (list 0)) (recur (filter (gt (car a)) (cdr a)))            (filter (lt (car a)) a)))',
+                '''(if ((eq 0) (length a))
+            (filter (gt 0) a)
+            (append (recur nil)
+            (recur (filter (gt (car a)) (cdr a)))
+            (filter (lt (car a)) (filter (lt 0) a))))''',
+                '''(if ((gt (p1 0)) (length a))
+            a
+            (append (recur (filter (gt (car a)) (cdr a)))
+            (recur nil)
+            (filter (lt (car a)) a)))''']
+    
 if len(sys.argv) == 1:
     x = GeneralSolver()
     x.analyze_problem()
@@ -143,7 +172,10 @@ else:
         if len(sys.argv) > 2:
             a = int(sys.argv[2])
         x = GeneralSolver(fakeAlpha = a)
-        x.enumerate_solutions(random_projections)
+        solutions,samples = x.enumerate_solutions(random_projections)
         print "total time = ",x.tt
+
+        marginal_sort(samples,4)
+        
 
         

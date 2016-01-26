@@ -28,7 +28,6 @@ for k_ in range(raw_data.shape[1]):
         k[a_,k_] = k_
         
 
-print k.shape
 
 if False:
     d = np.log(s - 1 + 2**al)/np.log(2) - k # delta
@@ -40,16 +39,16 @@ if False:
 
 # pull out statistics from the data
 p_no_survivors = raw_data[:,:,4]
+#print p_no_survivors
 et = raw_data[:,:,2]
 p_aq = np.reciprocal(et) + p_no_survivors # probability of accepting a sample from Q
 p_aq[p_aq < 0] = 0
 p_aq[p_aq > 1] = 1
 mc = raw_data[:,:,1] # expected model count
-print mc.shape
-print k.shape
+
 embeddingSize = 2**k / p_no_survivors
 
-kl = np.log(1 + 2**k / embeddingSize - 1/embeddingSize)/np.log(2)  - np.log(p_aq)/np.log(2) # + 2*np.log(1 - p_no_survivors)/np.log(2)
+kl = np.log(1 + 2**k / embeddingSize - 1/embeddingSize)/np.log(2)  - np.log(p_aq)/np.log(2) #+ 2*np.log(1 - p_no_survivors)/np.log(2)
 
 # upper bound on the kl divergence
 d = np.log(s - 1 + 2**al)/np.log(2) - k # delta
@@ -63,10 +62,13 @@ kl_ub = np.log ( (1 + 2**(-g)) * (1 + 2**(-d) )) / np.log(2)
 
 
 
-tt = [ [ x[3] for x in a ] for a in raw_data ]
-scale = s #55435 # |S|+1, which is the baseline
-tt = [ [ (scale if x < 0 else min(x,scale)) for x in a ] for a in tt ]
-plt.matshow(np.log(np.array(tt)), cmap=plt.cm.gray)
+#tt = [ [ x[3] for x in a ] for a in raw_data ]
+tt = raw_data[:,:,3]
+print tt
+scale = s+1  # |S|+1, which is the baseline
+tt[tt < 0] = scale
+tt[tt > scale] = scale
+plt.matshow(np.log(tt), cmap=plt.cm.gray)
 plt.xlabel('# random projections')
 plt.ylabel('alpha - |x_*|')
 #plt.title('Expected solver invocations')

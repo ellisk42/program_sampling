@@ -325,17 +325,24 @@ so:
   & = \sum_x p(x)\log \frac{A(x)q(x)}{\sum_y A(y)q(y)}\frac{\sum_y A(y)q_k(y)}{A(x)q_k(x)}\text{, as }q(x)A(x)\propto p(x)\\
   & = \log \frac{\sum_y A(y)q_k(y)}{\sum_y A(y)q(y)}+\sum_x p(x)\log \frac{q(x)P(mc > 0)}{p_1(x)}\\
   &  <  \log \frac{\sum_y A(y)q_k(y)}{\sum_y A(y)q(y)} + \log \frac{1}{c} + \log P(mc > 0)\\
-  &  <    \log \frac{\sum_y q_k(y)}{\sum_y A(y)q(y)} + \log \frac{1}{c} + \log P(mc > 0)\\
-  & = \log \frac{P(mc > 0)}{P(\text{sample from $Q$ accepted})}+ \log \frac{1}{c} + \log P(mc > 0)\\
-  & = 2\log P(mc > 0) - \log P(\text{sample from $Q$ accepted})  + \log (1 + 2^K/N - 1/N)\label{closeBound}\\
-  & < - \log P(\text{sample from $Q$ accepted})  + \log (1 + 2^K/N - 1/N)\\
-  &  =  \log (1 + 2^{ - \gamma}) + \log (1 + 2^{ - \delta})\\
-  & < 2^{ - \gamma} + 2^{ - \delta}.
+  & < \log \frac{\sum_{y\not= x_*} A(y)c'q(y)  +A(x_*)(1 - \sum_{y\not= x_*} c'q(y))}{\sum_y A(y)q(y)} + \log\frac{P(mc > 0)}{c} \\
+  &  =  \log \frac{\sum_{y\not= x_*} A(y)c'q(y) +1 - \sum_{y\not= x_*} c'q(y)}{\sum_y A(y)q(y)} + \log\frac{P(mc > 0)}{c} \\
+  &  =  \log \frac{1 + c'\sum_{y\not= x_*} q(y)(A(y)-1)}{\sum_y A(y)q(y)} + \log\frac{P(mc > 0)}{c} \\
+  &  =  \log \frac{1 + c'\sum_{y} q(y)(A(y)-1)}{\sum_y A(y)q(y)} + \log\frac{P(mc > 0)}{c} \\
+  &  =  \log \frac{1 + c'(\sum_{y} q(y)A(y) - 1)}{\sum_y A(y)q(y)} + \log\frac{P(mc > 0)}{c} \\
+  &  =  \log \left( c' + \frac{1 - c'}{P(\text{accept})} \right) + \log\frac{P(mc > 0)}{c} \text{, where }c' = \frac{c}{P(mc>0)}\\
+  & = \log  \left( 1 + \frac{1 - c'}{P(\text{accept})}\times \frac{P(mc > 0)}{c} \right)\\
+  & = \log  \left( 1 + \frac{(1 + 2^K/N - 1/N)P(mc > 0) - 1}{P(\text{accept from $Q$})} \right) \label{closeBound}\\
+  & < \log  \left( 1 + \frac{2^K/N}{P(\text{accept from $Q$})} \right) \\
+  & < \log  \left( 1 + 2^{ - \delta}(1 + 2^{ - \gamma}) \right)  < 2^{ - \delta} + 2^{ - \delta - \gamma} < 2^{ - \delta + 1}
 \end{align}
-And so the KL divergence decreases exponentially in $\gamma$ and $\delta$, and can be closely bounded above after enumerating all of the programs by equation~\ref{closeBound}.
-It is easier to show that a bound with the same asymptotics holds whenever we don't perform the rejection,
+And so the KL divergence decreases exponentially in $\delta$, and can be closely bounded above after enumerating all of the programs by equation~\ref{closeBound}.
+It is easier to show that a bound with the similar asymptotics (specifically, $O(2^{-\min (\delta, \gamma )}$) holds whenever we don't perform the rejection,
 which is interesting,
 and suggests that the rejection sampling isn't buying us very much.
+So the amount of work we have to do grows exponentially as we move away from the diagonal,
+and the KL divergence decays exponentially as we move away from the diagonal.
+This suggests going as close to the diagonal as the bound on the KL will allow.
 
 \subsection{Entropy in the program distribution}
 \begin{align}
@@ -364,6 +371,44 @@ Which thus far seems to be useless, probably because the Markov inequality is su
 
 \section{Experimental results}
 
+\subsection{List manipulation}
+This is a domain of recursive list manipulation programs designed to demonstrate the ability of program sampling to synthesize algorithms.
+There are two goals here: (1) show that description length priors can give reasonable algorithm implementations from examples, and (2) show that by maintaining a full posterior over programs we get better predictive accuracy than just picking the most likely program.
+
+Primitives include car, cdr, append, $\geq$, $\leq$, $0$, nil, increment, decrement, length, filter, and a list singleton constructor.
+The sketch constrains the space by (1) specifying that there is exactly one base case guarded by one conditional, and (2) specifying that the return value is a concatenation of lists which may be optionally recursed upon.
+This is expressive enough to encode sorting, reversing, indexing, counting, and searching through lists.
+
+\subsubsection{Sorting}
+Given a these few examples, can we learn a posterior over sorting programs? In particular, does sampling help us in this domain?
+\begin{verbatim}
+f([]) = [], f([5]) = [5], f([7,9]) = [7,9], f([2,7]) = [2,7], 
+f([5,4,3]) = [3,4,5], f([5,3,4]) = [3,4,5]
+\end{verbatim}
+
+I sampled 10 programs from the posterior using $K = 13$, $\alpha -L = 11$ and noticed the following program within the posterior:
+\begin{verbatim}
+(if ((eq 0) (length a))
+    nil
+    (append (recur (filter (gt (car a)) (cdr a)))
+            (list (car a))
+            (recur (filter (lt (car a)) (cdr a)))))
+\end{verbatim}
+Which is a recursive implementation of quicksort. Interestingly this is not the most likely program, which only uses two conditional branches and effectively only recursives on the smaller list elements (intentionally omitted from the training set is an example that would force it to recursive in this case).
+So if you do map inference you get a hard decision that fails for many lists,
+but if you sample sorting algorithms and then marginalize over the program you get a soft decision that includes the correct sorted list.
+
+Generating the samples took 40 minutes, compared to around a day to enumerate all 13000 solutions.
+This is a factor of 1--2 orders of magnitude better, but much less than what you would expect by just looking at the number of solver invocations (50 for sampling, which is 2--3 orders of magnitude fewer than enumeration).
+Empirically it seems that the first solver invocation takes a very long time,
+and subsequent invocations take on the order of seconds.
+
+I picked these values of $K$ and $\alpha$ by looking at Figure~\ref{sorting}, which plots upper bounds upon the run time and KL divergence.
+\begin{figure}\label{sorting}
+  \includegraphics[width = 10cm]{sort.png}
+  \caption{Grayscale: log expected solver invocations. Colored contours: upper bound on the log KL divergence. }
+\end{figure}
+
 \subsection{Flashfill}
 This is a domain of toy flash fill problems.
 
@@ -375,9 +420,10 @@ Jack and Jill      ---> Jack
 \end{verbatim}
 There are 12 satisfying solutions to this problem within the program space.
 Thus we are trying to beat enumeration, which would take 13 calls to the solver.
-Below is a heat map of the upper bound upon the numeber of solver invocations as a function of $\alpha$ and $K$:
-\begin{figure}
-  \includegraphics[width = 10cm]{heat.png}
+Figure~\ref{ambiguous2} shows a heat map of the upper bound upon the numeber of solver invocations as a function of $\alpha$ and $K$.
+\begin{figure}\label{ambiguous2}
+  \includegraphics[width = 10cm]{ambiguous2.png}
+  \caption{Grayscale: log expected solver invocations. Colored contours: upper bound on the log KL divergence. }
 \end{figure}
 What if we sample at the beginning of the dark region ($\alpha = 27,K = 5$)? Below is the output of the sampler:
 \begin{verbatim}
@@ -482,7 +528,8 @@ total time =  17.3803441525
 \end{verbatim}
 Notice that this is on a log scale due to the very large number of solutions.
 \begin{figure}
-  \includegraphics[width = 10cm]{ambiguous.png}  
+  \includegraphics[width = 10cm]{ambiguous.png}
+    \caption{Grayscale: log expected solver invocations. Colored contours: upper bound on the log KL divergence. }
 \end{figure}
 
 \subsubsection{High description length programs}
@@ -496,7 +543,8 @@ Rishabh Singh    -> Hi Rishabh!
 
 With only the first example, the performance curve looks like:
 \begin{figure}
-  \includegraphics[width = 10cm]{long1.png}  
+  \includegraphics[width = 10cm]{long1.png}
+  \caption{Grayscale: log expected solver invocations. Colored contours: upper bound on the log KL divergence. }
 \end{figure}
 
 With two examples, there is only one satisfying solution (the program is uniquely determined).
