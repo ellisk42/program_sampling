@@ -1,4 +1,4 @@
-pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
+pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16";
 
 #define PIECES 3
 #define TAPELENGTH (53*PIECES+PIECES-1)
@@ -78,6 +78,11 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
 }
 
 str SubStr(str s, int p1, int p2){
+  // if the position is greater than 7,
+  // then the high bit is one
+  if (p1 > 7) p1 = s.n - p1 + 8;
+  if (p2 > 7) p2 = s.n - p2 + 8;
+  
   assert p2 > p1;
   return new str(n=p2-p1, ch=s.ch[p1:p2]);
 }
@@ -223,6 +228,9 @@ bit eq(str s1, str s2){
   return 1;
 }
 
+void testCase([int n,int m],char [n] i, char[m] o){
+  assert eq(cstr(o),flashToy(cstr(i)));
+}
 
 // First demo: prior probability of the program is ~7*10^13, enumeration or sampling are infeasible
 /*harness void main0(){
@@ -232,56 +240,13 @@ bit eq(str s1, str s2){
 */
 
 // Second demo: Can sample from extremely large program spaces
-harness void main1(){    
+/*harness void main1(){    
   assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );
   assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
+  }*/
+
+
+harness void main() {
+#include "flashProblems.h"
 }
 
-
-
-// Third demo: Can handle ambiguity.
-/*harness void main1(){    
-  assert eq(cstr("J"), flashToy(cstr("Jack and Jill")) );
-  //assert eq(cstr("T"), flashToy(cstr("Tom and Jerry")) );
-}
-*/
-
-
-
-/*
-  harness void foo() {
-  char f = ??;
-  assert f == random_number();
-  }
-  void check(char[2] f,int x) {
-  assert f[1] == f[0];
-  assert f[0] == x;
-  }
-*/
-
-/*
-char characterIdentity(char x) { return x; }
-int numberIdentity(int x) {
-  int c = ??;
-  assert c < 3;
-  assert c > 0;
-  return x+c;
-}
-  
-harness void getCharacters(){
-  char[30] dictionary = ??;
-
-  for (int j = 0; j < 14; j++) {
-    assert characterIdentity(dictionary[j]) == numberIdentity(j);
-  }
-}
-
-  
-  
-*/
-/*
-harness void test(){
-  str s = cstr("testing");
-  assert s.ch[0:2] == {'t','e'};
-}
-*/

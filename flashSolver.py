@@ -47,7 +47,9 @@ def parse_tape(tape):
 
         
         p1_k = random_number()
+        if p1_k > 7: p1_k = 7-p1_k
         p2_k = random_number()
+        if p2_k > 7: p2_k = 7 - p2_k
 
         k1 = flip()
         k2 = flip()
@@ -125,6 +127,13 @@ if __name__ == "__main__" and False:
     print m
 
 if len(sys.argv) > 1:
+    if ',' in sys.argv[1]:
+        initial_tape = eval(sys.argv[1])
+        print len(initial_tape)
+        p,m = parse_tape(initial_tape)
+        print p
+        print sum(m)
+        sys.exit()
     random_projections = int(sys.argv[1])
     a = None
     if len(sys.argv) > 2:
