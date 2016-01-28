@@ -1,7 +1,7 @@
 pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16";
 
 #define PIECES 3
-#define TAPELENGTH (53*PIECES+PIECES-1)
+#define TAPELENGTH (59*PIECES+PIECES-1)
 
 #define SHORTEST 0
 #define EMBEDDINGLENGTH 1 //(19+13) //(30-SHORTEST)
@@ -37,8 +37,9 @@ char random_character() {
   bit b3 = flip();
   bit b4 = flip();
   bit b5 = flip();
+  bit b6 = flip();
   
-  return 16*b1 + 8*b2 + 4*b3 + 2*b4 + 1*b5;
+  return 32*b1 + 16*b2 + 8*b3 + 4*b4 + 2*b5 + 1*b6;
 }
 
   
@@ -69,7 +70,8 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
 	if(k==0){
 	  return i+ n1;
 	}else{
-	  return Pos(new str(n = (s.n-(i+1)), ch = s.ch[i+1:s.n]), r1, r2, k-1);
+	  k--;
+	  //	  return Pos(new str(n = (s.n-(i+1)), ch = s.ch[i+1:s.n]), r1, r2, k-1);
 	}
       }
     }
@@ -78,10 +80,6 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
 }
 
 str SubStr(str s, int p1, int p2){
-  // if the position is greater than 7,
-  // then the high bit is one
-  if (p1 > 7) p1 = s.n - p1 + 8;
-  if (p2 > 7) p2 = s.n - p2 + 8;
   
   assert p2 > p1;
   return new str(n=p2-p1, ch=s.ch[p1:p2]);
@@ -149,6 +147,9 @@ str genExpr(str s, ref int mdl){
 	assert r1l == 0 && r2l == 0 && p1_occurrence == 0;
 	//spend(4);
 	p1 = p1_k;
+	// if the position is greater than 7,
+	// then the high bit is one
+	if (p1 > 7) p1 = s.n - p1 + 8;
       } else {
 	spend(2);
 	//spend(2+2+2); // r1l,r2l,p1_occurrence
@@ -163,6 +164,7 @@ str genExpr(str s, ref int mdl){
 	//spend(4);
 	assert r1l_p == 0 && r2l_p == 0 && p2_occurrence == 0;
 	p2 = p2_k;
+	if (p2 > 7) p2 = s.n - p2 + 8;
       } else {
 	//spend(6);
 	spend(2);
@@ -191,13 +193,13 @@ str genExpr(str s, ref int mdl){
   str out = term();
   spend(1);
   if (flip()) {
-    repeat (TAPELENGTH - 53*1 - 1) { assert flip() == 0; }
+    repeat (TAPELENGTH - 59*1 - 1) { assert flip() == 0; }
     return out;
   }
   out = Concat(out,term());
   spend(1);
   if (flip()) {
-    repeat (TAPELENGTH - 53*2 - 2) { assert flip() == 0; }
+    repeat (TAPELENGTH - 59*2 - 2) { assert flip() == 0; }
     return out;
   }
   out = Concat(out,term()); 

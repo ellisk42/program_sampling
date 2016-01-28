@@ -4,7 +4,7 @@ from crypto import ProgramSolver
 
 PIECES = 3
 
-CHARACTERLENGTH = 5
+CHARACTERLENGTH = 6
 
 sketchCharacterMap = ['null',' ','!','"','#','D','I','J','K','P','R','T','U','a','b']
 def decode_character(c):
@@ -29,7 +29,8 @@ def parse_tape(tape):
         b3 = flip()
         b4 = flip()
         b5 = flip()
-        return 16*b1 + 8*b2 + 4*b3 + 2*b4 + 1*b5
+        b6 = flip()
+        return 32*b1 + 16*b2 + 8*b3 + 4*b4 + 2*b5 + 1*b6
 
     def random_little_number():
         b1 = flip()

@@ -4,9 +4,9 @@ if (problemNumber == 1) {
   if (EXAMPLE2)
     testCase("My name is Bill.", 	"Bill");
   if (EXAMPLE3)
-    testCase("My name is Richard.", 	"Richard");
+    testCase("My name is May.", 	"May");
   if (EXAMPLE4)
-    testCase("My name is Albert.", 	"Albert");
+    testCase("My name is Mary.", 	"Mary");
   if (EXAMPLE5)
     testCase("My name is Josh.", 	"Josh");
  }
@@ -45,7 +45,7 @@ if (problemNumber == 4) {
   if (EXAMPLE3)
     testCase("jim.james@fas.harvard.edu","jim james");
   if (EXAMPLE4)
-    testCase("ruby.clinton@mit.edu","ruby Clinton");
+    testCase("ruby.clinton@mit.edu","ruby clinton");
   if (EXAMPLE5)
     testCase("josh.smith@gmail.com","josh smith");
  }
