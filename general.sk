@@ -16,7 +16,7 @@ pragma options "--bnd-unroll-amnt 3 --bnd-arr1d-size 3 --bnd-arr-size 3";
 #endif
 
 
-#define MAXIMUMNUMBER LISTLENGTH // maximum number manipulated by program
+#define MAXIMUMNUMBER 7 // maximum number manipulated by program
 
 bit[BOUND] tape = ??;
 int tape_index = 0;
@@ -24,12 +24,13 @@ int tape_index = 0;
 // array length = {?,1,6,15}
 // integer l =    {?,0,4,13}
 
-#define ANALYZING
+//#define ANALYZING
 
 #ifndef ANALYZING
-#define SHORTEST 43
-#define EMBEDDINGLENGTH (SHORTEST+11) //(19+13) //(30-SHORTEST)
+
+#define EMBEDDINGLENGTH BOUND //(19+13) //(30-SHORTEST)
 bit[EMBEDDINGLENGTH] auxiliary = ??;
+
 #endif
 
 
@@ -227,9 +228,10 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
     success = integer_success;
     return singleton(z);
   }
-  mdl += array_mdl;
-  assert mdl < MAXIMUMLENGTH;
+  
+  
   if (c1 && !c2 && c3) {
+    mdl += array_mdl;
     if (array_success) {
       Array r = cdr(lp,cdr_success);
       success = cdr_success && !array_single;
@@ -240,7 +242,7 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
   }
   
   if (!c1 && c2 && c3) {
-    mdl += guard_mdl + integer_mdl;
+    mdl += (guard_mdl + integer_mdl + array_mdl);
     success = integer_success && array_success && guard_success && !array_empty;
     return filter(g,lp);
   }
@@ -290,9 +292,9 @@ int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit
   if (c1 && c2 && c3) { success = 1; return 0; }
   if (c1 && c2 && !c3) { assert mdl < MAXIMUMLENGTH; mdl += integer_mdl; success = integer_success && !integer_decremented; return validate_number(zp+1); }
   if (c1 && !c2 && c3) { assert mdl < MAXIMUMLENGTH; mdl += integer_mdl; success = integer_success && !integer_incremented; return validate_number(zp-1); }
-  mdl += array_mdl;
-  assert mdl < MAXIMUMLENGTH;
   if (c1 && !c2 && !c3) {
+    mdl += array_mdl;
+    assert mdl < MAXIMUMLENGTH;
     if (array_success) {
       bit car_success;
       int r = validate_number(car(l,car_success));
@@ -303,6 +305,8 @@ int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit
     return 0;
   }
   if (!c1 && c2 && c3) {
+    mdl += array_mdl;
+    assert mdl < MAXIMUMLENGTH;
     success = array_success && !array_single && !array_empty;
     return validate_number(l.s);
   }
@@ -335,6 +339,8 @@ Array recursive_expression(Array a, int bnd, ref int mdl) {
 #ifdef REVERSING
   Array z = empty_list(); bit rz = 0;
 #endif
+
+  mdl += 3;
   
   assert mdl < MAXIMUMLENGTH;
 
@@ -386,15 +392,16 @@ Array constant_array([int n],int [n] a) {
 }
 
 void test_case([int n],int [n] a, int [n] b, bit enforce_embedding) {
-  int bnd = n;
+  int bnd = n-1;
   
   int mdl = 0;
   Array k_a = constant_array(a);
   Array o = recursive_expression(k_a, bnd,mdl);
 
-#ifndef ANALYZING
+  //#ifndef ANALYZING
   if (enforce_embedding) {
-    assert mdl > (SHORTEST-1);
+    //    assert mdl > (SHORTEST-1);
+    //    minimize(mdl);
     assert mdl < MAXIMUMLENGTH;
     int embedding_index = 0;
     repeat (EMBEDDINGLENGTH) {
@@ -402,7 +409,7 @@ void test_case([int n],int [n] a, int [n] b, bit enforce_embedding) {
       embedding_index++;
     }
   }
-#endif
+  //#endif
   
 
   assert o.s == n;
@@ -410,64 +417,7 @@ void test_case([int n],int [n] a, int [n] b, bit enforce_embedding) {
 }
 
 harness void main(){
-  test_case({},{},0);
-  test_case({1},{1},0);
-#ifdef SORTING
-  if (LISTLENGTH > 1) {
-    test_case({1,2},{1,2},0);
-    test_case({2,1},{1,2},LISTLENGTH == 2);
-  }
-  if (LISTLENGTH > 2) {
-    test_case({1,2,3},{1,2,3},0);
-    test_case({1,3,2},{1,2,3},0);
-    test_case({2,1,3},{1,2,3},0);
-    test_case({2,3,1},{1,2,3},0);
-    test_case({3,1,2},{1,2,3},0);
-    test_case({3,2,1},{1,2,3},LISTLENGTH == 3);
-  }
-#endif
-#ifdef REVERSING
-  if (LISTLENGTH > 1) {
-    test_case({1,2},{2,1},0);
-    test_case({2,1},{1,2},LISTLENGTH == 2);
-  }
-  if (LISTLENGTH > 2) {
-    test_case({1,2,3},{3,2,1},0);
-    test_case({1,3,2},{2,3,1},0);
-    test_case({2,1,3},{3,1,2},0);
-    test_case({2,3,1},{1,3,2},0);
-    test_case({3,1,2},{2,1,3},0);
-    test_case({3,2,1},{1,2,3},LISTLENGTH == 3);
-  }
-#endif
+#include "generalTests.h"
   assert LISTLENGTH < 4;
 }
-  
-
-/*
-harness void l5() {
-  test_case({5,4,3},{3,4,5},3);
-}
-
-harness void l6() {
-  test_case({1,3,2},{1,2,3},3);
-}
-
-harness void l2() {
-    test_case({4,5},{4,5},2);
-}
-
-harness void l3() {
-    test_case({6,1},{1,6},2);
-}
-
-harness void l1() {
-  test_case({8},{8},1);
-}
-
-harness void l0() {
-  test_case({},{},1);
-}
-  
-
-*/
+ 

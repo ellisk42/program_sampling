@@ -1,10 +1,11 @@
+import os
 import sys
 from crypto import ProgramSolver
 
 
 PIECES = 3
 
-CHARACTERLENGTH = 6
+CHARACTERLENGTH = 7
 
 sketchCharacterMap = ['null',' ','!','"','#','D','I','J','K','P','R','T','U','a','b']
 def decode_character(c):
@@ -30,7 +31,8 @@ def parse_tape(tape):
         b4 = flip()
         b5 = flip()
         b6 = flip()
-        return 32*b1 + 16*b2 + 8*b3 + 4*b4 + 2*b5 + 1*b6
+        b7 = flip()
+        return 64*b1 + 32*b2 + 16*b3 + 8*b4 + 4*b5 + 2*b6 + 1*b7
 
     def random_little_number():
         b1 = flip()
@@ -120,13 +122,6 @@ class FlashSolver(ProgramSolver):
         p,m = parse_tape(t)
         return p,m
 
-if __name__ == "__main__" and False:
-    initial_tape = eval(sys.argv[1])
-    print len(initial_tape)
-    p,m = parse_tape(initial_tape)
-    print p
-    print m
-
 if len(sys.argv) > 1:
     if ',' in sys.argv[1]:
         initial_tape = eval(sys.argv[1])
@@ -134,14 +129,25 @@ if len(sys.argv) > 1:
         p,m = parse_tape(initial_tape)
         print p
         print sum(m)
-        sys.exit()
-    random_projections = int(sys.argv[1])
-    a = None
-    if len(sys.argv) > 2:
-        a = int(sys.argv[2])
-    x = FlashSolver(fakeAlpha = a)
-    x.enumerate_solutions(random_projections)
-    print "total time = ",x.tt
+    elif 'problem' in sys.argv[1]:
+        problem = int(sys.argv[1][len('problem'):])
+        os.system("sketch flashSample.sk -n --be:outputSat --fe-def problemNumber=%d,EXAMPLE1=%d,EXAMPLE2=%d,EXAMPLE3=%d,EXAMPLE4=%d,EXAMPLE5=%d" %
+                  (problem,
+                   1 if '1' in sys.argv[2] else 0,
+                   1 if '2' in sys.argv[2] else 0,
+                   1 if '3' in sys.argv[2] else 0,
+                   1 if '4' in sys.argv[2] else 0,
+                   1 if '5' in sys.argv[2] else 0))
+#        print FlashSolver(fakeAlpha = 0).model_count()
+        print FlashSolver().shortest_program()
+    else:
+        random_projections = int(sys.argv[1])
+        a = None
+        if len(sys.argv) > 2:
+            a = int(sys.argv[2])
+        x = FlashSolver(fakeAlpha = a)
+        x.enumerate_solutions(random_projections)
+        print "total time = ",x.tt
 else:
     x = FlashSolver()
     x.analyze_problem()

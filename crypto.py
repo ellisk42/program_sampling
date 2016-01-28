@@ -88,14 +88,14 @@ class ProgramSolver():
         print "Loaded",filename," with",len(h2v),"holes and",len(a2v),"auxiliary variables"
 
         # see if we are artificially decreasing alpha
-        if fakeAlpha:
+        if fakeAlpha != None:
             if fakeAlpha > len(a2v):
                 print "Attempting to fake an alpha value of",fakeAlpha,"which is larger than the actual",len(a2v)
                 print "Increase maximum alpha within the sketch"
                 assert False
         else:
             fakeAlpha = len(a2v)
-        
+
         # convert the tape index into a sat variable
         self.tape2variable = [ v for h,v in sorted(h2v.items()) ]
         self.auxiliary2variable = [ v for h,v in sorted(a2v.items()) if h < fakeAlpha ]
@@ -126,6 +126,29 @@ class ProgramSolver():
                               [v for v in self.variable2tape if random.random() > 0.5 ],
                               random.random() > 0.5)
 
+    # approximate model counting
+    def model_count(self):
+        k = 0
+        while True:
+            bindings = self.try_solving()
+            if not bindings: break
+            k += 1
+            self.random_projection()
+        return 2**k
+
+    def shortest_program(self):
+        while True:
+            bindings = self.try_solving()
+            if not bindings: return pg,l
+            pg,mask = self.parse_tape(self.holes2tape(bindings))
+            l = sum(mask)
+            print "Found",pg,"of length",l
+            a = min(len(self.auxiliary2variable),l)
+            print "Forcing falls everything from",a,"onward"
+            for v in self.auxiliary2variable[(a-1):]:
+                self.s.add_clause([-v])
+        
+            
     # returns log_2 of the number of satisfying values of A given a description length
     def satisfying_auxiliaries(self,description_length):
         if description_length < self.alpha:
@@ -152,6 +175,8 @@ class ProgramSolver():
             for v in range(len(result[1])):
                 if v in self.variable2tape:
                     bindings[v] = result[1][v]
+            for v in self.auxiliary2variable:
+                print (1 if result[1][v] else 0),
             if self.verbose: print "Satisfiable."
             return bindings
         else:

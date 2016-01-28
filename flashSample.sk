@@ -1,10 +1,10 @@
-pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16";
+pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-arr-size 16 --bnd-arr1d-size 16";
 
 #define PIECES 3
-#define TAPELENGTH (59*PIECES+PIECES-1)
+#define TAPELENGTH (65*PIECES+PIECES-1)
 
 #define SHORTEST 0
-#define EMBEDDINGLENGTH 1 //(19+13) //(30-SHORTEST)
+#define EMBEDDINGLENGTH 60 //(19+13) //(30-SHORTEST)
 
 bit[TAPELENGTH] tape = ??;
 bit[EMBEDDINGLENGTH] auxiliary = ??;
@@ -38,8 +38,9 @@ char random_character() {
   bit b4 = flip();
   bit b5 = flip();
   bit b6 = flip();
+  bit b7 = flip();
   
-  return 32*b1 + 16*b2 + 8*b3 + 4*b4 + 2*b5 + 1*b6;
+  return 64*b1 + 32*b2 + 16*b3 + 8*b4 + 4*b5 + 2*b6 + 1*b7;
 }
 
   
@@ -80,7 +81,7 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
 }
 
 str SubStr(str s, int p1, int p2){
-  
+  if (p2 == p1) p2 = p1 + 1;
   assert p2 > p1;
   return new str(n=p2-p1, ch=s.ch[p1:p2]);
 }
@@ -193,13 +194,13 @@ str genExpr(str s, ref int mdl){
   str out = term();
   spend(1);
   if (flip()) {
-    repeat (TAPELENGTH - 59*1 - 1) { assert flip() == 0; }
+    repeat (TAPELENGTH - 65*1 - 1) { assert flip() == 0; }
     return out;
   }
   out = Concat(out,term());
   spend(1);
   if (flip()) {
-    repeat (TAPELENGTH - 59*2 - 2) { assert flip() == 0; }
+    repeat (TAPELENGTH - 65*2 - 2) { assert flip() == 0; }
     return out;
   }
   out = Concat(out,term()); 
@@ -233,19 +234,6 @@ bit eq(str s1, str s2){
 void testCase([int n,int m],char [n] i, char[m] o){
   assert eq(cstr(o),flashToy(cstr(i)));
 }
-
-// First demo: prior probability of the program is ~7*10^13, enumeration or sampling are infeasible
-/*harness void main0(){
-  assert eq(cstr("Hi Eyal!"), flashToy(cstr("Eyal Dechter")) );    
-  // assert eq(cstr("Hi Rishabh!"), flashToy(cstr("Rishabh Singh")) );
-}
-*/
-
-// Second demo: Can sample from extremely large program spaces
-/*harness void main1(){    
-  assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );
-  assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
-  }*/
 
 
 harness void main() {

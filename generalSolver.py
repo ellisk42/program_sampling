@@ -1,3 +1,4 @@
+import os
 import random
 import sys
 from crypto import ProgramSolver
@@ -61,15 +62,15 @@ def array_expression(d):
     record_production("array",d,len(choiceMask+lp_m+z_m+g_m))
     shallow = False
 
-    if (shallow and c1 and c2) or ((not shallow) and c1 and c2 and c3):
+    if (c1 and c2 and c3):
         return "nil",choiceMask+blank(lp_m)+blank(z_m)+blank(g_m)
-    if (shallow and c1 and (not c2)) or ((not shallow) and c1 and c2 and (not c3)):
+    if (c1 and c2 and (not c3)):
         return "a",choiceMask+blank(lp_m)+blank(z_m)+blank(g_m)
-    if (shallow and (not c1) and c2) or ((not shallow) and c1 and (not c2) and c3):
+    if (c1 and (not c2) and c3):
         return ("(cdr %s)" % lp), choiceMask+lp_m+blank(z_m)+blank(g_m)
-    if (shallow and (not c1) and (not c2)) or ((not shallow) and c1 and (not c2) and (not c3)):
+    if (c1 and (not c2) and (not c3)):
         return ("(list %s)" % z), choiceMask+blank(lp_m)+z_m+blank(g_m)
-    if (not shallow) and (not c1) and c2 and c3:
+    if (not c1) and c2 and c3:
         return ("(filter %s %s)" % (g,lp)), choiceMask+lp_m+z_m+g_m
 
     return "FAILURE_A",[0]*(len(choiceMask+lp_m+z_m+g_m))
@@ -140,6 +141,40 @@ def marginal_sort(p,n):
             print stdout
         print " ==  ==  == "
 
+def outputTestCases(ts):
+    with open("generalTests.h","w") as f:
+        for t in range(len(ts)):
+            i = ",".join(map(str,ts[t][0]))
+            o = ",".join(map(str,ts[t][1]))
+            lastOne = 1 if t == len(ts) - 1 else 0
+            l = "test_case({%s},{%s},%d);\n" % (i,o,lastOne)
+            f.write(l)
+
+def sortingTestCases(n):
+    ts = []
+    while len(ts) < n:
+        p = random.random()
+        if p < 0.6:
+            l = 3
+        elif p < 0.8:
+            l = 2
+        elif p < 0.9:
+            l = 1
+        elif p < 1.0:
+            l = 0
+            
+        i = [ random.randint(0,7) for j in range(l) ]
+        if l == len(list(set(i))):
+            o = sorted(i)
+            t = (i,o)
+            if str(t) in [str(x) for x in ts ]:
+                continue
+            ts += [t]
+    ts.sort(key = lambda t: len(t[0]))
+    return ts
+
+
+            
 
 if False:
     samples = [ '(if ((eq (length a)) 0)    nil    (append (filter (eq (p1 0)) (list 0)) (recur (filter (gt (car a)) (cdr a)))            (filter (lt (car a)) a)))',
@@ -159,13 +194,19 @@ if len(sys.argv) == 1:
     x.analyze_problem()
     print "total time = ",x.tt
 else:
-    if ',' in sys.argv[1]:
-        input_tape = "[%s]" % sys.argv[1]
+    if 'parse' in sys.argv[1]:
+        input_tape = "[%s]" % sys.argv[2]
         p,m = parse_tape([ (x == 1) for x in eval(input_tape) ])
         print p
         print m
         print len(m)
         print production_lengths
+    elif 'sort' == sys.argv[1]:
+        print "Sorting test cases:"
+        outputTestCases(sortingTestCases(int(sys.argv[2])))
+        os.system("cat generalTests.h")
+        os.system("sketch general.sk -n --be:outputSat")
+        print GeneralSolver().shortest_program()
     else:
         random_projections = int(sys.argv[1])
         a = None

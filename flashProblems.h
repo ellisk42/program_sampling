@@ -1,3 +1,4 @@
+// working
 if (problemNumber == 1) {
   if (EXAMPLE1)
     testCase("My name is John.", 	"John");
@@ -10,7 +11,7 @@ if (problemNumber == 1) {
   if (EXAMPLE5)
     testCase("My name is Josh.", 	"Josh");
  }
-	
+// working
 if (problemNumber == 2) {
   if (EXAMPLE1)
     testCase("james", 	"james.");
@@ -23,31 +24,31 @@ if (problemNumber == 2) {
   if (EXAMPLE5)
     testCase("chris", 	"chris.");
  }
-	
+// working
 if (problemNumber == 3) {
   if (EXAMPLE1)
-    testCase("Donald Steven George","DSG");
+    testCase("don steve g.","dsg");
   if (EXAMPLE2)
-    testCase("Kevin Jason Matthew","KJM");
+    testCase("Kev Jason Mat","KJM");
   if (EXAMPLE3)
-    testCase("Jose Larry Scott","JLS");
+    testCase("Jose Larry S","JLS");
   if (EXAMPLE4)
-    testCase("Arthur Joe Juan","AJJ");
+    testCase("Art Joe Juan","AJJ");
   if (EXAMPLE5)
-    testCase("Raymond Frank Timothy","RFT");
+    testCase("Ray F. Timothy","RFT");
  }
-	
+// working
 if (problemNumber == 4) {
   if (EXAMPLE1)
-    testCase("brent.harold@hotmail.com","brent harold");
+    testCase("brent.hard@ho","brent hard");
   if (EXAMPLE2)
-    testCase("matthew.rosman@yahoo.com","matthew rosman");
+    testCase("matt.ra@yaho","matt ra");
   if (EXAMPLE3)
-    testCase("jim.james@fas.harvard.edu","jim james");
+    testCase("jim.james@har","jim james");
   if (EXAMPLE4)
-    testCase("ruby.clinton@mit.edu","ruby clinton");
+    testCase("ruby.clint@g","ruby clint");
   if (EXAMPLE5)
-    testCase("josh.smith@gmail.com","josh smith");
+    testCase("josh.smith@g","josh smith");
  }
 	
 if (problemNumber == 5) {
@@ -62,7 +63,7 @@ if (problemNumber == 5) {
   if (EXAMPLE5)
     testCase("Edna DEECS [SSID] 865-001-0003 --23954-11 09-01-2010","865-001-0003");
  }
-
+// won't work with current implementation
 if (problemNumber == 6) {
   if (EXAMPLE1)
     testCase("Company\\Code\\index.html","Company\\Code\\");
@@ -75,20 +76,20 @@ if (problemNumber == 6) {
   if (EXAMPLE5)
     testCase("Proj\\Numerical\\Simulators\\NBody\\nbody.c","Proj\\Numerical\\Simulators\\NBody\\");
  }
-
+// an example of ambiguity
 if (problemNumber == 7) {
   if (EXAMPLE1)
-    testCase("International Business Machines","IBM");
+    testCase("hi","hi hi");
   if (EXAMPLE2)
-    testCase("Principles Of Programming Languages","POP");
+    testCase("bye","hi bye");
   if (EXAMPLE3)
-    testCase("International Conference on Software Engineering","ICS");
+    testCase("adios","hi adios");
   if (EXAMPLE4)
-    testCase("International Conference on Functional Programming","ICF");
+    testCase("joe","hi joe");
   if (EXAMPLE5)
-    testCase("Neural Information Processing Systems","NIP");
+    testCase("icml","hi icml");
  }
-
+// working
 if (problemNumber == 8) {
   if (EXAMPLE1)
     testCase("Oege de Moor","Oege de Moor");
@@ -101,7 +102,7 @@ if (problemNumber == 8) {
   if (EXAMPLE5)
     testCase("Jennifer Smith Law Firm","Jennifer Smith Law Firm");
  }
-
+// working
 if (problemNumber == 9) {
   if (EXAMPLE1)
     testCase("1/21/2001","01");
@@ -114,20 +115,20 @@ if (problemNumber == 9) {
   if (EXAMPLE5)
     testCase("5/5/1987","87");
  }
-
+// working
 if (problemNumber == 10) {
   if (EXAMPLE1)
     testCase("Eyal Dechter","Dechter, Eyal");
   if (EXAMPLE2)
-    testCase("Joshua B. Tenenbaum","Tenenbaum, Joshua B.");
+    testCase("Joshua Tenenbaum","Tenenbaum, Joshua");
   if (EXAMPLE3)
-    testCase("Stephen H. Muggleton","Muggleton, H. Stephen");
+    testCase("Stephen Muggleton","Muggleton, Stephen");
   if (EXAMPLE4)
     testCase("Kevin Ellis","Ellis, Kevin");
   if (EXAMPLE5)
     testCase("Dianhuan Lin","Lin, Dianhuan");
  }
-
+// working
 if (problemNumber == 11) {
   if (EXAMPLE1)
     testCase("12/31/13","12.31");
@@ -140,20 +141,20 @@ if (problemNumber == 11) {
   if (EXAMPLE5)
     testCase("7/15/2015","7.15");
  }
-
+// not working and I don't understand why
 if (problemNumber == 12) {
   if (EXAMPLE1)
     testCase("Three <2: vincent> Jeff","(2: vincent)");
   if (EXAMPLE2)
-    testCase("Don Kyle <3: ricky sergio> virgil","(3: ricky)");
+    testCase("Don Kyle <3: ricky> virgil","(3: ricky)");
   if (EXAMPLE3)
-    testCase("herbert is <2: Marion> morris","(2: marion)");
+    testCase("herbert is <2: marion> morris","(2: marion)");
   if (EXAMPLE4)
     testCase("fransisco eduardo <1: apple trees>","(1: apple trees)");
   if (EXAMPLE5)
     testCase("country music <9: refrigerator>","(9: refrigerator)");
  }
-
+// not working
 if (problemNumber == 13) {
   if (EXAMPLE1)
     testCase("3113 Greenfield Ave., Los Angeles, CA 90034","Los Angeles");
@@ -167,6 +168,7 @@ if (problemNumber == 13) {
     testCase("3 Ames St., Portland, OR 02142","Portland");
  }
 
+// working
 if (problemNumber == 14) {
   if (EXAMPLE1)
     testCase("Verlene Ottley  ","V.O");
@@ -179,7 +181,7 @@ if (problemNumber == 14) {
   if (EXAMPLE5)
     testCase("Joanie Faas  ","J.F");
  }
-
+// working
 if (problemNumber == 15) {
   if (EXAMPLE1)
     testCase("Agripina Kuehner  ","Hi Agripina!");
@@ -190,9 +192,10 @@ if (problemNumber == 15) {
   if (EXAMPLE4)
     testCase("Marcie Michalak  ","Hi Marcie!");
   if (EXAMPLE5)
-    testCase("Eugena Eurich  ","Hi Eugna!");
+    testCase("Eugena Eurich  ","Hi Eugena!");
  }
 
+// working
 if (problemNumber == 16) {
   if (EXAMPLE1)
     testCase("#include <stdio.h>","stdio");
@@ -205,7 +208,7 @@ if (problemNumber == 16) {
   if (EXAMPLE5)
     testCase("#include <os.h>","os");
  }
-
+// working
 if (problemNumber == 17) {
   if (EXAMPLE1)
     testCase("aa",	   "aaa");
@@ -218,10 +221,10 @@ if (problemNumber == 17) {
   if (EXAMPLE5)
     testCase("john",   "johnn");
  }
-
+// working with the large array bounds
 if (problemNumber == 18) {
   if (EXAMPLE1)
-    testCase("3113 Greenfield Ave., Los Angeles, CA 90034",	"3113");
+    testCase("3113 Greenfield Ave., LA, CA 90034",	"3113");
   if (EXAMPLE2)
     testCase("43 St. Margaret St. #1, Dorchester, MA 02125","43");
   if (EXAMPLE3)
@@ -231,7 +234,7 @@ if (problemNumber == 18) {
   if (EXAMPLE5)
     testCase("3 Ames St., Portland, OR 02142", 		"3");
  }
-
+// working
 if (problemNumber == 19) {
   if (EXAMPLE1)
     testCase("aa",	   "aaaa");
