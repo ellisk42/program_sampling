@@ -1,17 +1,38 @@
+from subprocess import Popen, PIPE
 import os
 import sys
 from crypto import ProgramSolver
 
+from flashProblems import *
 
 PIECES = 3
 
-CHARACTERLENGTH = 7
+CHARACTERLENGTH = 6
 
-sketchCharacterMap = ['null',' ','!','"','#','D','I','J','K','P','R','T','U','a','b']
+sketchCharacterMap = []
 def decode_character(c):
     if c < len(sketchCharacterMap):
         return "'" + sketchCharacterMap[c] + "'"
     return c
+def character_sketch(c):
+    global sketchCharacterMap
+    sketchCharacterMap = []
+    output,errors = Popen(c, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True).communicate()
+    print errors
+    readingCharacters = False
+    for l in output.split("\n"):
+        print l
+        if 'Printing out characters' in l:
+            print "Starting to read characters"
+            readingCharacters = True
+        elif '[+] Printed out' in l:
+            print "No longer reading characters"
+            readingCharacters = False
+        elif readingCharacters:
+            print "Red character",l
+            sketchCharacterMap.append(l)
+    print sketchCharacterMap
+    
 
 def parse_tape(tape):
     tape_index = [0]
@@ -31,8 +52,7 @@ def parse_tape(tape):
         b4 = flip()
         b5 = flip()
         b6 = flip()
-        b7 = flip()
-        return 64*b1 + 32*b2 + 16*b3 + 8*b4 + 4*b5 + 2*b6 + 1*b7
+        return 32*b1 + 16*b2 + 8*b3 + 4*b4 + 2*b5 + 1*b6
 
     def random_little_number():
         b1 = flip()
@@ -117,6 +137,27 @@ def parse_tape(tape):
             return '++'.join(total_program), total_mask + [0]*(len(tape) - len(total_mask))
 
 
+def createTrainingSet(problem,examples):
+    body = "// automatically generated\n"
+    maximumLength = 0
+    characters = ""
+    for e in range(5):
+        if e + 1 in examples:
+            [i,o] = flashProblems[problem - 1][e]
+            maximumLength = max(maximumLength,len(i),len(o))
+            characters += (i+o)            
+            body += "testCase(\"%s\",\"%s\");\n" % (i,o)
+    print body
+    print len(set(list(characters))),"distinct characters"
+    with open("flashProblems.h","w") as f:
+        f.write(body)
+    return maximumLength + 1
+
+if False:
+    for p in range(1,20):
+        createTrainingSet(p,[1,2]) #[1,2,3,4,5])
+    assert False
+        
 class FlashSolver(ProgramSolver):
     def parse_tape(self,t):
         p,m = parse_tape(t)
@@ -131,13 +172,10 @@ if len(sys.argv) > 1:
         print sum(m)
     elif 'problem' in sys.argv[1]:
         problem = int(sys.argv[1][len('problem'):])
-        os.system("sketch flashSample.sk -n --be:outputSat --fe-def problemNumber=%d,EXAMPLE1=%d,EXAMPLE2=%d,EXAMPLE3=%d,EXAMPLE4=%d,EXAMPLE5=%d" %
-                  (problem,
-                   1 if '1' in sys.argv[2] else 0,
-                   1 if '2' in sys.argv[2] else 0,
-                   1 if '3' in sys.argv[2] else 0,
-                   1 if '4' in sys.argv[2] else 0,
-                   1 if '5' in sys.argv[2] else 0))
+        examples = map(int,sys.argv[2].split(','))
+        maximumLength = createTrainingSet(problem,examples)
+        print maximumLength
+        character_sketch("sketch flashSample.sk --fe-custom-codegen customcodegen.jar --be:outputSat --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength))
 #        print FlashSolver(fakeAlpha = 0).model_count()
         print FlashSolver().shortest_program()
     else:

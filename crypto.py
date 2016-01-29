@@ -134,12 +134,15 @@ class ProgramSolver():
             if not bindings: break
             k += 1
             self.random_projection()
+        print "Counted models in time",self.tt
         return 2**k
 
     def shortest_program(self):
         while True:
             bindings = self.try_solving()
-            if not bindings: return pg,l
+            if not bindings:
+                print "Found shortest in time %f" % self.tt
+                return pg,l
             pg,mask = self.parse_tape(self.holes2tape(bindings))
             l = sum(mask)
             print "Found",pg,"of length",l
@@ -264,8 +267,8 @@ class ProgramSolver():
         # How many solver queries did we save by the rank trick?
         implicitSolutionsEnumerated = sum([ 2**logNumberSolutions
                                             for p,(logNumberSolutions,mdl) in solutions.iteritems() ])
-        print "Implicitly enumerated %d satisfying solutions" % implicitSolutionsEnumerated
-        
+        print "Implicitly enumerated %d satisfying solutions in %f seconds" % (implicitSolutionsEnumerated,self.tt)
+
         # sample a solution
         logDistribution = [ (logNumberSolutions, (p,mdl)) for p,(logNumberSolutions,mdl) in solutions.iteritems() ]
         acceptedSamples = []

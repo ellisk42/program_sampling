@@ -16,7 +16,7 @@ int tape_index = 0;
 // integer l =    {?,0,4,13}
 
 
-#define EMBEDDINGLENGTH BOUND //(19+13) //(30-SHORTEST)
+//H#define EMBEDDINGLENGTH BOUND //(19+13) //(30-SHORTEST)
 bit[EMBEDDINGLENGTH] auxiliary = ??;
 
 #define O_EQ 0
@@ -152,9 +152,12 @@ Guard guard_expression(int z,int d,ref bit success) {
 int array_length(int d, ref bit success) {
   success = 1;
   assert d > 0;
-  if (d == 1) { flip(); return 1; }
+  bit c1 = flip();
+  if (d == 1) return 1;
 
-  int choice = randomChoice();
+  bit c2 = flip();
+  bit c3 = flip();
+  int choice = 4*c1 + 2*c2 + 1*c3; //randomChoice();
 
   if (!((choice == 5) || (choice == 3))) {
     force_zero_array(d-1);
@@ -174,18 +177,21 @@ int array_length(int d, ref bit success) {
   bit sg;
   int g = guard_length(sg);
 
-  if (choice == 7 || choice == 6) return 3;
+  int mdl = 3;
+  if (choice == 7 || choice == 6) return mdl;
   if (choice == 4) {
     success = sz;
-    return 3 + z;
+    return mdl + z;
   }
+  mdl += a;
   if (choice == 5) {
     success = sa;
-    return 3 + a;
+    return mdl;
   }
   if (choice == 3) {
+    mdl += (z + g);
     success = sa && sz && sg;
-    return 3 + z + a + g;
+    return mdl;
   }
   success = 0;
   return 0;
@@ -206,9 +212,10 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
   
   assert d > 0;
 
+  bit c1 = flip();
   if (d == 1) { // only terminals allowed
     success = 1;
-    if (flip()) {
+    if (c1) {
       empty = 1;
       return empty_list();
     } else {
@@ -216,7 +223,9 @@ Array array_expression(Array a,int d,ref bit success,ref bit single,ref bit empt
     }
   }
 
-  int choice = randomChoice();
+  bit c2 = flip();
+  bit c3 = flip();
+  int choice = 4*c1 + 2*c2 + 1*c3; //randomChoice();
 
   bit array_success,array_single,array_empty;
   Array lp = array_expression(a,d-1,array_success,array_single,array_empty);
@@ -345,18 +354,18 @@ int integer_expression(Array a,int d,ref bit success,ref bit incremented,ref bit
 
 int recursive_length() {
   tape_index = 0;
-  int m = 0;
+  int m = 3; // recursion options
   bit s0,s1,s2,s3,s4,s5,s6;
   m += integer_length(2,s0);
   m += guard_length(s1);
   m += integer_length(2,s2);
   m += array_length(2,s3);
   m += array_length(3,s4);
-  flip(); m += 1;
+  flip();
   m += array_length(3,s5);
-  flip(); m += 1;
+  flip();
   m += array_length(3,s6);
-  flip(); m += 1;
+  flip();
 
   assert s0 && s1 && s2 && s3 && s4 && s5 && s6;
 
@@ -416,15 +425,16 @@ void test_case([int n],int [n] a, int [n] b) {
   assert o.A[0::n] == b;
 }
 
-harness void main(){
+harness void main() {
 #include "generalTests.h"
 
+
   int mdl = recursive_length();
+  assert mdl > MINIMUMLENGTH-1;
   assert mdl < MAXIMUMLENGTH;
   int embedding_index = 0;
   repeat (EMBEDDINGLENGTH) {
-    if (mdl > embedding_index) assert auxiliary[embedding_index];
+    if (embedding_index < MINIMUMLENGTH || mdl > embedding_index) assert auxiliary[embedding_index];
     embedding_index++;
   }
 }
- 

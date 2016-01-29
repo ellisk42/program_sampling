@@ -1,7 +1,8 @@
-pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-arr-size 16 --bnd-arr1d-size 16";
+pragma options "--slv-ntimes 100000";
 
 #define PIECES 3
-#define TAPELENGTH (65*PIECES+PIECES-1)
+#define PIECESIZE 61
+#define TAPELENGTH (PIECESIZE*PIECES+PIECES-1)
 
 #define SHORTEST 0
 #define EMBEDDINGLENGTH 60 //(19+13) //(30-SHORTEST)
@@ -38,9 +39,8 @@ char random_character() {
   bit b4 = flip();
   bit b5 = flip();
   bit b6 = flip();
-  bit b7 = flip();
-  
-  return 64*b1 + 32*b2 + 16*b3 + 8*b4 + 4*b5 + 2*b6 + 1*b7;
+
+  return 32*b1 + 16*b2 + 8*b3 + 4*b4 + 2*b5 + 1*b6;
 }
 
   
@@ -65,7 +65,7 @@ str cstr([int n] , char[n] ch){
 // optionally skip over k occurrences
 int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
   assert n1 > 0 || n2 > 0;
-  for(int i=0; i<s.n; ++i){
+  for (int i=0; i<s.n; ++i){
     if(i+ n1 + n2 < s.n){
       if(s.ch[i::n1]==r1 && s.ch[(i+n1)::n2] == r2){
 	if(k==0){
@@ -121,7 +121,7 @@ str genExpr(str s, ref int mdl){
     spend(1);
     if(flip()){
       assert r1l > 0;
-      spend(r1l*5);
+      spend(r1l*6);
 
       assert r2[0] == 0 && r2[1] == 0 && r2[2] == 0;
       if (r1l < 3) assert r1[2] == 0;
@@ -184,8 +184,8 @@ str genExpr(str s, ref int mdl){
       if (effective_r2l < 2) assert r2[1] == 0;
       if (effective_r2l < 1) assert r2[0] == 0;
       
-      spend(effective_r1l*5);
-      spend(effective_r2l*5);
+      spend(effective_r1l*6);
+      spend(effective_r2l*6);
       
       return SubStr(s, p1, p2); 
     }
@@ -194,13 +194,13 @@ str genExpr(str s, ref int mdl){
   str out = term();
   spend(1);
   if (flip()) {
-    repeat (TAPELENGTH - 65*1 - 1) { assert flip() == 0; }
+    repeat (TAPELENGTH - PIECESIZE*1 - 1) { assert flip() == 0; }
     return out;
   }
   out = Concat(out,term());
   spend(1);
   if (flip()) {
-    repeat (TAPELENGTH - 65*2 - 2) { assert flip() == 0; }
+    repeat (TAPELENGTH - PIECESIZE*2 - 2) { assert flip() == 0; }
     return out;
   }
   out = Concat(out,term()); 

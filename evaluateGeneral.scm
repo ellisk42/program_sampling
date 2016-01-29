@@ -21,13 +21,30 @@
 (define (p1 x) (+ 1 x))
 (define (m1 x) (- x 1))
 
+(define (safe-append x y z)
+  (if (and (< (length x) 100)
+	   (< (length y) 100)
+	   (< (length z) 100))
+      (append x y z)
+      (throw 'deep)))
+
+(define spend (let ((invocations 0))
+		(lambda ()
+		  (set! invocations (+ 1 invocations))
+		  (if (= invocations 100)
+		      (throw 'deep)))))
+
 (define argument (call-with-input-string (caddr (command-line))
 					 read))
 (define body (call-with-input-string (cadr (command-line))
 				     read))
-(write (eval
-	`(letrec ((recur (lambda (a)
-			   ,body)))
-	   (recur ,argument))
-	(interaction-environment)))
+(write (catch 'deep
+	      (lambda () 
+		(eval
+		 `(letrec ((recur (lambda (a)
+				    (spend)
+				    ,body)))
+		    (recur ,argument))
+		 (interaction-environment)))
+	      (lambda (e) 'bottom)))
 (newline)

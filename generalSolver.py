@@ -1,7 +1,7 @@
 import os
 import random
 import sys
-from crypto import ProgramSolver
+from crypto import ProgramSolver,log2
 from subprocess import Popen, PIPE
 from itertools import permutations
 
@@ -131,15 +131,27 @@ class GeneralSolver(ProgramSolver):
         return p,m
 
 def marginal_sort(p,n):
+    multiset = {}
+    for pp in p:
+        multiset[pp] = 1 + multiset.get(pp,0)
+    
     l = list(range(1,n+1))
-    for lp in permutations(l):
-        print "sorting",lp
+    successes = 0
+    attempts = 50
+    for attempt in range(attempts):
+        lp = list(range(1,n+1))
+        random.shuffle(lp)
         lp = "(list %s)" % (str(list(lp)).replace(',',' ').replace(']','').replace('[',''))
-        for pp in p:
+        for pp in multiset:
+            w = multiset[pp]
+            pp = pp.replace('append','safe-append')
             po = Popen(["./evaluateGeneral.scm",pp.replace("\n"," "),lp], stdin=PIPE, stdout=PIPE, stderr=PIPE)
             stdout, stderr = po.communicate()
+            if "bottom" in stdout: continue
             print stdout
-        print " ==  ==  == "
+            output = map(int,stdout.replace("(","").replace(")","").split(" "))
+            if output == l: successes += w
+    return float(successes)/len(p)/attempts
 
 def outputTestCases(ts):
     with open("generalTests.h","w") as f:
@@ -186,6 +198,8 @@ if False:
             (append (recur (filter (gt (car a)) (cdr a)))
             (recur nil)
             (filter (lt (car a)) a)))''']
+    marginal_sort(samples,6)
+    assert False
     
 if len(sys.argv) == 1:
     x = GeneralSolver()
@@ -203,8 +217,24 @@ else:
         print "Sorting test cases:"
         outputTestCases(sortingTestCases(int(sys.argv[2])))
         os.system("cat generalTests.h")
-        os.system("sketch general.sk -n --be:outputSat")
-        print GeneralSolver().shortest_program()
+        os.system("sketch --fe-def EMBEDDINGLENGTH=64,MINIMUMLENGTH=23 general.sk --be:outputSat")
+        shortest,L = GeneralSolver().shortest_program()
+        os.system("sketch --fe-def EMBEDDINGLENGTH=1,MINIMUMLENGTH=%d general.sk --be:outputSat" % L)        
+        S = GeneralSolver(fakeAlpha = 0).model_count()
+        print "S =",S
+        a = min(int(L + log2(S)),64)
+        os.system("sketch --fe-def EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d general.sk --be:outputSat" % (a,L))
+        N = GeneralSolver().model_count()
+        print "N =",N
+        lowerBound = 2**(int(a)-L) + S - 1
+        print "Bounded by",lowerBound
+        print "Generating samples"
+        K = int(log2(lowerBound))
+        samples = sum([ GeneralSolver().enumerate_solutions(K)[1] for j in range(5) ],[])
+        print samples
+        print "Got",len(samples),"samples"
+        for l in range(1,15):
+            print marginal_sort(samples,l)
     else:
         random_projections = int(sys.argv[1])
         a = None
