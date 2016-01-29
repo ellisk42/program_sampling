@@ -63,11 +63,17 @@ class ProgramSolver():
 
         h2v = {} # hole 2 variable
         a2v = {} # auxiliary 2 variable
-                
+
+        startTime = time.time()
         self.maximum_variable = -1
+        readingComments = True
         with open(filename,'r') as f:
             for l in f:
-                if len(l) > len('c hole ') and l[:len('c hole ')] == 'c hole ':
+                if readingComments and 'p cnf' in l:
+                    readingComments = False
+                    self.maximum_variable = int(l.split(' ')[2])
+                    continue
+                if readingComments and len(l) > len('c hole ') and l[:len('c hole ')] == 'c hole ':
                     ms = re.findall(r'(\d+) \- (\d+)', l)[0]
                     if not (int(ms[0]) == int(ms[1])):
                         print l
@@ -78,14 +84,12 @@ class ProgramSolver():
                         h2v[int(n[1])] = ms
                     elif n[0] == '1': # auxiliary
                         a2v[int(n[1])] = ms
-                elif len(l) > 0 and not 'c' in l and not 'p' in l:
-                    vs = re.findall(r'(\-?\d+)',l)
+                elif len(l) > 0 and not ('c' == l[0]):
+                    vs = l.split() #re.findall(r'(\-?\d+)',l)
                     assert vs[-1] == '0'
                     clause = [int(v) for v in vs[:-1] ]
-                    self.maximum_variable = max([self.maximum_variable] +
-                                                [abs(v) for v in clause ])
                     self.s.add_clause(clause)
-        print "Loaded",filename," with",len(h2v),"holes and",len(a2v),"auxiliary variables"
+        print "Loaded",filename,"with",len(h2v),"holes and",len(a2v),"auxiliary variables in",(time.time()-startTime),"sec"
 
         # see if we are artificially decreasing alpha
         if fakeAlpha:

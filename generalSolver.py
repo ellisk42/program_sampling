@@ -155,7 +155,7 @@ if False:
             (filter (lt (car a)) a)))''']
     
 if len(sys.argv) == 1:
-    x = GeneralSolver()
+    x = GeneralSolver(filename = "sat_SYN_1.cnf")
     x.analyze_problem()
     print "total time = ",x.tt
 else:
