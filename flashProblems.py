@@ -23,18 +23,18 @@ flashProblems = [
  ["jim.james@har","jim james"],
  ["ruby.clint@g","ruby clint"],
  ["josh.smith@g","josh smith"]],
-# not working    
+# working    
 [["John DOE 3 Data [TS]865-000-0000 - - 453442-00 06-23-2009","865-000-0000"],
  ["A FF MARILYN 30'S 865-000-0030 - 4535871-00 07-07-2009","865-000-0030"],
  ["A GEDA-MARY 100MG 865-001-0020 - - 5941-00 06-23-2009","865-001-0020"],
  ["Sue DME 42 [ST]865-003-0100 -- 5555-99 08-22-2010","865-003-0100"],
  ["Edna DEECS [SSID] 865-001-0003 --23954-11 09-01-2010","865-001-0003"]],
-    # won't work with current implementation
-[["Company\\Code\\index.html","Company\\Code\\"],
- ["Company\\Docs\\Spec\\specs.doc","Company\\Docs\\Spec\\"],
- ["Work\\Presentations\\talk.ppt","Work\\Presentations\\"],
- ["Work\\Records\\2010\\January.dat","Work\\Records\\2010\\"],
- ["Proj\\Numerical\\Simulators\\NBody\\nbody.c","Proj\\Numerical\\Simulators\\NBody\\"]],
+# working
+[["Company\\\\Code\\\\index.html","Company\\\\Code\\\\"],
+ ["Company\\\\Docs\\\\Spec\\\\specs.doc","Company\\\\Docs\\\\Spec\\\\"],
+ ["Work\\\\Presentations\\\\talk.ppt","Work\\\\Presentations\\\\"],
+ ["Work\\\\Records\\\\2010\\\\January.dat","Work\\\\Records\\\\2010\\\\"],
+ ["Proj\\\\Numerical\\\\Simulators\\\\NBody\\\\nbody.c","Proj\\\\Numerical\\\\Simulators\\\\NBody\\\\"]],
     # an example of ambiguity
 [["hi","hi hi"],
  ["bye","hi bye"],
@@ -71,7 +71,7 @@ flashProblems = [
  ["herbert is <2: marion> morris","(2: marion)"],
  ["fransisco eduardo <1: apple trees>","(1: apple trees)"],
  ["country music <9: refrigerator>","(9: refrigerator)"]],
-    # not working
+    # working, but slow
 [["3113 Greenfield Ave., Los Angeles, CA 90034","Los Angeles"],
  ["43 St. Margaret St. #1, Dorchester, MA 02125","Dorchester"],
  ["43 Vassar St. 46-4053, Cambridge, MA 02139","Cambridge"],

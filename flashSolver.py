@@ -12,7 +12,7 @@ CHARACTERLENGTH = 6
 sketchCharacterMap = []
 def decode_character(c):
     if c < len(sketchCharacterMap):
-        return "'" + sketchCharacterMap[c] + "'"
+        return sketchCharacterMap[c]
     return c
 def character_sketch(c):
     global sketchCharacterMap
@@ -27,7 +27,7 @@ def character_sketch(c):
         elif '[+] Printed out' in l:
             readingCharacters = False
         elif readingCharacters:
-            sketchCharacterMap.append(l)
+            sketchCharacterMap.append(eval(l))
     print "character map",sketchCharacterMap
     
 

@@ -64,6 +64,9 @@ str cstr([int n] , char[n] ch){
 // returns  ^ position
 // optionally skip over k occurrences
 int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
+  int saved;
+  bit foundit = 0;
+  
   assert n1 > 0 || n2 > 0;
   for (int i=0; i<s.n; ++i){
     if(i+ n1 + n2 < s.n){
@@ -71,13 +74,17 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
 	if(k==0){
 	  return i+ n1;
 	}else{
-	  k--;
-	  //	  return Pos(new str(n = (s.n-(i+1)), ch = s.ch[i+1:s.n]), r1, r2, k-1);
+	  if (k < 3) k--;
+	  else { // k == 3
+	    foundit = 1;
+	    saved = i + n1;
+	  }
 	}
       }
     }
   }
-  assert 0;
+  assert foundit;
+  return saved;
 }
 
 str SubStr(str s, int p1, int p2){
