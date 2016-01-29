@@ -175,8 +175,8 @@ class ProgramSolver():
             for v in range(len(result[1])):
                 if v in self.variable2tape:
                     bindings[v] = result[1][v]
-            for v in self.auxiliary2variable:
-                print (1 if result[1][v] else 0),
+#            for v in self.auxiliary2variable:
+#                print (1 if result[1][v] else 0),
             if self.verbose: print "Satisfiable."
             return bindings
         else:

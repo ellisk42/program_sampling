@@ -146,8 +146,7 @@ def outputTestCases(ts):
         for t in range(len(ts)):
             i = ",".join(map(str,ts[t][0]))
             o = ",".join(map(str,ts[t][1]))
-            lastOne = 1 if t == len(ts) - 1 else 0
-            l = "test_case({%s},{%s},%d);\n" % (i,o,lastOne)
+            l = "test_case({%s},{%s});\n" % (i,o)
             f.write(l)
 
 def sortingTestCases(n):
@@ -170,7 +169,6 @@ def sortingTestCases(n):
             if str(t) in [str(x) for x in ts ]:
                 continue
             ts += [t]
-    ts.sort(key = lambda t: len(t[0]))
     return ts
 
 
