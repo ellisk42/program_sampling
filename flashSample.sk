@@ -1,4 +1,4 @@
-pragma options "--slv-ntimes 100000";
+//pragma options "--slv-ntimes 100000";
 
 #define PIECES 3
 #define PIECESIZE 61
@@ -121,7 +121,7 @@ str genExpr(str s, ref int mdl){
     spend(1);
     if(flip()){
       assert r1l > 0;
-      spend(r1l*6);
+      spend(r1l*6 + 2);
 
       assert r2[0] == 0 && r2[1] == 0 && r2[2] == 0;
       if (r1l < 3) assert r1[2] == 0;

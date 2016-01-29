@@ -23,15 +23,12 @@ def character_sketch(c):
     for l in output.split("\n"):
         print l
         if 'Printing out characters' in l:
-            print "Starting to read characters"
             readingCharacters = True
         elif '[+] Printed out' in l:
-            print "No longer reading characters"
             readingCharacters = False
         elif readingCharacters:
-            print "Red character",l
             sketchCharacterMap.append(l)
-    print sketchCharacterMap
+    print "character map",sketchCharacterMap
     
 
 def parse_tape(tape):

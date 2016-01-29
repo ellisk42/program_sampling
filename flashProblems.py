@@ -13,10 +13,10 @@ flashProblems = [
  ["chris", 	"chris."]],
     # working
 [["don steve g.","dsg"],
- ["Kev Jason Mat","KJM"],
+ ["Kevin Jason Mat","KJM"],
  ["Jose Larry S","JLS"],
- ["Art Joe Juan","AJJ"],
- ["Ray F. Timothy","RFT"]],
+ ["Arthur Joe Juan","AJJ"],
+ ["Raymond F. Timothy","RFT"]],
     # working
 [["brent.hard@ho","brent hard"],
  ["matt.ra@yaho","matt ra"],
