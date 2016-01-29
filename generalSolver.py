@@ -1,6 +1,7 @@
+import os
 import random
 import sys
-from crypto import ProgramSolver
+from crypto import ProgramSolver,log2
 from subprocess import Popen, PIPE
 from itertools import permutations
 
@@ -61,15 +62,15 @@ def array_expression(d):
     record_production("array",d,len(choiceMask+lp_m+z_m+g_m))
     shallow = False
 
-    if (shallow and c1 and c2) or ((not shallow) and c1 and c2 and c3):
+    if (c1 and c2 and c3):
         return "nil",choiceMask+blank(lp_m)+blank(z_m)+blank(g_m)
-    if (shallow and c1 and (not c2)) or ((not shallow) and c1 and c2 and (not c3)):
+    if (c1 and c2 and (not c3)):
         return "a",choiceMask+blank(lp_m)+blank(z_m)+blank(g_m)
-    if (shallow and (not c1) and c2) or ((not shallow) and c1 and (not c2) and c3):
+    if (c1 and (not c2) and c3):
         return ("(cdr %s)" % lp), choiceMask+lp_m+blank(z_m)+blank(g_m)
-    if (shallow and (not c1) and (not c2)) or ((not shallow) and c1 and (not c2) and (not c3)):
+    if (c1 and (not c2) and (not c3)):
         return ("(list %s)" % z), choiceMask+blank(lp_m)+z_m+blank(g_m)
-    if (not shallow) and (not c1) and c2 and c3:
+    if (not c1) and c2 and c3:
         return ("(filter %s %s)" % (g,lp)), choiceMask+lp_m+z_m+g_m
 
     return "FAILURE_A",[0]*(len(choiceMask+lp_m+z_m+g_m))
@@ -130,16 +131,60 @@ class GeneralSolver(ProgramSolver):
         return p,m
 
 def marginal_sort(p,n):
+    multiset = {}
+    for pp in p:
+        multiset[pp] = 1 + multiset.get(pp,0)
+    
     l = list(range(1,n+1))
-    for lp in permutations(l):
-        print "sorting",lp
+    successes = 0
+    attempts = 50
+    for attempt in range(attempts):
+        lp = list(range(1,n+1))
+        random.shuffle(lp)
         lp = "(list %s)" % (str(list(lp)).replace(',',' ').replace(']','').replace('[',''))
-        for pp in p:
+        for pp in multiset:
+            w = multiset[pp]
+            pp = pp.replace('append','safe-append')
             po = Popen(["./evaluateGeneral.scm",pp.replace("\n"," "),lp], stdin=PIPE, stdout=PIPE, stderr=PIPE)
             stdout, stderr = po.communicate()
+            if "bottom" in stdout: continue
             print stdout
-        print " ==  ==  == "
+            output = map(int,stdout.replace("(","").replace(")","").split(" "))
+            if output == l: successes += w
+    return float(successes)/len(p)/attempts
 
+def outputTestCases(ts):
+    with open("generalTests.h","w") as f:
+        for t in range(len(ts)):
+            i = ",".join(map(str,ts[t][0]))
+            o = ",".join(map(str,ts[t][1]))
+            l = "test_case({%s},{%s});\n" % (i,o)
+            f.write(l)
+
+def sortingTestCases(n):
+    ts = []
+    while len(ts) < n:
+        p = random.random()
+        if p < 0.6:
+            l = 3
+        elif p < 0.8:
+            l = 2
+        elif p < 0.9:
+            l = 1
+        elif p < 1.0:
+            l = 0
+            
+        i = [ random.randint(0,7) for j in range(l) ]
+        if l == len(list(set(i))):
+            o = sorted(i)
+            t = (i,o)
+            if str(t) in [str(x) for x in ts ]:
+                continue
+            ts += [t]
+    return ts
+
+
+            
 
 if False:
     samples = [ '(if ((eq (length a)) 0)    nil    (append (filter (eq (p1 0)) (list 0)) (recur (filter (gt (car a)) (cdr a)))            (filter (lt (car a)) a)))',
@@ -153,19 +198,43 @@ if False:
             (append (recur (filter (gt (car a)) (cdr a)))
             (recur nil)
             (filter (lt (car a)) a)))''']
+    marginal_sort(samples,6)
+    assert False
     
 if len(sys.argv) == 1:
     x = GeneralSolver(filename = "sat_SYN_1.cnf")
     x.analyze_problem()
     print "total time = ",x.tt
 else:
-    if ',' in sys.argv[1]:
-        input_tape = "[%s]" % sys.argv[1]
+    if 'parse' in sys.argv[1]:
+        input_tape = "[%s]" % sys.argv[2]
         p,m = parse_tape([ (x == 1) for x in eval(input_tape) ])
         print p
         print m
         print len(m)
         print production_lengths
+    elif 'sort' == sys.argv[1]:
+        print "Sorting test cases:"
+        outputTestCases(sortingTestCases(int(sys.argv[2])))
+        os.system("cat generalTests.h")
+        os.system("sketch --fe-def EMBEDDINGLENGTH=64,MINIMUMLENGTH=23 general.sk --be:outputSat")
+        shortest,L = GeneralSolver().shortest_program()
+        os.system("sketch --fe-def EMBEDDINGLENGTH=1,MINIMUMLENGTH=%d general.sk --be:outputSat" % L)        
+        S = GeneralSolver(fakeAlpha = 0).model_count()
+        print "S =",S
+        a = min(int(L + log2(S)),64)
+        os.system("sketch --fe-def EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d general.sk --be:outputSat" % (a,L))
+        N = GeneralSolver().model_count()
+        print "N =",N
+        lowerBound = 2**(int(a)-L) + S - 1
+        print "Bounded by",lowerBound
+        print "Generating samples"
+        K = int(log2(lowerBound))
+        samples = sum([ GeneralSolver().enumerate_solutions(K)[1] for j in range(5) ],[])
+        print samples
+        print "Got",len(samples),"samples"
+        for l in range(1,15):
+            print marginal_sort(samples,l)
     else:
         random_projections = int(sys.argv[1])
         a = None

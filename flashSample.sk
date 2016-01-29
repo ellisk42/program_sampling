@@ -1,10 +1,11 @@
-pragma options "--slv-ntimes 100000 --bnd-unroll-amnt 16 --bnd-cbits 4";
+//pragma options "--slv-ntimes 100000";
 
 #define PIECES 3
-#define TAPELENGTH (53*PIECES+PIECES-1)
+#define PIECESIZE 61
+#define TAPELENGTH (PIECESIZE*PIECES+PIECES-1)
 
 #define SHORTEST 0
-#define EMBEDDINGLENGTH 1 //(19+13) //(30-SHORTEST)
+#define EMBEDDINGLENGTH 60 //(19+13) //(30-SHORTEST)
 
 bit[TAPELENGTH] tape = ??;
 bit[EMBEDDINGLENGTH] auxiliary = ??;
@@ -37,8 +38,9 @@ char random_character() {
   bit b3 = flip();
   bit b4 = flip();
   bit b5 = flip();
-  
-  return 16*b1 + 8*b2 + 4*b3 + 2*b4 + 1*b5;
+  bit b6 = flip();
+
+  return 32*b1 + 16*b2 + 8*b3 + 4*b4 + 2*b5 + 1*b6;
 }
 
   
@@ -62,22 +64,31 @@ str cstr([int n] , char[n] ch){
 // returns  ^ position
 // optionally skip over k occurrences
 int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
+  int saved;
+  bit foundit = 0;
+  
   assert n1 > 0 || n2 > 0;
-  for(int i=0; i<s.n; ++i){
+  for (int i=0; i<s.n; ++i){
     if(i+ n1 + n2 < s.n){
       if(s.ch[i::n1]==r1 && s.ch[(i+n1)::n2] == r2){
 	if(k==0){
 	  return i+ n1;
 	}else{
-	  return Pos(new str(n = (s.n-(i+1)), ch = s.ch[i+1:s.n]), r1, r2, k-1);
+	  if (k < 3) k--;
+	  else { // k == 3
+	    foundit = 1;
+	    saved = i + n1;
+	  }
 	}
       }
     }
   }
-  assert 0;
+  assert foundit;
+  return saved;
 }
 
 str SubStr(str s, int p1, int p2){
+  if (p2 == p1) p2 = p1 + 1;
   assert p2 > p1;
   return new str(n=p2-p1, ch=s.ch[p1:p2]);
 }
@@ -117,7 +128,7 @@ str genExpr(str s, ref int mdl){
     spend(1);
     if(flip()){
       assert r1l > 0;
-      spend(r1l*5);
+      spend(r1l*6 + 2);
 
       assert r2[0] == 0 && r2[1] == 0 && r2[2] == 0;
       if (r1l < 3) assert r1[2] == 0;
@@ -144,6 +155,9 @@ str genExpr(str s, ref int mdl){
 	assert r1l == 0 && r2l == 0 && p1_occurrence == 0;
 	//spend(4);
 	p1 = p1_k;
+	// if the position is greater than 7,
+	// then the high bit is one
+	if (p1 > 7) p1 = s.n - p1 + 8;
       } else {
 	spend(2);
 	//spend(2+2+2); // r1l,r2l,p1_occurrence
@@ -158,6 +172,7 @@ str genExpr(str s, ref int mdl){
 	//spend(4);
 	assert r1l_p == 0 && r2l_p == 0 && p2_occurrence == 0;
 	p2 = p2_k;
+	if (p2 > 7) p2 = s.n - p2 + 8;
       } else {
 	//spend(6);
 	spend(2);
@@ -176,8 +191,8 @@ str genExpr(str s, ref int mdl){
       if (effective_r2l < 2) assert r2[1] == 0;
       if (effective_r2l < 1) assert r2[0] == 0;
       
-      spend(effective_r1l*5);
-      spend(effective_r2l*5);
+      spend(effective_r1l*6);
+      spend(effective_r2l*6);
       
       return SubStr(s, p1, p2); 
     }
@@ -186,13 +201,13 @@ str genExpr(str s, ref int mdl){
   str out = term();
   spend(1);
   if (flip()) {
-    repeat (TAPELENGTH - 53*1 - 1) { assert flip() == 0; }
+    repeat (TAPELENGTH - PIECESIZE*1 - 1) { assert flip() == 0; }
     return out;
   }
   out = Concat(out,term());
   spend(1);
   if (flip()) {
-    repeat (TAPELENGTH - 53*2 - 2) { assert flip() == 0; }
+    repeat (TAPELENGTH - PIECESIZE*2 - 2) { assert flip() == 0; }
     return out;
   }
   out = Concat(out,term()); 
@@ -223,65 +238,12 @@ bit eq(str s1, str s2){
   return 1;
 }
 
-
-// First demo: prior probability of the program is ~7*10^13, enumeration or sampling are infeasible
-/*harness void main0(){
-  assert eq(cstr("Hi Eyal!"), flashToy(cstr("Eyal Dechter")) );    
-  // assert eq(cstr("Hi Rishabh!"), flashToy(cstr("Rishabh Singh")) );
-}
-*/
-
-// Second demo: Can sample from extremely large program spaces
-harness void main1(){    
-  assert eq(cstr("Tom"), flashToy(cstr("Tom and Jerry")) );
-  assert eq(cstr("Jack"), flashToy(cstr("Jack and Jill")) );
+void testCase([int n,int m],char [n] i, char[m] o){
+  assert eq(cstr(o),flashToy(cstr(i)));
 }
 
 
-
-// Third demo: Can handle ambiguity.
-/*harness void main1(){    
-  assert eq(cstr("J"), flashToy(cstr("Jack and Jill")) );
-  //assert eq(cstr("T"), flashToy(cstr("Tom and Jerry")) );
-}
-*/
-
-
-
-/*
-  harness void foo() {
-  char f = ??;
-  assert f == random_number();
-  }
-  void check(char[2] f,int x) {
-  assert f[1] == f[0];
-  assert f[0] == x;
-  }
-*/
-
-/*
-char characterIdentity(char x) { return x; }
-int numberIdentity(int x) {
-  int c = ??;
-  assert c < 3;
-  assert c > 0;
-  return x+c;
-}
-  
-harness void getCharacters(){
-  char[30] dictionary = ??;
-
-  for (int j = 0; j < 14; j++) {
-    assert characterIdentity(dictionary[j]) == numberIdentity(j);
-  }
+harness void main() {
+#include "flashProblems.h"
 }
 
-  
-  
-*/
-/*
-harness void test(){
-  str s = cstr("testing");
-  assert s.ch[0:2] == {'t','e'};
-}
-*/
