@@ -148,7 +148,6 @@ def marginal_sort(p,n):
             po = Popen(["./evaluateGeneral.scm",pp.replace("\n"," "),lp], stdin=PIPE, stdout=PIPE, stderr=PIPE)
             stdout, stderr = po.communicate()
             if "bottom" in stdout: continue
-            print stdout
             output = map(int,stdout.replace("(","").replace(")","").split(" "))
             if output == l: successes += w
     return float(successes)/len(p)/attempts
@@ -200,7 +199,12 @@ if False:
             (filter (lt (car a)) a)))''']
     marginal_sort(samples,6)
     assert False
-    
+
+
+random.seed(os.urandom(10))
+dumpPrefix = str(random.random())[2:]
+print "Dumping to prefix",dumpPrefix
+
 if len(sys.argv) == 1:
     x = GeneralSolver(filename = "sat_SYN_1.cnf")
     x.analyze_problem()
@@ -217,24 +221,26 @@ else:
         print "Sorting test cases:"
         outputTestCases(sortingTestCases(int(sys.argv[2])))
         os.system("cat generalTests.h")
-        os.system("sketch --fe-def EMBEDDINGLENGTH=64,MINIMUMLENGTH=23 general.sk --be:outputSat")
-        shortest,L = GeneralSolver().shortest_program()
-        os.system("sketch --fe-def EMBEDDINGLENGTH=1,MINIMUMLENGTH=%d general.sk --be:outputSat" % L)        
-        S = GeneralSolver(fakeAlpha = 0).model_count()
+        os.system("sketch --fe-def EMBEDDINGLENGTH=64,MINIMUMLENGTH=23 general.sk --beopt:outputSatNamed %s" % dumpPrefix)
+        shortest,L = GeneralSolver(filename = dumpPrefix + "_1.cnf").shortest_program()
+        os.system("sketch --fe-def EMBEDDINGLENGTH=1,MINIMUMLENGTH=%d general.sk --be:outputSatNamed %s" % (L,dumpPrefix))        
+        S = GeneralSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).model_count()
         print "S =",S
         a = min(int(L + log2(S)),64)
-        os.system("sketch --fe-def EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d general.sk --be:outputSat" % (a,L))
-        N = GeneralSolver().model_count()
+        os.system("sketch --fe-def EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d general.sk --be:outputSatNamed %s" % (a,L,dumpPrefix))
+        N = GeneralSolver(filename = dumpPrefix + "_1.cnf").model_count()
         print "N =",N
         lowerBound = 2**(int(a)-L) + S - 1
         print "Bounded by",lowerBound
         print "Generating samples"
         K = int(log2(lowerBound))
-        samples = sum([ GeneralSolver().enumerate_solutions(K)[1] for j in range(5) ],[])
+        samples = sum([ GeneralSolver(filename = dumpPrefix + "_1.cnf").enumerate_solutions(K)[1]
+                        for j in range(5) ],[])
         print samples
         print "Got",len(samples),"samples"
         for l in range(1,15):
             print marginal_sort(samples,l)
+        os.system("rm %s_1.cnf" % dumpPrefix)
     else:
         random_projections = int(sys.argv[1])
         a = None
