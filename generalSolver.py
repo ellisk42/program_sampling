@@ -223,11 +223,11 @@ else:
         os.system("cat generalTests.h")
         os.system("sketch --fe-def EMBEDDINGLENGTH=64,MINIMUMLENGTH=23 general.sk --beopt:outputSatNamed %s" % dumpPrefix)
         shortest,L = GeneralSolver(filename = dumpPrefix + "_1.cnf").shortest_program()
-        os.system("sketch --fe-def EMBEDDINGLENGTH=1,MINIMUMLENGTH=%d general.sk --be:outputSatNamed %s" % (L,dumpPrefix))        
+        os.system("sketch --fe-def EMBEDDINGLENGTH=1,MINIMUMLENGTH=%d general.sk --beopt:outputSatNamed %s" % (L,dumpPrefix))
         S = GeneralSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).model_count()
         print "S =",S
         a = min(int(L + log2(S)),64)
-        os.system("sketch --fe-def EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d general.sk --be:outputSatNamed %s" % (a,L,dumpPrefix))
+        os.system("sketch --fe-def EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d general.sk --beopt:outputSatNamed %s" % (a,L,dumpPrefix))
         N = GeneralSolver(filename = dumpPrefix + "_1.cnf").model_count()
         print "N =",N
         lowerBound = 2**(int(a)-L) + S - 1
