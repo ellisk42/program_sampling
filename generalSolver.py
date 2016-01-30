@@ -134,6 +134,7 @@ def marginal_sort(p,n):
     multiset = {}
     for pp in p:
         multiset[pp] = 1 + multiset.get(pp,0)
+    print len(multiset),"types of programs"
     
     l = list(range(1,n+1))
     successes = 0
@@ -144,21 +145,24 @@ def marginal_sort(p,n):
         lp = "(list %s)" % (str(list(lp)).replace(',',' ').replace(']','').replace('[',''))
         for pp in multiset:
             w = multiset[pp]
-            pp = pp.replace('append','safe-append')
-            po = Popen(["./evaluateGeneral.scm",pp.replace("\n"," "),lp], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            pp = pp.replace('append','safe-append').replace("\n"," ")
+            po = Popen(["./evaluateGeneral.scm",pp,lp], stdin=PIPE, stdout=PIPE, stderr=PIPE)
             stdout, stderr = po.communicate()
-            if "bottom" in stdout: continue
+            if "bottom" in stdout or stderr != "": continue
             output = map(int,stdout.replace("(","").replace(")","").split(" "))
             if output == l: successes += w
     return float(successes)/len(p)/attempts
 
 def outputTestCases(ts):
-    with open("generalTests.h","w") as f:
+    global dumpPrefix
+    with open(dumpPrefix+"/generalTests.sk","w") as f:
+        f.write("include \"general.sk\";\nharness void main() { enforce(); \n")
         for t in range(len(ts)):
             i = ",".join(map(str,ts[t][0]))
             o = ",".join(map(str,ts[t][1]))
             l = "test_case({%s},{%s});\n" % (i,o)
             f.write(l)
+        f.write("}")
 
 def sortingTestCases(n):
     ts = []
@@ -186,18 +190,8 @@ def sortingTestCases(n):
             
 
 if False:
-    samples = [ '(if ((eq (length a)) 0)    nil    (append (filter (eq (p1 0)) (list 0)) (recur (filter (gt (car a)) (cdr a)))            (filter (lt (car a)) a)))',
-                '''(if ((eq 0) (length a))
-            (filter (gt 0) a)
-            (append (recur nil)
-            (recur (filter (gt (car a)) (cdr a)))
-            (filter (lt (car a)) (filter (lt 0) a))))''',
-                '''(if ((gt (p1 0)) (length a))
-            a
-            (append (recur (filter (gt (car a)) (cdr a)))
-            (recur nil)
-            (filter (lt (car a)) a)))''']
-    marginal_sort(samples,6)
+    samples = []
+    marginal_sort(samples,2)
     assert False
 
 
@@ -219,15 +213,21 @@ else:
         print production_lengths
     elif 'sort' == sys.argv[1]:
         print "Sorting test cases:"
+        os.system("mkdir %s" % dumpPrefix)
         outputTestCases(sortingTestCases(int(sys.argv[2])))
-        os.system("cat generalTests.h")
-        os.system("sketch --fe-def EMBEDDINGLENGTH=64,MINIMUMLENGTH=23 general.sk --beopt:outputSatNamed %s" % dumpPrefix)
+        os.system("cat %s/generalTests.sk" % dumpPrefix)
+        def generateFormula(el,ml):
+            command = "sketch %s/generalTests.sk" % dumpPrefix
+            command += " --fe-def EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d" % (el,ml)
+            command += " --beopt:outputSatNamed %s" % dumpPrefix
+            os.system(command)
+        generateFormula(64,23)
         shortest,L = GeneralSolver(filename = dumpPrefix + "_1.cnf").shortest_program()
-        os.system("sketch --fe-def EMBEDDINGLENGTH=1,MINIMUMLENGTH=%d general.sk --beopt:outputSatNamed %s" % (L,dumpPrefix))
+        generateFormula(1,L)
         S = GeneralSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).model_count()
         print "S =",S
         a = min(int(L + log2(S)),64)
-        os.system("sketch --fe-def EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d general.sk --beopt:outputSatNamed %s" % (a,L,dumpPrefix))
+        generateFormula(a,L)
         N = GeneralSolver(filename = dumpPrefix + "_1.cnf").model_count()
         print "N =",N
         lowerBound = 2**(int(a)-L) + S - 1
@@ -241,6 +241,7 @@ else:
         for l in range(1,15):
             print marginal_sort(samples,l)
         os.system("rm %s_1.cnf" % dumpPrefix)
+        os.system("rm -r %s" % dumpPrefix)
     else:
         random_projections = int(sys.argv[1])
         a = None

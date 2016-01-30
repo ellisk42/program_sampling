@@ -424,8 +424,8 @@ void test_case([int n],int [n] a, int [n] b) {
   assert o.A[0::n] == b;
 }
 
-harness void main() {
-#include "generalTests.h"
+void enforce() {
+  //  include "generalTests.h";
 
   int mdl = recursive_length();
   assert mdl > MINIMUMLENGTH-1;
