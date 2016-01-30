@@ -56,7 +56,7 @@ def exact_survival_probability(h,k):
         
         
 class ProgramSolver():
-    def __init__(self,fakeAlpha = None,filename = "sat_SYN_PREVIEW_1.cnf"):
+    def __init__(self,fakeAlpha = None,filename = "sat_1.cnf"):
         self.verbose = True
         self.s = Solver(threads = 1,verbose = 0)
         self.tt = 0

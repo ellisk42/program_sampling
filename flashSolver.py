@@ -3,6 +3,7 @@ import os
 import sys
 from crypto import ProgramSolver
 
+from interpretFlash import interpret
 from flashProblems import *
 
 PIECES = 3
@@ -91,18 +92,18 @@ def parse_tape(tape):
             bit_mask += [1]*2 # r1l
             bit_mask += [0]*(2+2+2+ 4+4+ 1+1+ 2+2)
             bit_mask += [1] # return_constant
-            return ("Const%s" % [ decode_character(c) for c in r1[0:r1l] ]), bit_mask
+            return ("Const(%s)" % [ decode_character(c) for c in r1[0:r1l] ]), bit_mask
         if k1:
             p1 = str(p1_k)
         else:
-            p1 = "pos(%s,%s,%s)" % ([ decode_character(c) for c in r1[0:r1l] ],
+            p1 = "Pos(%s,%s,%s)" % ([ decode_character(c) for c in r1[0:r1l] ],
                                     [ decode_character(c) for c in r2[0:r2l] ],
                                     p1_occurrence)
 
         if k2:
             p2 = str(p2_k)
         else:
-            p2 = "pos(%s,%s,%s)" % ([ decode_character(c) for c in r1[0:r1l_p] ],
+            p2 = "Pos(%s,%s,%s)" % ([ decode_character(c) for c in r1[0:r1l_p] ],
                                     [ decode_character(c) for c in r2[0:r2l_p] ],
                                     p2_occurrence)
 
@@ -126,12 +127,13 @@ def parse_tape(tape):
         total_program.append(p)
         total_mask += m
 
+        composite = reduce(lambda a,x: "Append(%s,%s)" % (a,x),total_program)
         if j == PIECES-1: # last piece
-            return '++'.join(total_program), total_mask + [0]*(len(tape) - len(total_mask))
-        
+            return composite, total_mask + [0]*(len(tape) - len(total_mask))
+        #'++'.join(total_program)
         total_mask += [1]
         if flip():
-            return '++'.join(total_program), total_mask + [0]*(len(tape) - len(total_mask))
+            return composite, total_mask + [0]*(len(tape) - len(total_mask))
 
 
 def createTrainingSet(problem,examples):
@@ -174,7 +176,10 @@ if len(sys.argv) > 1:
         print maximumLength
         character_sketch("sketch flashSample.sk --fe-custom-codegen customcodegen.jar --be:outputSat --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength))
 #        print FlashSolver(fakeAlpha = 0).model_count()
-        print FlashSolver().shortest_program()
+        p,_ = FlashSolver().shortest_program()
+        for [i,o] in flashProblems[problem - 1]:
+            prediction = interpret(p,i)
+            print i,"\t",prediction,"\t",o,"\t",prediction == o
     else:
         random_projections = int(sys.argv[1])
         a = None

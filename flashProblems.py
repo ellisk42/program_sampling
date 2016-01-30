@@ -55,8 +55,8 @@ flashProblems = [
  ["5/5/1987","87"]],
     # working
 [["Eyal Dechter","Dechter, Eyal"],
- ["Joshua Tenenbaum","Tenenbaum, Joshua"],
- ["Stephen Muggleton","Muggleton, Stephen"],
+ ["Joshua B. Tenenbaum","Tenenbaum, Joshua B."],
+ ["Stephen H. Muggleton","Muggleton, Stephen H."],
  ["Kevin Ellis","Ellis, Kevin"],
  ["Dianhuan Lin","Lin, Dianhuan"]],
     # working
