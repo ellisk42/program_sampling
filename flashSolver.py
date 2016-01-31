@@ -1,7 +1,8 @@
+import math
 from subprocess import Popen, PIPE
 import os
 import sys
-from crypto import ProgramSolver
+from crypto import ProgramSolver,log2
 
 from interpretFlash import interpret
 from flashProblems import *
@@ -22,7 +23,6 @@ def character_sketch(c):
     print errors
     readingCharacters = False
     for l in output.split("\n"):
-        print l
         if 'Printing out characters' in l:
             readingCharacters = True
         elif '[+] Printed out' in l:
@@ -160,6 +160,7 @@ if False:
 class FlashSolver(ProgramSolver):
     def parse_tape(self,t):
         p,m = parse_tape(t)
+        assert len(m) == len(self.tape2variable)
         return p,m
 
 if len(sys.argv) > 1:
@@ -174,12 +175,49 @@ if len(sys.argv) > 1:
         examples = map(int,sys.argv[2].split(','))
         maximumLength = createTrainingSet(problem,examples)
         print maximumLength
-        character_sketch("sketch flashSample.sk --fe-custom-codegen customcodegen.jar --be:outputSat --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength))
-#        print FlashSolver(fakeAlpha = 0).model_count()
-        p,_ = FlashSolver().shortest_program()
-        for [i,o] in flashProblems[problem - 1]:
+
+        def generateFormula(aux, shortest):
+            command = "sketch flashSample.sk --fe-custom-codegen customcodegen.jar --be:outputSat"
+            command += " --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength)
+            command += " --fe-def SHORTEST=%d,EMBEDDINGLENGTH=%d" % (shortest,aux)
+            character_sketch(command)
+
+        generateFormula(60,10)
+        p,mdl = FlashSolver().shortest_program()
+        print "MDL predictions:"
+        for [i,o] in []: #flashProblems[problem - 1]:
             prediction = interpret(p,i)
             print i,"\t",prediction,"\t",o,"\t",prediction == o
+
+        generateFormula(1,mdl)
+        S = FlashSolver(fakeAlpha = 0).model_count()
+        print "S = %d" % S
+
+        a = int(mdl + log2(S))
+        print "Starting value of Alpha = ",a
+        generateFormula(a,mdl)
+
+        N = FlashSolver().model_count()
+        print "N = %d" % N
+        print "Lower bound:", (S - 1 + 2**(a - mdl))
+        K = int(math.ceil(log2(S - 1 + 2**(a - mdl))))
+        print "Using K =",K
+
+        samples = sum([ FlashSolver().enumerate_solutions(K)[1]
+                        for j in range(20) ],[])
+        print "Got %d samples" % len(samples)
+        
+        for sample in list(set(samples)):
+            print sample
+            correct = 0
+            for [i,o] in flashProblems[problem - 1]:
+                prediction = interpret(sample,i)
+                print i,"\t",prediction,"\t",o,"\t",prediction == o
+                if prediction == o: correct += 1
+            print "%d/5 correct\n" % correct
+
+            
+
     else:
         random_projections = int(sys.argv[1])
         a = None

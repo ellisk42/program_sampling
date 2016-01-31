@@ -149,8 +149,11 @@ def marginal_sort(p,n):
             po = Popen(["./evaluateGeneral.scm",pp,lp], stdin=PIPE, stdout=PIPE, stderr=PIPE)
             stdout, stderr = po.communicate()
             if "bottom" in stdout or stderr != "": continue
-            output = map(int,stdout.replace("(","").replace(")","").split(" "))
-            if output == l: successes += w
+            try:
+                output = map(int,stdout.replace("(","").replace(")","").split(" "))
+                if output == l: successes += w
+            except:
+                continue
     return float(successes)/len(p)/attempts
 
 def outputTestCases(ts):

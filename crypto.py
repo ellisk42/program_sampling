@@ -135,11 +135,16 @@ class ProgramSolver():
         k = 0
         while True:
             bindings = self.try_solving()
-            if not bindings: break
+            if not bindings:
+                print "Counted models in time",self.tt
+                return 2**k
             k += 1
             self.random_projection()
-        print "Counted models in time",self.tt
-        return 2**k
+
+            if k > 24: # arbitrary bound
+                solutions = self.enumerate_solutions(subsamples = 0)[0]
+                S = sum([2**solutions[p][0] for p in solutions ])
+                return S*2**k
 
     def shortest_program(self):
         while True:
@@ -194,7 +199,7 @@ class ProgramSolver():
         p,bit_mask = self.parse_tape(tape)
         clause = []
         for j in range(len(tape)):
-            if bit_mask[j] == 1 or True:
+            if bit_mask[j] == 1:
                 # jth tape position
                 v = self.tape2variable[j]
                 if tape[j] == 1: v = -v
@@ -234,7 +239,7 @@ class ProgramSolver():
                 print "Sample rejected"
 
 
-    def enumerate_solutions(self,subspace_dimension = 0):
+    def enumerate_solutions(self,subspace_dimension = 0,subsamples = 10):
         print "K =",subspace_dimension
         for j in range(subspace_dimension):
             self.random_projection()
@@ -247,13 +252,18 @@ class ProgramSolver():
             program,mask = self.parse_tape(tp)
             description_length = sum(mask)
             if program in solutions:
-                print "DUPLICATEPROGRAM",tp
+                print "DUPLICATEPROGRAM",program
+                print "TAPES:"
+                print tp
+                print solutions[program][2]
+                print "MASKS:"
                 print mask
-                print program
+                print self.parse_tape(solutions[program][2])[1]
+                print "Other program",self.parse_tape(solutions[program][2])[0]
                 assert False
 
             logNumberSolutions = self.satisfying_auxiliaries(description_length)
-            solutions[program] = (logNumberSolutions, description_length)
+            solutions[program] = (logNumberSolutions, description_length, tp)
 
             if self.verbose:
                 print "Enumerated program", program, "with |x| =", description_length, "and",logNumberSolutions,"log satisfying auxiliary variables"
@@ -262,23 +272,27 @@ class ProgramSolver():
             self.s.add_clause(self.uniqueness_clause(tp))
             result = self.try_solving()
 
+        if len(solutions) == 0:
+            print "No satisfying solutions"
+            return [],[]
+        
         # summary statistics
         logZ = float("-inf")
-        for _,mdl in solutions.values(): logZ = lse2(logZ,-mdl)
-        shortest = min([mdl for _,mdl in solutions.values() ])
+        for _,mdl,_2 in solutions.values(): logZ = lse2(logZ,-mdl)
+        shortest = min([mdl for _,mdl,_2 in solutions.values() ])
         print "|s| =",len(solutions), "\tlog_2(z) =",logZ, "\t1/p =", 2**(-logZ), "\tshortest =",shortest,"bits"
 
         # How many solver queries did we save by the rank trick?
         implicitSolutionsEnumerated = sum([ 2**logNumberSolutions
-                                            for p,(logNumberSolutions,mdl) in solutions.iteritems() ])
+                                            for p,(logNumberSolutions,mdl,_) in solutions.iteritems() ])
         print "Implicitly enumerated %d satisfying solutions in %f seconds" % (implicitSolutionsEnumerated,self.tt)
 
         # sample a solution
-        logDistribution = [ (logNumberSolutions, (p,mdl)) for p,(logNumberSolutions,mdl) in solutions.iteritems() ]
+        logDistribution = [ (logNumberSolutions, (p,mdl)) for p,(logNumberSolutions,mdl,_) in solutions.iteritems() ]
         acceptedSamples = []
         
         print "Samples:"
-        for j in range(10):
+        for j in range(subsamples):
             p,mdl = sample_log2_distribution(logDistribution)
             print p,mdl
             if mdl > self.alpha:

@@ -1,11 +1,6 @@
-//pragma options "--slv-ntimes 100000";
-
 #define PIECES 3
-#define PIECESIZE 61
+#define PIECESIZE 59
 #define TAPELENGTH (PIECESIZE*PIECES+PIECES-1)
-
-#define SHORTEST 0
-#define EMBEDDINGLENGTH 60 //(19+13) //(30-SHORTEST)
 
 bit[TAPELENGTH] tape = ??;
 bit[EMBEDDINGLENGTH] auxiliary = ??;
@@ -219,9 +214,11 @@ str flashToy(str s){
   tape_index = 0;
   str o =  genExpr(s,mdl);
 
+  assert mdl >= SHORTEST;
+  
   int embedding_index = 0;
   repeat (EMBEDDINGLENGTH) {
-    if ((mdl-SHORTEST) > embedding_index) assert auxiliary[embedding_index];
+    if (mdl > embedding_index) assert auxiliary[embedding_index];
     embedding_index++;
   }
 
@@ -245,5 +242,11 @@ void testCase([int n,int m],char [n] i, char[m] o){
 
 harness void main() {
 #include "flashProblems.h"
+
+  /*  int embedding_index = 0;
+  repeat (EMBEDDINGLENGTH) {
+    if (embedding_index < SHORTEST) assert auxiliary[embedding_index];
+    embedding_index++;
+    }*/
 }
 

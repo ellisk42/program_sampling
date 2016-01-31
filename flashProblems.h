@@ -1,4 +1,3 @@
 // automatically generated
-testCase("aa","aaaa");
-testCase("abc","abcabc");
-testCase("xyz","xyzxyz");
+testCase("don steve g.","dsg");
+testCase("Kevin Jason Mat","KJM");
