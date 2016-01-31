@@ -28,7 +28,7 @@ for j in range(len(sort5)):
 for j in range(len(sort8)):
     plot.plot(np.linspace(4,14,num = 11),np.array(sort8[j])[3:],'r')
 
-
+plot.ylim([0,1.1])
 plot.xlabel("Testing list length")
 plot.ylabel("Fraction correct")
 

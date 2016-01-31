@@ -166,7 +166,7 @@ def outputTestCases(ts):
             f.write(l)
         f.write("}")
 
-def sortingTestCases(n):
+def makeTestCases(n,f):
     ts = []
     while len(ts) < n:
         p = random.random()
@@ -181,7 +181,7 @@ def sortingTestCases(n):
             
         i = [ random.randint(0,7) for j in range(l) ]
         if l == len(list(set(i))):
-            o = sorted(i)
+            o = f(i)
             t = (i,o)
             if str(t) in [str(x) for x in ts ]:
                 continue
@@ -195,6 +195,9 @@ if False:
     samples = []
     marginal_sort(samples,2)
     assert False
+
+def reverse(l):
+    return list(reversed(l))
 
 
 random.seed(os.urandom(10))
@@ -213,10 +216,11 @@ else:
         print m
         print len(m)
         print production_lengths
-    elif 'sort' == sys.argv[1]:
-        print "Sorting test cases:"
+    elif 'sort' == sys.argv[1] or 'reverse' == sys.argv[1]:
+        print "%s test cases:" % sys.argv[1]
+        
         os.system("mkdir %s" % dumpPrefix)
-        outputTestCases(sortingTestCases(int(sys.argv[2])))
+        outputTestCases(makeTestCases(int(sys.argv[2]),sorted if sys.argv[1] == "sort" else reverse))
         os.system("cat %s/generalTests.sk" % dumpPrefix)
         def generateFormula(el,ml):
             command = "sketch %s/generalTests.sk" % dumpPrefix

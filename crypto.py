@@ -141,7 +141,7 @@ class ProgramSolver():
             k += 1
             self.random_projection()
 
-            if k > 24: # arbitrary bound
+            if k > 23: # arbitrary bound
                 solutions = self.enumerate_solutions(subsamples = 0)[0]
                 S = sum([2**solutions[p][0] for p in solutions ])
                 return S*2**k
