@@ -134,7 +134,6 @@ def marginal_sort(p,n):
     multiset = {}
     for pp in p:
         multiset[pp] = 1 + multiset.get(pp,0)
-    print len(multiset),"types of programs"
     
     l = list(range(1,n+1))
     successes = 0
