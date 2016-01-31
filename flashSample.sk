@@ -101,8 +101,12 @@ str genExpr(str s, ref int mdl){
   void spend(int b) {
     mdl += b;
   }
+
+  bit canConstant = 1;
+  bit haveBadPosition = 0;
+  int badPosition = 0;
   
-  str term(){
+  str term() { //ref bit canConstant, ref int bannedPosition){
     char[3] r1 = {random_character(),random_character(),random_character()};
     char[3] r2 = {random_character(),random_character(),random_character()};
     int r1l = random_little_number();
@@ -122,7 +126,12 @@ str genExpr(str s, ref int mdl){
     // produce all the holes that once
     spend(1);
     if(flip()){
+      haveBadPosition = 0; // any following position is fine
+      
       assert r1l > 0;
+      assert canConstant;
+      canConstant = r1l == 3;
+      
       spend(r1l*6 + 2);
 
       assert r2[0] == 0 && r2[1] == 0 && r2[2] == 0;
@@ -140,6 +149,8 @@ str genExpr(str s, ref int mdl){
 
       return new str(n = r1l, ch = r1[0::r1l]);
     } else {
+      canConstant = 1;
+      
       spend(2 + 4 + 4); // choices k1,k2, inevitable 4 bits for each branch
       
       int effective_r1l = 0;
@@ -177,6 +188,15 @@ str genExpr(str s, ref int mdl){
 	p2 = Pos(s, r1[0::r1l_p], r2[0::r2l_p], p2_occurrence);
       }
 
+      if (haveBadPosition)
+	assert p1 != badPosition || (p1 == p2);
+
+      if (p1 != p2) {
+	haveBadPosition = 1;
+	badPosition = p2;
+      } else {
+	haveBadPosition = 0;
+      }
 
       if (effective_r1l < 3) assert r1[2] == 0;
       if (effective_r1l < 2) assert r1[1] == 0;

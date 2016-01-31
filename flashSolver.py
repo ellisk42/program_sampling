@@ -170,6 +170,9 @@ if len(sys.argv) > 1:
         p,m = parse_tape(initial_tape)
         print p
         print sum(m)
+    elif 'mdl' == sys.argv[1]:
+        for p in range(1,20):
+            os.system("python flashSolver.py problem%d 1,2,3,4,5" % p)
     elif 'problem' in sys.argv[1]:
         problem = int(sys.argv[1][len('problem'):])
         examples = map(int,sys.argv[2].split(','))
@@ -185,9 +188,10 @@ if len(sys.argv) > 1:
         generateFormula(60,10)
         p,mdl = FlashSolver().shortest_program()
         print "MDL predictions:"
-        for [i,o] in []: #flashProblems[problem - 1]:
+        for [i,o] in flashProblems[problem - 1]:
             prediction = interpret(p,i)
             print i,"\t",prediction,"\t",o,"\t",prediction == o
+        assert False
 
         generateFormula(1,mdl)
         S = FlashSolver(fakeAlpha = 0).model_count()
@@ -203,10 +207,12 @@ if len(sys.argv) > 1:
         K = int(math.ceil(log2(S - 1 + 2**(a - mdl))))
         print "Using K =",K
 
-        samples = sum([ FlashSolver().enumerate_solutions(K)[1]
-                        for j in range(20) ],[])
+        samples = []
+        while len(samples) < 10:
+            samples += FlashSolver().enumerate_solutions(K,subsamples = 1)[1]
         print "Got %d samples" % len(samples)
-        
+
+        sampleAccuracy = {}
         for sample in list(set(samples)):
             print sample
             correct = 0
@@ -215,7 +221,20 @@ if len(sys.argv) > 1:
                 print i,"\t",prediction,"\t",o,"\t",prediction == o
                 if prediction == o: correct += 1
             print "%d/5 correct\n" % correct
-
+            sampleAccuracy[sample] = correct
+        
+        accuracyCurve = []
+        for k in range(1,6):
+            # what fraction got at least k correct?
+            count = 0
+            for s in sampleAccuracy:
+                accuracy = sampleAccuracy[s]
+                if accuracy > k-1:
+                    count += len([ z for z in samples if s == z])
+            averageAccuracy = float(count)/len(samples)
+            print averageAccuracy,"got at least",k,"correct"
+            accuracyCurve += [averageAccuracy]
+        print accuracyCurve
             
 
     else:
