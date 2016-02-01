@@ -1,19 +1,17 @@
-pragma options "--bnd-unroll-amnt 3 --bnd-arr1d-size 3 --bnd-arr-size 3";
+//pragma options "--bnd-unroll-amnt 3 --bnd-arr1d-size 3 --bnd-arr-size 3";
 
 // Problem specification
-#define LISTLENGTH 3 // train on lists of up to length
 
-#define BOUND 64
-#define MAXIMUMLENGTH 64 // maximum description length
 
+//#define BOUND 64 // tape length
 
 #define MAXIMUMNUMBER 7 // maximum number manipulated by program
 
 bit[BOUND] tape = ??;
 int tape_index = 0;
 // guard length = 2, always
-// array length = {?,1,6,15}
-// integer l =    {?,0,4,13}
+// array length = {?,1,6,15,33}
+// integer l =    {?,0,4,13,31,67}
 
 
 bit[EMBEDDINGLENGTH] auxiliary = ??;
@@ -202,6 +200,7 @@ void force_zero_array(int d) {
   if (d == 1) { repeat (1) { assert tape[tape_index + (j++)] == 0; } }
   else if (d == 2) { repeat (6) { assert tape[tape_index + (j++)] == 0; } }
   else if (d == 3) { repeat (15) { assert tape[tape_index + (j++)] == 0; } }
+  else if (d == 4) { repeat (33) { assert tape[tape_index + (j++)] == 0; } }
   else assert 0;
 }
 
@@ -279,6 +278,7 @@ void force_zero_integer(int d) {
   int j = 0;
   if (d == 2) { repeat (4) { assert tape[tape_index + (j++)] == 0; } }
   else if (d == 3) { repeat (13) { assert tape[tape_index + (j++)] == 0; } }
+  else if (d == 4) { repeat (31) { assert tape[tape_index + (j++)] == 0; } }
   else assert 0;
 }
 
@@ -407,16 +407,49 @@ Array recursive_expression(Array a, int bnd) {
   return concatenate3(x,y,z);
 }
 
+int counting_expression(Array a) {
+  tape_index = 0;
 
+  bit s0,ignore1,ignore2;
+
+  int z = integer_expression(a,5,s0,ignore1,ignore2);
+  assert s0;
+
+  return z;
+}
+
+int counting_length() {
+  tape_index = 0;
+  bit s;
+  int m = integer_length(5,s);
+  assert s;
+  return m;
+}
 
 Array constant_array([int n],int [n] a) {
   return new Array(s = n,A = a);
 }
 
+void counting_case([int n],int [n] a, int target) {
+  Array k_a = constant_array(a);
+  assert target == counting_expression(k_a);
+}
+
+void enforce_counting() {
+  int mdl = counting_length();
+  assert mdl > MINIMUMLENGTH-1;
+  assert mdl < BOUND+1;
+  int embedding_index = 0;
+  repeat (EMBEDDINGLENGTH) {
+    if (embedding_index < MINIMUMLENGTH || mdl > embedding_index) assert auxiliary[embedding_index];
+    embedding_index++;
+  }
+}
+
+
 void test_case([int n],int [n] a, int [n] b) {
   int bnd = n-1;
   
-  int mdl = 0;
   Array k_a = constant_array(a);
   Array o = recursive_expression(k_a, bnd);  
 
@@ -424,12 +457,12 @@ void test_case([int n],int [n] a, int [n] b) {
   assert o.A[0::n] == b;
 }
 
-void enforce() {
-  //  include "generalTests.h";
 
+
+void enforce() {
   int mdl = recursive_length();
   assert mdl > MINIMUMLENGTH-1;
-  assert mdl < MAXIMUMLENGTH;
+  assert mdl < BOUND+1;
   int embedding_index = 0;
   repeat (EMBEDDINGLENGTH) {
     if (embedding_index < MINIMUMLENGTH || mdl > embedding_index) assert auxiliary[embedding_index];

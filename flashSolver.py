@@ -191,7 +191,6 @@ if len(sys.argv) > 1:
         for [i,o] in flashProblems[problem - 1]:
             prediction = interpret(p,i)
             print i,"\t",prediction,"\t",o,"\t",prediction == o
-        assert False
 
         generateFormula(1,mdl)
         S = FlashSolver(fakeAlpha = 0).model_count()
