@@ -1,3 +1,4 @@
+import random
 import math
 from subprocess import Popen, PIPE
 import os
@@ -6,6 +7,14 @@ from crypto import ProgramSolver,log2
 
 from interpretFlash import interpret
 from flashProblems import *
+
+
+random.seed(os.urandom(10))
+dumpPrefix = str(random.random())[2:]
+print "Dumping to prefix",dumpPrefix
+
+
+
 
 PIECES = 3
 
@@ -137,7 +146,7 @@ def parse_tape(tape):
 
 
 def createTrainingSet(problem,examples):
-    body = "// automatically generated\n"
+    body = "// automatically generated\ninclude \"flashSample.sk\";\nharness void main() {\n"
     maximumLength = 0
     characters = ""
     for e in range(5):
@@ -146,9 +155,10 @@ def createTrainingSet(problem,examples):
             maximumLength = max(maximumLength,len(i),len(o))
             characters += (i+o)            
             body += "testCase(\"%s\",\"%s\");\n" % (i,o)
+    body += "}\n"
     print body
     print len(set(list(characters))),"distinct characters"
-    with open("flashProblems.h","w") as f:
+    with open(dumpPrefix+"/flashProblems.sk","w") as f:
         f.write(body)
     return maximumLength + 1
 
@@ -170,45 +180,47 @@ if len(sys.argv) > 1:
         p,m = parse_tape(initial_tape)
         print p
         print sum(m)
-    elif 'mdl' == sys.argv[1]:
+    elif 'everything' == sys.argv[1]:
         for p in range(1,20):
-            os.system("python flashSolver.py problem%d 1,2,3,4,5" % p)
+            os.system("python flashSolver.py problem%d %s" % (p,sys.argv[2]))
     elif 'problem' in sys.argv[1]:
+        os.system('mkdir %s' % dumpPrefix)
         problem = int(sys.argv[1][len('problem'):])
         examples = map(int,sys.argv[2].split(','))
         maximumLength = createTrainingSet(problem,examples)
         print maximumLength
 
         def generateFormula(aux, shortest):
-            command = "sketch flashSample.sk --fe-custom-codegen customcodegen.jar --be:outputSat"
+            command = "sketch %s/flashProblems.sk --fe-custom-codegen customcodegen.jar" % dumpPrefix
+            command += " --beopt:outputSatNamed %s" % dumpPrefix
             command += " --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength)
             command += " --fe-def SHORTEST=%d,EMBEDDINGLENGTH=%d" % (shortest,aux)
             character_sketch(command)
 
         generateFormula(60,10)
-        p,mdl = FlashSolver().shortest_program()
+        p,mdl = FlashSolver(filename = dumpPrefix + "_1.cnf").shortest_program()
         print "MDL predictions:"
         for [i,o] in flashProblems[problem - 1]:
             prediction = interpret(p,i)
             print i,"\t",prediction,"\t",o,"\t",prediction == o
 
         generateFormula(1,mdl)
-        S = FlashSolver(fakeAlpha = 0).model_count()
+        S = FlashSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).mbound(2)[1]
         print "S = %d" % S
 
         a = int(mdl + log2(S))
         print "Starting value of Alpha = ",a
         generateFormula(a,mdl)
 
-        N = FlashSolver().model_count()
+        N = FlashSolver(filename = dumpPrefix + "_1.cnf").mbound(2)[0]
         print "N = %d" % N
         print "Lower bound:", (S - 1 + 2**(a - mdl))
-        K = int(math.ceil(log2(S - 1 + 2**(a - mdl))))
+        K = int(math.ceil(log2(N))-3)
         print "Using K =",K
 
         samples = []
-        while len(samples) < 10:
-            samples += FlashSolver().enumerate_solutions(K,subsamples = 1)[1]
+        while len(samples) < 100:
+            samples += FlashSolver(filename = dumpPrefix + "_1.cnf").enumerate_solutions(K,subsamples = 1)[1]
         print "Got %d samples" % len(samples)
 
         sampleAccuracy = {}
@@ -235,7 +247,8 @@ if len(sys.argv) > 1:
             accuracyCurve += [averageAccuracy]
         print accuracyCurve
             
-
+        os.system("rm %s_1.cnf" % dumpPrefix)
+        os.system("rm -r %s" % dumpPrefix)
     else:
         random_projections = int(sys.argv[1])
         a = None

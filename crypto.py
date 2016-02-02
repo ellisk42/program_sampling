@@ -61,6 +61,8 @@ class ProgramSolver():
         self.s = Solver(threads = 1,verbose = 0)
         self.tt = 0
 
+        self.filename = filename
+
         h2v = {} # hole 2 variable
         a2v = {} # auxiliary 2 variable
 
@@ -137,7 +139,7 @@ class ProgramSolver():
             bindings = self.try_solving()
             if not bindings:
                 print "Counted models in time",self.tt
-                return 2**k
+                return 2**(k-1)
             k += 1
             self.random_projection()
 
@@ -145,6 +147,18 @@ class ProgramSolver():
                 solutions = self.enumerate_solutions(subsamples = 0)[0]
                 S = sum([2**solutions[p][0] for p in solutions ])
                 return S*2**k
+
+    def mbound(self,t):
+        k = max(0,int(math.floor(log2(self.model_count()) - 3)))
+        models = []
+        for t_ in range(0,t):
+            self.__init__(filename = self.filename, fakeAlpha = self.alpha)
+            solutions = self.enumerate_solutions(subspace_dimension = k,subsamples = 0)[0]
+            S = sum([2**solutions[p][0] for p in solutions ])
+            models += [S]
+        return 2**k * min(models), 2**k * max(models)
+            
+        
 
     def shortest_program(self):
         while True:

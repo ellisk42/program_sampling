@@ -1,7 +1,7 @@
 #define PIECES 3
 #define PIECESIZE 59
 #define TAPELENGTH (PIECESIZE*PIECES+PIECES-1)
-
+//#define 
 bit[TAPELENGTH] tape = ??;
 bit[EMBEDDINGLENGTH] auxiliary = ??;
 
@@ -150,6 +150,13 @@ str genExpr(str s, ref int mdl){
       return new str(n = r1l, ch = r1[0::r1l]);
     } else {
       canConstant = 1;
+
+      assert r2l < 3 && r1l < 3;
+      assert r2l_p < 3 && r1l_p < 3;
+
+      // bound the specificity of patterns
+      assert r1l+r2l < 4;
+      assert r1l_p+r2l_p < 4;
       
       spend(2 + 4 + 4); // choices k1,k2, inevitable 4 bits for each branch
       
@@ -235,6 +242,7 @@ str flashToy(str s){
   str o =  genExpr(s,mdl);
 
   assert mdl >= SHORTEST;
+  //  assert mdl - MAXIMUMLENGTH;
   
   int embedding_index = 0;
   repeat (EMBEDDINGLENGTH) {
@@ -260,13 +268,13 @@ void testCase([int n,int m],char [n] i, char[m] o){
 }
 
 
-harness void main() {
-#include "flashProblems.h"
+//harness void main() {
+//#include "flashProblems.h"
 
   /*  int embedding_index = 0;
   repeat (EMBEDDINGLENGTH) {
     if (embedding_index < SHORTEST) assert auxiliary[embedding_index];
     embedding_index++;
     }*/
-}
+//}
 
