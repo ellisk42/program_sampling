@@ -322,7 +322,16 @@ class ProgramSolver():
                 acceptedSamples += [p]
         return solutions,acceptedSamples
             
-
+    def arbitrarily_enumerate(self,n):
+        samples = []
+        for j in range(n):
+            bindings = self.try_solving()
+            if not bindings: break
+            p,m = self.parse_tape(self.holes2tape(bindings))
+            self.s.add_clause(self.uniqueness_clause(self.holes2tape(bindings)))
+            samples += [p]
+        return samples
+    
     def analyze_problem(self):
         # enumerate all solutions and their mdl
         # do an analysis of acceptance probability as a function of alpha

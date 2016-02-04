@@ -5,11 +5,79 @@ import matplotlib.pyplot as plt
 import math
 
 
+
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+
 def log2(x):
     if x <= 0: return float('-inf')
     return math.log(x)/math.log(2)
 
 
+def lse2(x,y):
+    if x < y: return lse2(y,x)
+    return x + log2(1 + 2**(y - x))
+
+
+
+
+X = [26, 20, 38, 49, 49, 49, 49, 43, 32, 43, 32, 26, 38, 20, 43, 43]
+logZ = reduce(lse2,[ -x for x in X ])
+L = min(X)
+def log_zq(d):
+    return reduce(lse2,[ -d for x in X if x > d ] + [ -x for x in X if x<=d ])
+def log_embeddingSize(d):
+    return reduce(lse2,[ 0 for x in X if x > d ] + [ (d-x) for x in X if x<=d ])
+def acceptQ(d):
+    return 2**(logZ - log_zq(d))
+def C(d,k):
+    return 1.0 / (1 + 2**(k - log_embeddingSize(d)))
+def tt(d,k):
+    p = p_fail(d,k)
+    if p < 1:
+        survivors = 2**(reduce(lse2,[ min(0,(-k + d - min(x,d))) for x in X ]))
+        return (1 + survivors)/(1 - p)
+    else:
+        return len(X)
+def p_fail(d,k):
+    p = 1 + 2**(k - log_embeddingSize(d)) - C(d,k) * acceptQ(d)
+    if p < 1 and p > 0: return p
+    return 1
+def kl(d,k):
+    c = C(d,k)
+    if log2(c + (1 - c)/acceptQ(d)) - log2(c) <= 0:
+        print d, k, c, acceptQ(d)
+        assert False
+    return log2(c + (1 - c)/acceptQ(d)) - log2(c)
+
+MAXK = 20
+MAXTILT = 20
+
+d_ = np.array([[d for k in range(0,MAXK) ] for d in range(L,L+MAXTILT) ])
+k_ = np.array([[k for k in range(0,MAXK) ] for d in range(L,L+MAXTILT) ])
+
+time = np.array([[tt(d,k) for k in range(0,MAXK) ] for d in range(L,L+MAXTILT) ])
+time[time > len(X)] = len(X)
+
+
+
+print plt.matshow(time, cmap=plt.cm.gray)
+plt.xlabel(r'$K$ = (\# random projections)')
+ax = plt.gca()
+ax.xaxis.set_ticks_position('bottom')
+plt.ylabel(r'$d-|x_*|$ = $\log_2 ($ Tilt of $q(x))$')
+#plt.title('Expected solver invocations')
+plt.colorbar()
+
+accuracy = np.array([[np.log(kl(d,k)) for k in range(0,MAXK) ] for d in range(L,L+MAXTILT) ])
+#accuracy[accuracy > 0] = 0
+
+CS = plt.contour(accuracy)
+plt.clabel(CS, inline=1, fontsize=8)
+
+
+plt.show()
+assert False
 
 
 
