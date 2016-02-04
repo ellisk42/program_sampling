@@ -14,7 +14,9 @@ random.seed(os.urandom(10))
 dumpPrefix = str(random.random())[2:]
 print "Dumping to prefix",dumpPrefix
 
-
+# should reconsider the case of a very tilted distribution?
+# if this is true then were testing of baseline
+TILTED = True
 
 
 PIECES = 3
@@ -229,6 +231,13 @@ if len(sys.argv) > 1:
             command += " --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength)
             command += " --fe-def SHORTEST=%d,EMBEDDINGLENGTH=%d" % (shortest,aux)
             character_sketch(command)
+        if len(sys.argv) == 4 and 'enumerate' == sys.argv[3]:
+            generateFormula(1,10)
+            ss = FlashSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).enumerate_solutions(subsamples = 0)[0]
+            for s in ss:
+                print "(%s,%d),"%(s,ss[s][1]),
+            assert False
+
 
         generateFormula(60,10)
         p,mdl = FlashSolver(filename = dumpfile).shortest_program()
@@ -238,11 +247,20 @@ if len(sys.argv) > 1:
             prediction = interpret(p,i)
             print i,"\t",prediction,"\t",o,"\t",prediction == o
             if prediction == o: mdl_accuracy += 1
+        print "MDL accuracy: %d/5" % mdl_accuracy
+
+        
 #        print [(1.0 if mdl_accuracy>=j else 0) for j in range(1,6)  ]
-#        os.system("rm %s" % dumpfile)
-#        os.system("rm -r %s" % dumpPrefix)
 #        sys.exit()
 
+        
+        generateFormula(1,mdl)
+
+        if False:
+            everything = FlashSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).enumerate_solutions(0,subsamples = 0)[0]
+            for p in everything:
+                print (p,everything[p][1]),","
+            assert False
 
         generateFormula(1,mdl)
         S = FlashSolver(filename = dumpfile,fakeAlpha = 0).mbound(2)[1]
@@ -250,6 +268,9 @@ if len(sys.argv) > 1:
 
         a = int(mdl + log2(max(S,1)))
         print "Starting value of Alpha = ",a
+        if TILTED:
+            a = 179
+            print "ignoring that value of Alpha, using",a
         generateFormula(a,mdl)
 
         N = FlashSolver(filename = dumpfile).mbound(2)[0]
@@ -264,6 +285,7 @@ if len(sys.argv) > 1:
         while len(samples) < 100:
             samples += FlashSolver(filename = dumpfile).enumerate_solutions(K,subsamples = 1)[1]
         print "Got %d samples" % len(samples)
+
         printAccuracyCurve(samples,problem)
         '''
         sampleAccuracy = {}

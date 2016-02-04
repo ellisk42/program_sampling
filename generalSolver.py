@@ -5,7 +5,7 @@ from crypto import ProgramSolver,log2
 from subprocess import Popen, PIPE
 from itertools import permutations
 
-useLowerBound = True
+useLowerBound = False
 
 def reverse(l):
     return list(reversed(l))
@@ -306,12 +306,25 @@ else:
         
         dumpCNF = "/tmp/%s_1.cnf" % dumpPrefix
         generateFormula(tapeLength,MINLENGTH)
+
+        if True:
+            print "everything:"
+            everything = GeneralSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).enumerate_solutions(0,subsamples = 0)[0]
+            for p in everything:
+                print (p,everything[p][1]),","
+        if True: # baseline: repeatedly querying the solver with different random seeds
+            print "Samples from different random seeds:"
+            stupidSamples = []
+            for j in range(1000):
+                stupidSamples += GeneralSolver(filename = dumpPrefix + "_1.cnf").arbitrarily_enumerate(1)
+            print stupidSamples
+
         shortest,L = GeneralSolver(filename = dumpCNF).shortest_program()
         generateFormula(1,L)
         
         S = GeneralSolver(filename = dumpCNF,fakeAlpha = 0).model_count()
         print "S =",S
-        a = min(int(L + log2(S)),tapeLength)
+        a = min(int(L + log2(S)+4),tapeLength)
         
         generateFormula(a,L)
 
@@ -324,7 +337,7 @@ else:
             print "N =",N
             lowerBound = 2**(int(a)-L) + S - 1
             print "Bounded by",lowerBound
-            K = int(log2(N) - 1)
+            K = int(log2(N) - 3)
         print "Generating samples"
         
         samples = []
@@ -340,7 +353,7 @@ else:
                 else:
                     print marginal_evaluation(samples,l,correctImplementation),',',
         print ']'
-        os.system("rm %s_1.cnf" % dumpPrefix)
+        os.system("rm %s" % dumpCNF)
         os.system("rm -r %s" % dumpPrefix)
     else:
         random_projections = int(sys.argv[1])
