@@ -213,7 +213,8 @@ if len(sys.argv) > 1:
     elif 'everything' == sys.argv[1]:
         examples = (len(sys.argv[2]) + 1)/2
         for p in range(1,20):
-            os.system("longjob -o examples%d/%d python flashSolver.py problem%d %s" % (examples,p,p,sys.argv[2]))
+            os.system("python flashSolver.py problem%d %s" % (p,sys.argv[2]))
+#            os.system("longjob -o examples%d/%d python flashSolver.py problem%d %s" % (examples,p,p,sys.argv[2]))
     elif 'problem' in sys.argv[1]:
         os.system('mkdir %s' % dumpPrefix)
         dumpfile = "/tmp/" + dumpPrefix + "_1.cnf"
@@ -232,9 +233,16 @@ if len(sys.argv) > 1:
         generateFormula(60,10)
         p,mdl = FlashSolver(filename = dumpfile).shortest_program()
         print "MDL predictions:"
+        mdl_accuracy = 0
         for [i,o] in flashProblems[problem - 1]:
             prediction = interpret(p,i)
             print i,"\t",prediction,"\t",o,"\t",prediction == o
+            if prediction == o: mdl_accuracy += 1
+#        print [(1.0 if mdl_accuracy>=j else 0) for j in range(1,6)  ]
+#        os.system("rm %s" % dumpfile)
+#        os.system("rm -r %s" % dumpPrefix)
+#        sys.exit()
+
 
         generateFormula(1,mdl)
         S = FlashSolver(filename = dumpfile,fakeAlpha = 0).mbound(2)[1]
@@ -282,7 +290,7 @@ if len(sys.argv) > 1:
             accuracyCurve += [averageAccuracy]
         print accuracyCurve
 '''            
-        os.system("rm %s_1.cnf" % dumpPrefix)
+        os.system("rm %s" % dumpfile)
         os.system("rm -r %s" % dumpPrefix)
     else:
         random_projections = int(sys.argv[1])
