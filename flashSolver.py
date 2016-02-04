@@ -8,6 +8,7 @@ from crypto import ProgramSolver,log2
 from interpretFlash import interpret
 from flashProblems import *
 
+from composite1_5 import samples1_5
 
 random.seed(os.urandom(10))
 dumpPrefix = str(random.random())[2:]
@@ -160,7 +161,7 @@ def createTrainingSet(problem,examples):
     body += "}\n"
     print body
     print len(set(list(characters))),"distinct characters"
-    with open(dumpPrefix+"/flashProblems.sk","w") as f:
+    with open("%s/flashProblems%s.sk" % (dumpPrefix,dumpPrefix),"w") as f:
         f.write(body)
     return maximumLength + 1
 
@@ -168,90 +169,9 @@ if False:
     for p in range(1,20):
         createTrainingSet(p,[1,2]) #[1,2,3,4,5])
     assert False
-        
-class FlashSolver(ProgramSolver):
-    def parse_tape(self,t):
-        p,m = parse_tape(t)
-        assert len(m) == len(self.tape2variable)
-        return p,m
 
-if len(sys.argv) > 1:
-    if ',' in sys.argv[1]:
-        initial_tape = eval(sys.argv[1])
-        print len(initial_tape)
-        p,m = parse_tape(initial_tape)
-        print p
-        print sum(m)
-    elif 'everything' == sys.argv[1]:
-        for p in range(1,20):
-            os.system("python flashSolver.py problem%d %s" % (p,sys.argv[2]))
-    elif 'problem' in sys.argv[1]:
-        os.system('mkdir %s' % dumpPrefix)
-        problem = int(sys.argv[1][len('problem'):])
-        examples = map(int,sys.argv[2].split(','))
-        maximumLength = createTrainingSet(problem,examples)
-        print maximumLength
-
-        def generateFormula(aux, shortest):
-            command = "sketch %s/flashProblems.sk --fe-custom-codegen customcodegen.jar" % dumpPrefix
-            command += " --beopt:outputSatNamed %s" % dumpPrefix
-            command += " --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength)
-            command += " --fe-def SHORTEST=%d,EMBEDDINGLENGTH=%d" % (shortest,aux)
-            character_sketch(command)
-        if len(sys.argv) == 4 and 'enumerate' == sys.argv[3]:
-            generateFormula(1,10)
-            ss = FlashSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).enumerate_solutions(subsamples = 0)[0]
-            for s in ss:
-                print "(%s,%d),"%(s,ss[s][1]),
-            assert False
-
-
-        generateFormula(60,10)
-        p,mdl = FlashSolver(filename = dumpPrefix + "_1.cnf").shortest_program()
-        print "MDL predictions:"
-        mdl_accuracy = 0
-        for [i,o] in flashProblems[problem - 1]:
-            prediction = interpret(p,i)
-            print i,"\t",prediction,"\t",o,"\t",prediction == o
-            if prediction == o: mdl_accuracy += 1
-        print "MDL accuracy: %d/5" % mdl_accuracy
-
-        
-#        print [(1.0 if mdl_accuracy>=j else 0) for j in range(1,6)  ]
-#        sys.exit()
-
-        
-        generateFormula(1,mdl)
-
-        if False:
-            everything = FlashSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).enumerate_solutions(0,subsamples = 0)[0]
-            for p in everything:
-                print (p,everything[p][1]),","
-            assert False
-
-        generateFormula(1,mdl)
-        S = FlashSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).mbound(2)[1]
-        print "S = %d" % S
-
-        a = int(mdl + log2(S))
-        print "Starting value of Alpha = ",a
-        if TILTED:
-            a = 179
-            print "ignoring that value of Alpha, using",a
-        generateFormula(a,mdl)
-
-        N = FlashSolver(filename = dumpPrefix + "_1.cnf").mbound(2)[0]
-        print "N = %d" % N
-        print "Lower bound:", (S - 1 + 2**(a - mdl))
-        K = int(math.ceil(log2(N))-3)
-        print "Using K =",K
-
-        samples = []
-        while len(samples) < 100:
-            samples += FlashSolver(filename = dumpPrefix + "_1.cnf").enumerate_solutions(K,subsamples = 1)[1]
-        print "Got %d samples" % len(samples)
-        print samples
-
+def printAccuracyCurve(samples,problem):
+    if True:
         sampleAccuracy = {}
         for sample in list(set(samples)):
             print sample
@@ -275,8 +195,123 @@ if len(sys.argv) > 1:
             print averageAccuracy,"got at least",k,"correct"
             accuracyCurve += [averageAccuracy]
         print accuracyCurve
-            
-        os.system("rm %s_1.cnf" % dumpPrefix)
+
+#printAccuracyCurve(samples1_5,5)
+#assert False
+        
+class FlashSolver(ProgramSolver):
+    def parse_tape(self,t):
+        p,m = parse_tape(t)
+        assert len(m) == len(self.tape2variable)
+        return p,m
+
+if len(sys.argv) > 1:
+    if ',' in sys.argv[1]:
+        initial_tape = eval(sys.argv[1])
+        print len(initial_tape)
+        p,m = parse_tape(initial_tape)
+        print p
+        print sum(m)
+    elif 'everything' == sys.argv[1]:
+        examples = (len(sys.argv[2]) + 1)/2
+        for p in range(1,20):
+            os.system("longjob -o examples%d/%d python flashSolver.py problem%d %s" % (examples,p,p,sys.argv[2]))
+    elif 'problem' in sys.argv[1]:
+        os.system('mkdir %s' % dumpPrefix)
+        dumpfile = "/tmp/" + dumpPrefix + "_1.cnf"
+        problem = int(sys.argv[1][len('problem'):])
+        examples = map(int,sys.argv[2].split(','))
+        maximumLength = createTrainingSet(problem,examples)
+        print maximumLength
+
+        def generateFormula(aux, shortest):
+            command = "sketch %s/flashProblems%s.sk --fe-custom-codegen customcodegen.jar" % (dumpPrefix,dumpPrefix)
+            command += " --beopt:outputSatNamed /tmp/%s" % dumpPrefix
+            command += " --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength)
+            command += " --fe-def SHORTEST=%d,EMBEDDINGLENGTH=%d" % (shortest,aux)
+            character_sketch(command)
+        if len(sys.argv) == 4 and 'enumerate' == sys.argv[3]:
+            generateFormula(1,10)
+            ss = FlashSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).enumerate_solutions(subsamples = 0)[0]
+            for s in ss:
+                print "(%s,%d),"%(s,ss[s][1]),
+            assert False
+
+
+        generateFormula(60,10)
+        p,mdl = FlashSolver(filename = dumpfile).shortest_program()
+        print "MDL predictions:"
+        mdl_accuracy = 0
+        for [i,o] in flashProblems[problem - 1]:
+            prediction = interpret(p,i)
+            print i,"\t",prediction,"\t",o,"\t",prediction == o
+            if prediction == o: mdl_accuracy += 1
+        print "MDL accuracy: %d/5" % mdl_accuracy
+
+        
+#        print [(1.0 if mdl_accuracy>=j else 0) for j in range(1,6)  ]
+#        sys.exit()
+
+        
+        generateFormula(1,mdl)
+
+        if False:
+            everything = FlashSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).enumerate_solutions(0,subsamples = 0)[0]
+            for p in everything:
+                print (p,everything[p][1]),","
+            assert False
+
+        generateFormula(1,mdl)
+        S = FlashSolver(filename = dumpfile,fakeAlpha = 0).mbound(2)[1]
+        print "\n\n>>>>>>>>> S = %d\n\n" % S
+
+        a = int(mdl + log2(max(S,1)))
+        print "Starting value of Alpha = ",a
+        if TILTED:
+            a = 179
+            print "ignoring that value of Alpha, using",a
+        generateFormula(a,mdl)
+
+        N = FlashSolver(filename = dumpfile).mbound(2)[0]
+        print "\n\n>>>>>>>>> N = %d" % N
+        print "Lower bound:", (S - 1 + 2**(a - mdl))
+        if N < (S - 1 + 2**(a - mdl)):
+            N = (S - 1 + 2**(a - mdl))
+        K = max(0,int(math.ceil(log2(max(N,1)))-2))
+        print "Using K =",K
+
+        samples = []
+        while len(samples) < 100:
+            samples += FlashSolver(filename = dumpfile).enumerate_solutions(K,subsamples = 1)[1]
+        print "Got %d samples" % len(samples)
+
+        printAccuracyCurve(samples,problem)
+        '''
+        sampleAccuracy = {}
+        for sample in list(set(samples)):
+            print sample
+            correct = 0
+            for [i,o] in flashProblems[problem - 1]:
+                prediction = interpret(sample,i)
+                print i,"\t",prediction,"\t",o,"\t",prediction == o
+                if prediction == o: correct += 1
+            print "%d/5 correct\n" % correct
+            sampleAccuracy[sample] = correct
+        
+        accuracyCurve = []
+        for k in range(1,6):
+            # what fraction got at least k correct?
+            count = 0
+            for s in sampleAccuracy:
+                accuracy = sampleAccuracy[s]
+                if accuracy > k-1:
+                    count += len([ z for z in samples if s == z])
+            averageAccuracy = float(count)/len(samples)
+            print averageAccuracy,"got at least",k,"correct"
+            accuracyCurve += [averageAccuracy]
+        print accuracyCurve
+'''            
+        os.system("rm %s" % dumpfile)
         os.system("rm -r %s" % dumpPrefix)
     else:
         random_projections = int(sys.argv[1])

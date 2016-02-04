@@ -30,11 +30,11 @@ flashProblems = [
  ["Sue DME 42 [ST]865-003-0100 -- 5555-99 08-22-2010","865-003-0100"],
  ["Edna DEECS [SSID] 865-001-0003 --23954-11 09-01-2010","865-001-0003"]],
 # working
-[["Company\\\\Code\\\\index.html","Company\\\\Code\\\\"],
- ["Company\\\\Docs\\\\Spec\\\\specs.doc","Company\\\\Docs\\\\Spec\\\\"],
- ["Work\\\\Presentations\\\\talk.ppt","Work\\\\Presentations\\\\"],
- ["Work\\\\Records\\\\2010\\\\January.dat","Work\\\\Records\\\\2010\\\\"],
- ["Proj\\\\Numerical\\\\Simulators\\\\NBody\\\\nbody.c","Proj\\\\Numerical\\\\Simulators\\\\NBody\\\\"]],
+[["Company/Code/index.html","Company/Code/"],
+ ["Company/Docs/Spec/specs.doc","Company/Docs/Spec/"],
+ ["Work/Presentations/talk.ppt","Work/Presentations/"],
+ ["Work/Records/2010/January.dat","Work/Records/2010/"],
+ ["Proj/Numerical/Simulators/NBody/nbody.c","Proj/Numerical/Simulators/NBody/"]],
     # an example of ambiguity
 [["hi","hi hi"],
  ["bye","hi bye"],

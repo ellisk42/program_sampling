@@ -146,7 +146,10 @@ class ProgramSolver():
             if k > 23: # arbitrary bound
                 solutions = self.enumerate_solutions(subsamples = 0)[0]
                 S = sum([2**solutions[p][0] for p in solutions ])
-                return S*2**k
+                if S > 0:
+                    return S*2**k
+                else:
+                    return 2**(k-1)
 
     def mbound(self,t):
         k = max(0,int(math.floor(log2(self.model_count()) - 3)))
@@ -180,7 +183,7 @@ class ProgramSolver():
         if description_length < self.alpha:
             # for each bit of description length, delete one column of A
             matrix_rows = [ r[description_length:] for r in self.auxiliary_rows ]
-            r = binary_rank(matrix_rows)
+            r = 0 if len(matrix_rows) == 0 else binary_rank(matrix_rows)
             return self.alpha - description_length - r
         else:
             return 0

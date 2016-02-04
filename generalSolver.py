@@ -301,9 +301,10 @@ else:
             command = "sketch %s/generalTests.sk" % dumpPrefix
             command += " --bnd-unroll-amnt %d --bnd-arr1d-size %d --bnd-arr-size %d" % (MAXLIST,MAXLIST,MAXLIST)
             command += " --fe-def BOUND=%d,EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d" % (tapeLength,el,ml)
-            command += " --beopt:outputSatNamed %s" % dumpPrefix
+            command += " --beopt:outputSatNamed /tmp/%s" % dumpPrefix
             os.system(command)
-            
+        
+        dumpCNF = "/tmp/%s_1.cnf" % dumpPrefix
         generateFormula(tapeLength,MINLENGTH)
 
         if True:
@@ -318,10 +319,10 @@ else:
                 stupidSamples += GeneralSolver(filename = dumpPrefix + "_1.cnf").arbitrarily_enumerate(1)
             print stupidSamples
 
-        shortest,L = GeneralSolver(filename = dumpPrefix + "_1.cnf").shortest_program()
+        shortest,L = GeneralSolver(filename = dumpCNF).shortest_program()
         generateFormula(1,L)
         
-        S = GeneralSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).model_count()
+        S = GeneralSolver(filename = dumpCNF,fakeAlpha = 0).model_count()
         print "S =",S
         a = min(int(L + log2(S)+4),tapeLength)
         
@@ -332,24 +333,27 @@ else:
             print "|E| bounded by",lowerBound
             K = int(log2(lowerBound))
         else:
-            N = GeneralSolver(filename = dumpPrefix + "_1.cnf").model_count()
+            N = GeneralSolver(filename = dumpCNF).model_count()
             print "N =",N
             lowerBound = 2**(int(a)-L) + S - 1
             print "Bounded by",lowerBound
             K = int(log2(N) - 3)
         print "Generating samples"
         
-        samples = sum([ GeneralSolver(filename = dumpPrefix + "_1.cnf").enumerate_solutions(K,subsamples=1)[1]
-                        for j in range(1000) ],[])
+        samples = []
+        while len(samples) < 5:
+            samples += GeneralSolver(filename = dumpCNF).enumerate_solutions(K,subsamples=1)[1]
+
         print samples
         print "Got",len(samples),"samples with",len(set(samples)),"unique solutions\n[",
-        for l in []: #range(1,15):
-            if sys.argv[1] == 'count':
-                print marginal_counting(samples,l),',',
-            else:
-                print marginal_evaluation(samples,l,correctImplementation),',',
+        if False:
+            for l in range(1,15):
+                if sys.argv[1] == 'count':
+                    print marginal_counting(samples,l),',',
+                else:
+                    print marginal_evaluation(samples,l,correctImplementation),',',
         print ']'
-        os.system("rm %s_1.cnf" % dumpPrefix)
+        os.system("rm %s" % dumpCNF)
         os.system("rm -r %s" % dumpPrefix)
     else:
         random_projections = int(sys.argv[1])
