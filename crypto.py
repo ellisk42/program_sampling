@@ -141,9 +141,10 @@ class ProgramSolver():
                 print "Counted models in time",self.tt
                 return 2**(k-1)
             k += 1
+            print "model_count: k =",k
             self.random_projection()
 
-            if k > 23: # arbitrary bound
+            if k > 300: # arbitrary bound
                 solutions = self.enumerate_solutions(subsamples = 0)[0]
                 S = sum([2**solutions[p][0] for p in solutions ])
                 if S > 0:
@@ -160,8 +161,12 @@ class ProgramSolver():
             S = sum([2**solutions[p][0] for p in solutions ])
             models += [S]
         return 2**k * min(models), 2**k * max(models)
-            
-        
+
+
+    # Neutralizes the effect of the embedding
+    def removeEmbedding(self):
+        for v in self.auxiliary2variable:
+            self.s.add_clause(v)
 
     def shortest_program(self):
         while True:

@@ -16,8 +16,8 @@ print "Dumping to prefix",dumpPrefix
 
 # should reconsider the case of a very tilted distribution?
 # if this is true then were testing of baseline
-TILTED = True
-
+#TILTED = True
+DUMBBASELINE = False
 
 PIECES = 3
 
@@ -225,11 +225,12 @@ if len(sys.argv) > 1:
         maximumLength = createTrainingSet(problem,examples)
         print maximumLength
 
-        def generateFormula(aux, shortest):
+        def generateFormula(aux, shortest, originalApproach = False):
+            originalApproach = 1 if originalApproach else 0
             command = "sketch %s/flashProblems%s.sk --fe-custom-codegen customcodegen.jar" % (dumpPrefix,dumpPrefix)
             command += " --beopt:outputSatNamed /tmp/%s" % dumpPrefix
             command += " --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength)
-            command += " --fe-def SHORTEST=%d,EMBEDDINGLENGTH=%d" % (shortest,aux)
+            command += " --fe-def SHORTEST=%d,EMBEDDINGLENGTH=%d,ORIGINALAPPROACH=%d" % (shortest,aux,originalApproach)
             character_sketch(command)
         if len(sys.argv) == 4 and 'enumerate' == sys.argv[3]:
             generateFormula(1,10)
@@ -239,8 +240,15 @@ if len(sys.argv) > 1:
             assert False
 
 
-        generateFormula(60,10)
+        generateFormula(60,10,False)
+
+        if DUMBBASELINE:
+            samples = FlashSolver(filename = dumpfile).arbitrarily_enumerate(100)
+            printAccuracyCurve(samples,problem)
+            sys.exit()
+        
         p,mdl = FlashSolver(filename = dumpfile).shortest_program()
+        
         print "MDL predictions:"
         mdl_accuracy = 0
         for [i,o] in flashProblems[problem - 1]:

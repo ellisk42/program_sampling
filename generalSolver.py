@@ -5,7 +5,13 @@ from crypto import ProgramSolver,log2
 from subprocess import Popen, PIPE
 from itertools import permutations
 
-useLowerBound = False
+# if this is true we use a simple lower bound on the model count rather than comput it
+useLowerBound = True
+
+# should reconsider the case of a very tilted distribution?
+# if this is true then were testing of baseline
+TILTED = True
+
 
 def reverse(l):
     return list(reversed(l))
@@ -297,6 +303,8 @@ else:
         outputTestCases(testCases)
         os.system("cat %s/generalTests.sk" % dumpPrefix)
 
+        # el = embedded length
+        # ml = minimum length
         def generateFormula(el,ml):
             command = "sketch %s/generalTests.sk" % dumpPrefix
             command += " --bnd-unroll-amnt %d --bnd-arr1d-size %d --bnd-arr-size %d" % (MAXLIST,MAXLIST,MAXLIST)
@@ -307,12 +315,12 @@ else:
         dumpCNF = "/tmp/%s_1.cnf" % dumpPrefix
         generateFormula(tapeLength,MINLENGTH)
 
-        if True:
+        if False:
             print "everything:"
             everything = GeneralSolver(filename = dumpPrefix + "_1.cnf",fakeAlpha = 0).enumerate_solutions(0,subsamples = 0)[0]
             for p in everything:
                 print (p,everything[p][1]),","
-        if True: # baseline: repeatedly querying the solver with different random seeds
+        if False: # baseline: repeatedly querying the solver with different random seeds
             print "Samples from different random seeds:"
             stupidSamples = []
             for j in range(1000):
@@ -320,11 +328,24 @@ else:
             print stupidSamples
 
         shortest,L = GeneralSolver(filename = dumpCNF).shortest_program()
-        generateFormula(1,L)
+        samples = [shortest]
+        if False: # accuracy of MAP
+            for l in range(1,15):
+                if sys.argv[1] == 'count':
+                    print marginal_counting(samples,l),',',
+                else:
+                    print marginal_evaluation(samples,l,correctImplementation),',',
+                assert False # force death of process
         
+        generateFormula(1,L)
+
+        # S = number of consistent programs
         S = GeneralSolver(filename = dumpCNF,fakeAlpha = 0).model_count()
         print "S =",S
         a = min(int(L + log2(S)+4),tapeLength)
+        if TILTED:
+            a = tapeLength
+            print "ignoring alpha,using",a
         
         generateFormula(a,L)
 
@@ -334,7 +355,7 @@ else:
             K = int(log2(lowerBound))
         else:
             N = GeneralSolver(filename = dumpCNF).model_count()
-            print "N =",N
+            print "|E| ~",N
             lowerBound = 2**(int(a)-L) + S - 1
             print "Bounded by",lowerBound
             K = int(log2(N) - 3)

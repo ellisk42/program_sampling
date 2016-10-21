@@ -74,16 +74,18 @@ plot.ylabel("Fraction correct")
 plot.subplot(321)
 for s,e,c in zip([sort5,sort8,sort11],[5,8,11],['r','g','b']):
     s = np.average(np.array(s),axis = 0)    
-    plot.plot(np.linspace(4,14,num = 11),s[3:],c,label = "%d examples"%e)
+    plot.plot(np.linspace(1,14,num = 14),s,c,label = "%d examples"%e)
 plot.legend(fontsize=8)
+plot.xlim([1,14])
 plot.ylim([0,1.1])
 plot.ylabel("Sort accuracy")
 
 plot.subplot(323)
 for s,e,c in zip([count1,count3,count5],[1,3,5],['r','g','b']):
     s = np.average(np.array(s),axis = 0)    
-    plot.plot(np.linspace(4,14,num = 11),s[3:],c,label = '%d examples'%e)
+    plot.plot(np.linspace(1,14,num = 14),s,c,label = '%d examples'%e)
 plot.legend(fontsize=8)
+plot.xlim([1,14])
 plot.ylim([0,1.1])
 plot.xlabel("Testing list length")
 plot.ylabel("Count accuracy")
@@ -103,11 +105,25 @@ plot.ylabel("Reverse accuracy")
 ax = plot.subplot(326)
 ax.axis('off')
 plot.xlabel("Posterior sample")
-plot.figtext(0.5,0.5,'(length (filter (= (head X)) (tail X)))',family = 'monospace')
-plot.figtext(0.48,0.66,'(if (<= (+1 0) (length X))\n   X\n   (append (recurse (filter (<= (head X))\n                            (tail X)))\n           (list (head X))\n           (recurse (filter (>= (head X))\n                            (tail X)))))',family = 'monospace')
-plot.figtext(0.5,0.15,'(if (<= (+1 0) (length X))\n    X\n    (append (recurse (tail X))\n            (list (head X))))',family = 'monospace')
+plot.figtext(0.42,0.45,'''(length
+ (filter
+  (= (head X))
+  (tail X)))''',family = 'monospace')
+plot.figtext(0.42,0.63,'''(if (<= (+1 0) (length X))
+ X
+ (append
+  (recurse (filter (<= (head X))
+            (tail X)))
+  (list (head X))
+  (recurse (filter (>= (head X))
+            (tail X)))))''',family = 'monospace')
+plot.figtext(0.42,0.14,'''(if (<= (+1 0) (length X))
+ X
+ (append
+  (recurse (tail X))
+  (list (head X))))''',family = 'monospace')
 
-plot.figtext(0.6,0.05,"Posterior sample")
+plot.figtext(0.5,0.03,"Posterior sample")
 
 plot.show()
 
@@ -127,7 +143,10 @@ examples3 = [[1.0, 1.0, 1.0, 1.0, 1.0],
              [1.0, 1.0, 1.0, 1.0, 1.0],
              [1.0, 1.0, 1.0, 1.0, 1.0],
              [1.0, 1.0, 1.0, 1.0, 1.0],
-             [1.0, 1.0, 1.0, 1.0, 1.0]]
+             [1.0, 1.0, 1.0, 1.0, 1.0],
+             [1,1,1,1,1], # problem five
+             
+]
 mdl3 = [[1.0, 1.0, 1.0, 1.0, 1.0],
         [1.0, 1.0, 1.0, 1.0, 1.0],
         [1.0, 1.0, 1.0, 1.0, 1.0],
@@ -222,17 +241,75 @@ mdl1 = [[1.0, 1.0, 1.0, 1.0, 0],
         [1.0, 0, 0, 0, 0],
         [1.0, 0, 0, 0, 0],
         [1.0, 1.0, 0, 0, 0]]
-plot.figure()
-for examples,c,e in zip([examples1,examples2,examples3,mdl1,mdl2,mdl3],
-                        ['r-','g-','b-','r:','g:','b:'],[1,2,3]*2):
+mdl1_5 = np.average(np.array(mdl1),axis=0)[4]
+baselineEnumeration1 = [[1.0, 0.26, 0.0, 0.0, 0.0],
+                       [1.0, 0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.02, 0.0, 0.0, 0.0],
+                       [1.0, 0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.02, 0.02, 0.02, 0.02],
+                       [1.0, 0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.12, 0.04, 0.02, 0.02],
+                       [1.0, 0.08, 0.04, 0.04, 0.04],
+                       [1.0, 0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.26881720430107525, 0.0967741935483871, 0.010752688172043012, 0.010752688172043012],
+                       [1.0, 0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.01, 0.0, 0.0, 0.0],
+                       [1.0, 0.0, 0.0, 0.0, 0.0]]
+baselineEnumeration2 = [[1.0, 1.0, 1.0, 1.0, 0.21052631578947367],
+                        [1.0, 1.0, 0.08695652173913043, 0.08695652173913043, 0.043478260869565216],
+                        [1.0, 1.0, 0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+                        [1.0, 1.0, 0.15, 0.15, 0.1],
+                        [1.0, 1.0, 0.32, 0.12, 0.1],
+                        [1.0, 1.0, 0.0, 0.0, 0.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 0.59, 0.32, 0.29],
+                        [1.0, 1.0, 0.84, 0.35, 0.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 0.5, 0.5],
+                        [1.0, 1.0, 0.16, 0.01, 0.01],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 0.9166666666666666, 0.5, 0.25],
+                        [1.0, 1.0, 0.08, 0.07, 0.04],
+                        [1.0, 1.0, 1.0, 0.18181818181818182, 0.045454545454545456],
+                        [1.0, 1.0, 0.03, 0.03, 0.01]]
+baselineEnumeration3 = [[1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 0.5],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 0.42, 0.29],
+                        [1.0, 1.0, 1.0, 1.0, 0.4827586206896552],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 0.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 0.5, 0.5],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 0.5454545454545454, 0.2727272727272727],
+                        [1.0, 1.0, 1.0, 0.8888888888888888, 0.4444444444444444],
+                        [1.0, 1.0, 1.0, 0.18181818181818182, 0.045454545454545456],
+                        [1.0, 1.0, 1.0, 1.0, 0.6]]
+plot.figure(figsize = (5,3))
+plot.gcf().subplots_adjust(bottom=0.2,left = 0.2)
+for examples,c,e in zip([examples1,examples2,examples3,mdl1,mdl2,mdl3,
+                         baselineEnumeration1,baselineEnumeration2,baselineEnumeration3],
+                        ['r-','g-','b-','r:','g:','b:','r--','g--','b--'],[1,2,3]*2+[1,2,3]):
     if len(examples) == 0: continue
     plot.errorbar(np.array([1,2,3,4,5]),
                   np.average(np.array(examples),axis = 0),
-                  fmt = c[1],
+                  fmt = c[1:],
                   color = c[0],
                   yerr = np.std(np.array(examples),axis = 0)/np.sqrt(len(examples)),
                   label = "%d examples" % e)
-    if ':' in c: continue
+    if ':' in c or 'k' in c: continue
+    continue
     examples = [[(1 if y > 0 else 0) for y in x  ] for x in examples ]
     plot.errorbar(np.array([1,2,3,4,5]),
                   np.average(np.array(examples),axis = 0),
@@ -246,8 +323,8 @@ handles, labels = plot.gca().get_legend_handles_labels()
 # remove the errorbars
 handles = [h[0] for h in handles]
 # use them in the legend
-plot.gca().legend([handles[0],handles[2],handles[4]],
-                  [labels[0],labels[2],labels[4]], loc='center right',numpoints=1)
+plot.gca().legend(handles[:3],labels[:3],
+                  loc='lower left',numpoints=1,fontsize = 8)
 
 
 
@@ -258,4 +335,32 @@ plot.ylabel('Fraction solving')
 ya = plot.gca().get_xaxis()
 ya.set_major_locator(plot.MaxNLocator(integer=True))
 #plot.legend(loc = 'center right')
+plot.show()
+
+
+kcurve = np.array([[4, 4, 4], [3, 5, 5], [1, 1, 1], [1, 1, 1], [2, 3, 3], [5, 5, 5], [1, 1, 1], [5, 5, 5], [2, 5, 5], [1, 1, 1], [1, 2, 2], [1, 1, 1], [1, 2, 2], [1, 1, 1], [1, 3, 5], [5, 5, 5], [2, 2, 2], [1, 5, 5]]).T
+# for a given K, what is the probability of getting all of the right answers?
+kcurve[kcurve < 5] = 0
+kcurve[kcurve == 5] = 1
+kcurve=kcurve.sum(axis = 1)
+
+
+
+# Example data
+people = ('c=1', 'c=2','c=3')
+y_pos = np.arange(len(kcurve))
+performance = kcurve/19.0
+
+plot.figure(figsize=(4,3))
+plot.gcf().subplots_adjust(bottom=0.15,left = 0.2)
+
+plot.bar(y_pos, performance, align='center', alpha=1,color='r')
+plot.xticks(y_pos, people)
+plot.yticks(np.arange(0, 0.6, 0.1))
+plot.axhline(y=mdl1_5,color='k',ls='dashed',label="MDL")
+
+plot.xlabel("Within top C predictions")
+#plot.title('Fraction solving all')
+plot.ylabel('Fraction solving all')
+plot.legend(loc="upper left")
 plot.show()

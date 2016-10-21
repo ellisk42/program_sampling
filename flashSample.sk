@@ -1,3 +1,9 @@
+// The original approach that I tried was to not have an embedding
+// We would then sample uniformly over assignments to the sat variables
+// This would give sampling from the description length prior.
+// But it's very inefficient!
+//#define ORIGINALAPPROACH
+
 #define PIECES 3
 #define PIECESIZE 59
 #define TAPELENGTH (PIECESIZE*PIECES+PIECES-1)
@@ -85,6 +91,9 @@ int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
 str SubStr(str s, int p1, int p2){
   if (p2 == p1) p2 = p1 + 1;
   assert p2 > p1;
+  assert p1 >= 0;
+  assert p2 >= 0;
+  assert p2-p1 <= s.n;
   return new str(n=p2-p1, ch=s.ch[p1:p2]);
 }
 
@@ -134,6 +143,7 @@ str genExpr(str s, ref int mdl){
       
       spend(r1l*6 + 2);
 
+if (!ORIGINALAPPROACH) {
       assert r2[0] == 0 && r2[1] == 0 && r2[2] == 0;
       if (r1l < 3) assert r1[2] == 0;
       if (r1l < 2) assert r1[1] == 0;
@@ -146,7 +156,7 @@ str genExpr(str s, ref int mdl){
       assert k2 == 0;
       assert p1_occurrence == 0;
       assert p2_occurrence == 0;
-
+}
       return new str(n = r1l, ch = r1[0::r1l]);
     } else {
       canConstant = 1;
@@ -165,7 +175,9 @@ str genExpr(str s, ref int mdl){
       
       int p1;
       if (k1) {
+if (!ORIGINALAPPROACH) {
 	assert r1l == 0 && r2l == 0 && p1_occurrence == 0;
+}
 	//spend(4);
 	p1 = p1_k;
 	// if the position is greater than 7,
@@ -174,7 +186,9 @@ str genExpr(str s, ref int mdl){
       } else {
 	spend(2);
 	//spend(2+2+2); // r1l,r2l,p1_occurrence
+if (!ORIGINALAPPROACH) {
 	assert p1_k == 0;
+}
 	effective_r1l = max(effective_r1l,r1l);
 	effective_r2l = max(effective_r2l,r2l);
 	p1 = Pos(s, r1[0::r1l], r2[0::r2l], p1_occurrence);
@@ -183,7 +197,9 @@ str genExpr(str s, ref int mdl){
       int p2;
       if (k2) {
 	//spend(4);
+if (!ORIGINALAPPROACH) {
 	assert r1l_p == 0 && r2l_p == 0 && p2_occurrence == 0;
+}
 	p2 = p2_k;
 	if (p2 > 7) p2 = s.n - p2 + 8;
       } else {
@@ -204,7 +220,7 @@ str genExpr(str s, ref int mdl){
       } else {
 	haveBadPosition = 0;
       }
-
+if (!ORIGINALAPPROACH) {
       if (effective_r1l < 3) assert r1[2] == 0;
       if (effective_r1l < 2) assert r1[1] == 0;
       if (effective_r1l < 1) assert r1[0] == 0;
@@ -212,6 +228,7 @@ str genExpr(str s, ref int mdl){
       if (effective_r2l < 3) assert r2[2] == 0;
       if (effective_r2l < 2) assert r2[1] == 0;
       if (effective_r2l < 1) assert r2[0] == 0;
+}
       
       spend(effective_r1l*6);
       spend(effective_r2l*6);
@@ -223,13 +240,17 @@ str genExpr(str s, ref int mdl){
   str out = term();
   spend(1);
   if (flip()) {
+if (!ORIGINALAPPROACH) {
     repeat (TAPELENGTH - PIECESIZE*1 - 1) { assert flip() == 0; }
+}
     return out;
   }
   out = Concat(out,term());
   spend(1);
   if (flip()) {
+if (!ORIGINALAPPROACH) {
     repeat (TAPELENGTH - PIECESIZE*2 - 2) { assert flip() == 0; }
+}
     return out;
   }
   out = Concat(out,term()); 
