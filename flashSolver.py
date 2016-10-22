@@ -17,7 +17,11 @@ print "Dumping to prefix",dumpPrefix
 # should reconsider the case of a very tilted distribution?
 # if this is true then were testing of baseline
 #TILTED = True
+# should we consider the case of arbitrarily enumerating programs?
 DUMBBASELINE = False
+# should we not even use an embedding, and sample bit strings uniformly?
+OLDAPPROACH = True
+
 
 PIECES = 3
 
@@ -256,6 +260,17 @@ if len(sys.argv) > 1:
             print i,"\t",prediction,"\t",o,"\t",prediction == o
             if prediction == o: mdl_accuracy += 1
         print "MDL accuracy: %d/5" % mdl_accuracy
+
+        if OLDAPPROACH:
+            generateFormula(1,mdl,True)
+            n = len(FlashSolver(filename = dumpfile).tape2variable)
+            k = int(n - mdl) + 1 # start with 1/2 probability of survival of mdl estimate
+            for _ in range(10):
+                print "k = ",k
+                sample = FlashSolver(filename = dumpfile).sampleOldApproach(k)
+                if sample == "duplicate": k += 1
+                elif sample == "unsatisfiable": k -= 1
+            assert False
 
         
 #        print [(1.0 if mdl_accuracy>=j else 0) for j in range(1,6)  ]

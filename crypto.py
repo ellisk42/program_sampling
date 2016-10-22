@@ -144,7 +144,7 @@ class ProgramSolver():
             print "model_count: k =",k
             self.random_projection()
 
-            if k > 300: # arbitrary bound
+            if k > 30: # arbitrary bound
                 solutions = self.enumerate_solutions(subsamples = 0)[0]
                 S = sum([2**solutions[p][0] for p in solutions ])
                 if S > 0:
@@ -163,10 +163,22 @@ class ProgramSolver():
         return 2**k * min(models), 2**k * max(models)
 
 
-    # Neutralizes the effect of the embedding
-    def removeEmbedding(self):
+    def sampleOldApproach(self, k):
+        # Neutralizes the effect of the embedding
         for v in self.auxiliary2variable:
-            self.s.add_clause(v)
+            self.s.add_clause([v])
+        # randomly constrain
+        for _ in range(k): self.random_projection()
+        result = self.try_solving()
+        if not result: return "unsatisfiable"
+
+        tape = self.holes2tape(result)
+        program,mask = self.parse_tape(tape)
+        if self.is_solution_unique(tape):
+            return program
+        else:
+            return "duplicate"
+        
 
     def shortest_program(self):
         while True:
@@ -237,8 +249,8 @@ class ProgramSolver():
         self.s.add_clause([d]) # make the clause documents they satisfied
         if result:
             tp = self.holes2tape(result)
-            print "alternative:",self.parse_tape(tp)
-            print "alternative tape:",tp
+            #print "alternative:",self.parse_tape(tp)
+            #print "alternative tape:",tp
             return False
         else:
             return True
@@ -252,13 +264,14 @@ class ProgramSolver():
             self.random_projection()
         result = self.try_solving()
         if result:
-            print "Random projection satisfied"
+            # Random projection satisfied
             tp = self.holes2tape(result)
-            print self.parse_tape(tp)[0]
+            program = self.parse_tape(tp)[0]
             if self.is_solution_unique(tp):
-                print "Unique. Accepted."
+                return program
             else:
-                print "Sample rejected"
+                return "NotUnique"
+            
 
 
     def enumerate_solutions(self,subspace_dimension = 0,subsamples = 10):
@@ -414,10 +427,3 @@ class ProgramSolver():
 #            if et < 1.00001: break
 
         
-            
-
-        
-#x = ProgramSolver()
-#x.enumerate_solutions(int(sys.argv[1]))
-#x.try_sampling(int(sys.argv[2]))
-#print "total time = ",x.tt
