@@ -10,8 +10,11 @@ useLowerBound = True
 
 # should reconsider the case of a very tilted distribution?
 # if this is true then were testing of baseline
-TILTED = True
+TILTED = False
 
+
+# Do not use an embedding
+ORIGINALAPPROACH = True
 
 def reverse(l):
     return list(reversed(l))
@@ -305,10 +308,10 @@ else:
 
         # el = embedded length
         # ml = minimum length
-        def generateFormula(el,ml):
+        def generateFormula(el,ml,originalApproach = False):
             command = "sketch %s/generalTests.sk" % dumpPrefix
             command += " --bnd-unroll-amnt %d --bnd-arr1d-size %d --bnd-arr-size %d" % (MAXLIST,MAXLIST,MAXLIST)
-            command += " --fe-def BOUND=%d,EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d" % (tapeLength,el,ml)
+            command += " --fe-def BOUND=%d,EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d,ORIGINALAPPROACH=%d" % (tapeLength,el,ml,originalApproach)
             command += " --beopt:outputSatNamed /tmp/%s" % dumpPrefix
             os.system(command)
         
@@ -336,6 +339,18 @@ else:
                 else:
                     print marginal_evaluation(samples,l,correctImplementation),',',
                 assert False # force death of process
+
+        if ORIGINALAPPROACH:
+            generateFormula(1,L,True)
+            n = len(GeneralSolver(filename = dumpCNF).tape2variable)
+            k = int(n - L) + 1 # start with 1/2 probability of survival of mdl estimate
+            print "L = ",L
+            for _ in range(10):
+                print "k = ",k
+                sample = GeneralSolver(filename = dumpCNF).sampleOldApproach(k)
+                if sample == "duplicate": k += 1
+                elif sample == "unsatisfiable": k -= 1
+            assert False
         
         generateFormula(1,L)
 

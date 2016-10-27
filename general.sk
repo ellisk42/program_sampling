@@ -129,7 +129,10 @@ int guard_length(ref bit success) {
 
 void force_zero_guard(int d) {
   int j = 0;
-  repeat (2) { assert tape[tape_index + (j++)] == 0; } 
+  repeat (2) {
+    if (!ORIGINALAPPROACH) assert tape[tape_index + j] == 0;
+    j++;
+  } 
 }
 
 Guard guard_expression(int z,int d,ref bit success) {
@@ -197,10 +200,30 @@ int array_length(int d, ref bit success) {
 void force_zero_array(int d) {
   assert d > 0;
   int j = 0;
-  if (d == 1) { repeat (1) { assert tape[tape_index + (j++)] == 0; } }
-  else if (d == 2) { repeat (6) { assert tape[tape_index + (j++)] == 0; } }
-  else if (d == 3) { repeat (15) { assert tape[tape_index + (j++)] == 0; } }
-  else if (d == 4) { repeat (33) { assert tape[tape_index + (j++)] == 0; } }
+  if (d == 1) {
+    repeat (1) {
+      if (!ORIGINALAPPROACH) assert tape[tape_index + j] == 0;
+      j++;
+    }
+  }
+  else if (d == 2) {
+    repeat (6) {
+      if (!ORIGINALAPPROACH) assert tape[tape_index + j] == 0;
+      j++;
+    }
+  }
+  else if (d == 3) {
+    repeat (15) {
+      if (!ORIGINALAPPROACH) assert tape[tape_index + j] == 0;
+      j++;
+    }
+  }
+  else if (d == 4) {
+    repeat (33) {
+      if (!ORIGINALAPPROACH) assert tape[tape_index + j] == 0;
+      j++;
+    }
+  }
   else assert 0;
 }
 
@@ -276,9 +299,24 @@ void force_zero_integer(int d) {
   if (d == 1) return;
 
   int j = 0;
-  if (d == 2) { repeat (4) { assert tape[tape_index + (j++)] == 0; } }
-  else if (d == 3) { repeat (13) { assert tape[tape_index + (j++)] == 0; } }
-  else if (d == 4) { repeat (31) { assert tape[tape_index + (j++)] == 0; } }
+  if (d == 2) {
+    repeat (4) {
+      if (!ORIGINALAPPROACH) assert tape[tape_index + j] == 0;
+      j++;
+    }
+  }
+  else if (d == 3) {
+    repeat (13) {
+      if (!ORIGINALAPPROACH) assert tape[tape_index + j] == 0;
+      j++;
+    }
+  }
+  else if (d == 4) {
+    repeat (31) {
+      if (!ORIGINALAPPROACH) assert tape[tape_index + j] == 0;
+      j++;
+    }
+  }
   else assert 0;
 }
 
