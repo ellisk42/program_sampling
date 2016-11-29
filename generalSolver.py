@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 from itertools import permutations
 
 # if this is true we use a simple lower bound on the model count rather than comput it
-useLowerBound = True
+useLowerBound = False
 
 # should reconsider the case of a very tilted distribution?
 # if this is true then were testing of baseline
@@ -14,7 +14,7 @@ TILTED = False
 
 
 # Do not use an embedding
-ORIGINALAPPROACH = True
+ORIGINALAPPROACH = False
 
 def reverse(l):
     return list(reversed(l))
@@ -220,6 +220,18 @@ def outputTestCases(ts):
         f.write("}")
 
 def makeTestCases(n,f):
+    if not n.isdigit():
+        # must be a file, so load the test cases from that file
+        cases = []
+        with open(n,"r") as handle:
+            for l in handle:
+                i = eval(l)
+                o = f(i)
+                t = (i,o)
+                print "Test case:",t
+                cases.append(t)
+        return cases
+    n = int(n)
     ts = []
     while len(ts) < n:
         p = random.random()
@@ -285,9 +297,9 @@ else:
 
         if sys.argv[1] == "sort":
             correctImplementation = sorted
-            testCases = makeTestCases(int(sys.argv[2]),sorted)
+            testCases = makeTestCases(sys.argv[2],sorted)
             tapeLength = 64
-            MAXLIST = 3
+            MAXLIST = max([len(t) for tc in testCases for t in tc  ])
             MINLENGTH = 23
         if sys.argv[1] == "count":
             correctImplementation = countFirst

@@ -289,7 +289,7 @@ if len(sys.argv) > 1:
         S = FlashSolver(filename = dumpfile,fakeAlpha = 0).mbound(2)[1]
         print "\n\n>>>>>>>>> S = %d\n\n" % S
 
-        a = int(mdl + log2(max(S,1)))
+        a = int(mdl + log2(max(S,1)) + 1)
         print "Starting value of Alpha = ",a
         if TILTED:
             a = 179
