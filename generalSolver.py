@@ -1,7 +1,7 @@
 import os
 import random
 import sys
-from crypto import ProgramSolver,log2
+from crypto import ProgramSolver,log2,PROGRAMSAMPLE
 from subprocess import Popen, PIPE
 from itertools import permutations
 
@@ -155,6 +155,16 @@ class GeneralSolver(ProgramSolver):
             tape = [ f == 1 for f in t ]
             return integer_expression(5)
         assert False
+    @staticmethod
+    def generateFormula(el,ml,originalApproach = False):
+        global dumpPrefix,MAXLIST,tapeLength
+        # el = embedded length
+        # ml = minimum length
+        command = "sketch %s/generalTests.sk" % dumpPrefix
+        command += " --bnd-unroll-amnt %d --bnd-arr1d-size %d --bnd-arr-size %d" % (MAXLIST,MAXLIST,MAXLIST)
+        command += " --fe-def BOUND=%d,EMBEDDINGLENGTH=%d,MINIMUMLENGTH=%d,ORIGINALAPPROACH=%d" % (tapeLength,el,ml,originalApproach)
+        command += " --beopt:outputSatNamed /tmp/%s" % dumpPrefix
+        os.system(command)
 
 def marginal_evaluation(p,n,f):
     multiset = {}
@@ -328,6 +338,14 @@ else:
             os.system(command)
         
         dumpCNF = "/tmp/%s_1.cnf" % dumpPrefix
+
+        newSamples = PROGRAMSAMPLE(dumpCNF, GeneralSolver, tapeLength, MINLENGTH,
+                                   4, # delta
+                                   3, # gamma
+                                   2, # model count safety
+                                   10, # number of samples
+                                   1) # subsamples
+        assert False
         generateFormula(tapeLength,MINLENGTH)
 
         if False:

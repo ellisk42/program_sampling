@@ -120,6 +120,9 @@ class ProgramSolver():
     def parse_tape(self,tp):
         print "This should never be called"
         assert False
+    @staticmethod
+    def generateFormula(embeddingLength, minimumLength, originalApproach = False):
+        raise Exception('generateFormula: override this')
         
     def generate_variable(self):
         self.maximum_variable += 1
@@ -427,3 +430,30 @@ class ProgramSolver():
 #            if et < 1.00001: break
 
         
+def PROGRAMSAMPLE(dumpFile, k, tapeLength, minimumLength, delta, gamma, modelCount, numberOfSamples, subsamples = 1):
+    k.generateFormula(tapeLength, minimumLength)
+
+    p,mdl = k(filename = dumpFile).shortest_program()
+
+    k.generateFormula(1,mdl)
+    S = k(filename = dumpFile, fakeAlpha = 0).mbound(modelCount)[1]
+    print "\n\n>>>>>>>>> S = %d\n\n" % S
+
+    a = int(math.ceil(mdl + log2(max(S,1)) + gamma))
+
+    k.generateFormula(a, mdl)
+
+    N = k(filename = dumpFile).mbound(2)[0]
+    
+    print "\n\n>>>>>>>>> N = %d" % N
+    print "Lower bound:", (S - 1 + 2**(a - mdl))
+    if N < (S - 1 + 2**(a - mdl)):
+        N = (S - 1 + 2**(a - mdl))
+    K = max(0,int(math.ceil(log2(max(N,1)))-delta))
+    print "Using K =",K
+
+    samples = []
+    while len(samples) < numberOfSamples:
+        samples += k(filename = dumpFile).enumerate_solutions(K,subsamples = subsamples)[1]
+
+    return samples

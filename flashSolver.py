@@ -3,7 +3,7 @@ import math
 from subprocess import Popen, PIPE
 import os
 import sys
-from crypto import ProgramSolver,log2
+from crypto import ProgramSolver,log2,PROGRAMSAMPLE
 
 from interpretFlash import interpret
 from flashProblems import *
@@ -16,11 +16,11 @@ print "Dumping to prefix",dumpPrefix
 
 # should reconsider the case of a very tilted distribution?
 # if this is true then were testing of baseline
-#TILTED = True
+TILTED = False
 # should we consider the case of arbitrarily enumerating programs?
 DUMBBASELINE = False
 # should we not even use an embedding, and sample bit strings uniformly?
-OLDAPPROACH = True
+OLDAPPROACH = False
 
 
 PIECES = 3
@@ -208,6 +208,16 @@ class FlashSolver(ProgramSolver):
         p,m = parse_tape(t)
         assert len(m) == len(self.tape2variable)
         return p,m
+    @staticmethod
+    def generateFormula(aux, shortest, originalApproach = False):
+        global dumpPrefix,maximumLength
+        
+        originalApproach = 1 if originalApproach else 0
+        command = "sketch %s/flashProblems%s.sk --fe-custom-codegen customcodegen.jar" % (dumpPrefix,dumpPrefix)
+        command += " --beopt:outputSatNamed /tmp/%s" % dumpPrefix
+        command += " --bnd-unroll-amnt %d --bnd-arr-size %d --bnd-arr1d-size %d" % (maximumLength,maximumLength,maximumLength)
+        command += " --fe-def SHORTEST=%d,EMBEDDINGLENGTH=%d,ORIGINALAPPROACH=%d" % (shortest,aux,originalApproach)
+        character_sketch(command)
 
 if len(sys.argv) > 1:
     if ',' in sys.argv[1]:
@@ -243,6 +253,13 @@ if len(sys.argv) > 1:
                 print "(%s,%d),"%(s,ss[s][1]),
             assert False
 
+        newSamples = PROGRAMSAMPLE(dumpfile, FlashSolver, 60, 10,
+                                   2, # delta
+                                   1, # gamma
+                                   2, # model count safety
+                                   10, # number of samples
+                                   1) # subsamples
+        assert False
 
         generateFormula(60,10,False)
 
