@@ -1,0 +1,26 @@
+\begin{thebibliography}{1}
+
+\bibitem{gomes2006near}
+Carla~P Gomes, Ashish Sabharwal, and Bart Selman.
+\newblock Near-uniform sampling of combinatorial spaces using xor constraints.
+\newblock In {\em Advances In Neural Information Processing Systems}, pages
+  481--488, 2006.
+
+\bibitem{ermon2013embed}
+Stefano Ermon, Carla~P Gomes, Ashish Sabharwal, and Bart Selman.
+\newblock Embed and project: Discrete sampling with universal hashing.
+\newblock In {\em Advances in Neural Information Processing Systems}, pages
+  2085--2093, 2013.
+
+\bibitem{chakraborty2015weighted}
+Supratik Chakraborty, Dror Fried, Kuldeep~S Meel, and Moshe~Y Vardi.
+\newblock From weighted to unweighted model counting.
+\newblock 2015.
+
+\bibitem{DBLP:conf/ecai/LinDETM14}
+Dianhuan Lin, Eyal Dechter, Kevin Ellis, Joshua~B. Tenenbaum, and Stephen
+  Muggleton.
+\newblock Bias reformulation for one-shot function induction.
+\newblock In {\em {ECAI} 2014}, pages 525--530, 2014.
+
+\end{thebibliography}

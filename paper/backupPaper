@@ -1,0 +1,470 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% ICML 2016 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Use the following line _only_ if you're still using LaTeX 2.09.
+%\documentstyle[icml2016,epsf,natbib]{article}
+% If you rely on Latex2e packages, like most moden people use this:
+\documentclass{article}
+\usepackage{amsthm}
+% use Times
+\usepackage{times}
+% For figures
+\usepackage{graphicx} % more modern
+%\usepackage{epsfig} % less modern
+\usepackage{subfigure} 
+\usepackage{fancyvrb}
+% For citations
+\usepackage{natbib}
+\usepackage{amssymb}
+
+% For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% As of 2011, we use the hyperref package to produce hyperlinks in the
+% resulting PDF.  If this breaks your system, please commend out the
+% following usepackage line and replace \usepackage{icml2016} with
+% \usepackage[nohyperref]{icml2016} above.
+\usepackage{amsmath}
+\usepackage{hyperref}
+\DeclareMathOperator*{\argmin}{arg\,min} % thin space, limits underneath in displays
+\DeclareMathOperator*{\argmin}{argmin} % no space, limits underneath in displays
+\DeclareMathOperator{\argmin}{arg\,min} % thin space, limits on side in displays
+\DeclareMathOperator{\argmin}{argmin} % no space, limits on side in displays
+
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Employ the following version of the ``usepackage'' statement for
+% submitting the draft version of the paper for review.  This will set
+% the note in the first column to ``Under review.  Do not distribute.''
+\usepackage{icml2016} 
+
+% Employ this version of the ``usepackage'' statement after the paper has
+% been accepted, when creating the final version.  This will set the
+% note in the first column to ``Proceedings of the...''
+%\usepackage[accepted]{icml2016}
+
+\newtheorem{proposition}{Proposition}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Submission and Formatting Instructions for ICML 2016}
+
+\begin{document} 
+
+\twocolumn[
+\icmltitle{Efficient Bayesian Program Learning}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2016
+% package.
+\icmlauthor{Your Name}{email@yourdomain.edu}
+\icmladdress{Your Fantastic Institute,
+            314159 Pi St., Palo Alto, CA 94306 USA}
+\icmlauthor{Your CoAuthor's Name}{email@coauthordomain.edu}
+\icmladdress{Their Fantastic Institute,
+            27182 Exp St., Toronto, ON M6H 2T1 CANADA}
+
+% You may provide any keywords that you 
+% find helpful for describing your paper; these are used to populate 
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Bayesian, program induction, probabilistic models}
+
+\vskip 0.3in
+]
+
+\begin{abstract} 
+\end{abstract} 
+
+\section{Introduction}
+\label{introduction}
+Learning programs from examples is a central problem in artificial intelligence, and many recent proposals draw on techniques from machine learning.
+These approaches, like the Neural Turing Machine and related connectionist models~\cite{DBLP:journals/corr/ReedF15,graves2014neural} or Hierarchical Bayesian Program Learning and related symbolic models~\cite{lake2015human,DBLP:conf/icml/LiangJK10,menon2013machine},
+couple a probabilistic learning framework with either gradient- or sampling-based search procedures.
+In this work,
+we consider the problem of Bayesian inference over program spaces,
+and take as our goal to provide strong guarantees on the quality of our predictor.
+Through a combination of solver-based program synthesis~\cite{solar2008program} and sampling via random projections~\cite{ermon2013embed},
+we show how to sample from posterior distributions over programs where the samples provably come from a distribution arbitrarily close to the true posterior.
+
+\subsection{Limitations of the approach}
+
+Our sampling algorithm inherits all of the limitations of constraint-based  program synthesis algorithms.
+It is limited to synthesizing \emph{finite} programs, where all resource consumption, including program length,
+is a priori bounded.
+This contrasts with
+methods based on stochastic search~\cite{nori2015efficient,schkufza2013stochastic,DBLP:books/daglib/0070933}.
+Constraint-based methods tend to excel in domains where
+most of the structure is already given as a ``sketch''~\cite{solar2008program} and where most of the program's description length is accounted for by constants that can be fit to the data.
+For example, we can synthesize text editing programs taking almost 60 bits of description length in a couple seconds, but spend 10 minutes synthesizing a recursive sorting routine that takes fewer bits of description length.
+Furthermore,
+past work has demonstrated empirically that constraint-based approaches scale poorly with data set size~\cite{ellis2015unsupervised,raychev2016learning}.
+
+Furthermore we require 1 MAP inference query, and 2 queries to an approximate model counter.
+In practice, approximate model counters like MBound~\cite{gomes2006model} have complexity comparable with that of generating samples; %(consistent with sampling being in \#P),
+in effect, we have to first ``calibrate'' the sampler.
+Note that this has to be done only once in order to generate an arbitrary number of iid samples,
+unlike, eg, burn-in for an MCMC sampler.
+However, requiring a model count is an extra criterion that solver-based techniques do not have, and model-counting algorithms, even approximate ones, tend to not scale beyond a certain point.
+Thus, for good performance, ProgramSample requires that there not be too many programs consistent with the data;
+our experimental results show that we can only scale to on the order of tens of millions of
+consistent programs.
+
+\subsection{Motivation and problem statement}
+
+We consider a finite set of programs $X$
+and want to sample from the distribution $p(x) = \frac{2^{-|x|}}{Z}$ where $|x|$
+is the description length of $x\in X$ (ie, $|x|$ is a natural number) and
+$Z = \sum_{x\in X} 2^{-|x|}$.
+The set $X$ will in general be very large and subject to constraints upon the program's behavior, for example,
+consistency with input/output examples or consistency with a declarative specification.
+We assume access to a \emph{solver}, which can enumerate members of $X$,
+but without any guarantees on the order of enumeration.
+
+
+\section{The sampling algorithm}
+The key idea is to approximate the distribution $p(\cdot )$ with another distribution, $q(\cdot )$, whose \emph{tilt}, defined in~\cite{chakraborty2014distribution} as $\frac{\max_x q(x)}{\min_x q(x)}$, is guaranteed to be small and whose KL divergence from $p(\cdot )$ is also guaranteed to be small.
+We then embed $X$ in a higher dimensional space, $E$, such that sampling uniformly from $E$ corresponds to sampling from another distribution $r(\cdot)$, whose fluctuations around $q(\cdot )$ can be made arbitrarily small.
+We can sample uniformly from $E$ using a variety of techniques based on adding random project constraints to the set $X$, which are extensively studied in, for example,~\cite{gomes2006near,valiant1985np,chakraborty2014balancing,gomes2006model}.
+A final step of rejection sampling corrects for the low-tilt approximation.
+Fig.~\ref{cartoon} illustrates this process, which we call ProgramSample.
+\begin{figure}
+  \includegraphics[width=8cm]{cartoon.png}
+  \caption{ProgramSample twice distorts the distribution $p$. First it introduces a parameter $d$ that bounds the tilt; we correct for this with rejection sampling. Second it samples from $q$ by drawing instead from $r$, where $KL(q||r)$ can be made arbitrarily small by appropriately setting another parameter, $K$.}\label{cartoon}
+  \end{figure}
+
+\subsection{Getting high-quality samples}
+\textbf{Low-tilt approximation.}
+We introduce a parameter into the sampling algorithm, $d$, that parameterizes $q(\cdot )$.
+The parameter $d$ acts as a threshold, or cut-off, for the description length of a program;
+the distribution $q$ acts as though any program with description length exceeding $d$ can be encoded using $d$ bits. Concretely,
+\begin{equation}
+  q(x) \propto \begin{cases}
+    2^{-|x|},& \text{if } |x|\leq d\\
+    2^{-d},              & \text{otherwise}
+\end{cases}
+  \end{equation}
+If we could sample exactly from $q$, we could reject a sample $x$ with probability $1-A(x)$ where $A$ is
+\begin{equation}
+  A(x) \propto \begin{cases}
+    1,& \text{if } |x|\leq d\\
+    2^{-|x|+d},              & \text{otherwise}
+    \end{cases}
+  \end{equation}
+and get exact samples from $p$, where the acceptance rate would approach 1 exponentially quickly in $d$.
+More precisely we have the following result:
+\begin{proposition}\label{acceptanceBound}
+  Let $x\in X$ be a sample from $q$. The probability of accepting $x$ is at least $\frac{1}{1 + |X|2^{|x_*|-d}}$ where $x_* = \argmin_x |x|$.
+\end{proposition}
+\begin{proof}
+  The probability of acceptance is
+  \begin{align}
+    \sum_x q(x) A(x)& = \sum_x \frac{2^{-|x|}}{\sum_{x'}q(x')}\\
+    & = \frac{Z}{Z + \sum_{|x| > d}(2^{-d} - 2^{-|x|}] }\\
+      & > \frac{1}{1 + |X|2^{-d}/Z}>\frac{1}{1 + |X|2^{|x_*|-d}}.
+  \end{align}
+\end{proof}
+%Two comments on Prop.~\ref{acceptanceBound}: (1) $Z$ is difficult to compute, and so we will use loose lower bounds; in fact $Z > 2^{-|x_*|}$ is sufficient for our later needs.
+A similar argument also shows that the KL between $p$ and $q$ is order $2^{-d}\frac{|X|}{Z}$.
+
+The distribution $q$ is useful because we can guarantee that it has small tilt:
+let $x_* = \argmin_x |x|$, then the tilt of $q$ is $d - |x_*|$.
+Recent work has shown that the performance of nonuniform sampling via random projections degrades as the tilt increases~\cite{chakraborty2014distribution};
+introducing the proposal $q$ effectively reifies the tilt,
+making it a parameter of the program induction algorithm,
+not the distribution over programs.
+
+%as we show below:
+We now show how to approximately sample from $q$ using a variant of the Embed and Project framework~\cite{ermon2013embed}.
+
+\textbf{The embedding.} The idea is to define a new set of programs, which we call $E$, such that short programs are included in the set much more often than long programs.
+Each program $x$ will be represented in $E$ by an amount proportional to $2^{-\min (|x|,d)}$, thus proportional to $q(x)$,
+such that sampling elements uniformly from $E$  samples according to $q$.
+
+We embed $X$ within the larger set $E$ by introducing $d$ \emph{auxiliary variables}, written $(A_1,\cdots, A_d)$,
+such that every element of $E$ is a tuple of an element of $x$ and an assignment to $A = (A_1,\cdots, A_d)$:
+  \begin{equation}
+    E = \{(x,A) \text{ }:\text{ } x\in X,  \bigwedge_{1\leq j \leq d} |x|\geq j\implies A_j=1 \}
+  \end{equation}
+  Suppose we sample $(x,A)$ uniformly from $E$.
+  Then the probability of getting a particular $x\in X$ is
+  $\propto |\{(x',A)\in E \text{ s.t. } x' = x\} = \{A\text{ s.t. } |x|\geq j\implies A_j=1\}=2^{\min (0,d-|x|)}$
+  which is proportional to $q(x)$.
+
+  \textbf{The random projections.} We  could sample exactly from $E$  by invoking the solver $|E|+1$ times to get every element of $E$,
+  but in general it will have $O(|X|2^d)$ elements, which could be very large.
+  Instead, ask the solver for all the elements of $E$ consistent with some number of random constraints
+  such that (1) few elements of $E$ are likely to satisfy (``survive'') the constraints,
+  and (2) any element of $E$ is approximately equally likely to satisfy the constraints.
+  We can then sample a survivor uniformly to get an approximate sample from $E$.
+
+  Our random constraints take the form of XOR, or parity constraints, which are random projections mod 2.
+  Let $K$ be the number of random projections.
+  Then the $K$ constraints are of the form $H(x,A) = b$ where $H$ is a $K\times (d+n)$ binary matrix and $b$ is a $K$-dimensional binary vector.
+  If no solutions satisfy the $K$ constraints than the sampling attempt is rejected.
+
+  These samples are close to uniform in the following sense, which strengthens the result in~\cite{gomes2006near}.
+  \begin{proposition}\label{propositionLowerBound}
+    The probability of sampling $(x,A)$ is at least $\frac{1}{|E|}\times \frac{1}{1 + 2^K/|E|}$ and the probability of getting any sample at all is at least $1 - 2^{K}/|E|$.
+%    Furthermore we get a sample with probability at least $1 - |E|2&{-K}$
+  \end{proposition}
+  \begin{proof}
+    The probability sampling $(x,A)$, given that $(x,A)$ survives the $K$ constraints,
+    is $\frac{1}{\text{mc}}$, where $\text{mc}$ is the model count (\# of survivors).
+    The probability of $(x,A)$ surviving the $K$ constraints is $2^{-K}$ and is independent of whether any other element of $E$ survives the constraints~\cite{gomes2006near}.
+    So the probability of sampling $(x,A)$ is
+    \begin{align}
+      &      2^{-K}\sum_{i = 1}^{|E|} P(\text{mc} = i | (x,A) \text{ survives})\frac{1}{i}\\
+      & = 2^{-K} E[\frac{1}{mc} | (x,A) \text{ survives} ] \\
+      &> 2^{-K} \frac{1}{E[mc|(x,A) \text{ survives}]}\text{, Jensen's inequality}\\
+      &= 2^{-K} \frac{1}{1 + (|E|-1)2^{-K}}\text{, pairwise independence}\\
+      &> \frac{1}{|E|}\times \frac{1}{1 + 2^K/|E|}.
+      \end{align}
+    We fail to get a sample if $\text{mc} = 0$. We bound the probability of this event using Chebyshev's inequality: $E[\text{mc}] = |E|2^{-K}>\text{Var}(\text{mc})$, so
+    \begin{align}
+      P(\text{mc}= 0)&\leq P(|\text{mc}-E[\text{mc}]|\geq E[\text{mc}])\\
+      &\leq \frac{\text{Var}(mc)}{E[\text{mc}]^2}<1/E[\text{mc}] = 2^K/|E|.
+    \end{align}
+  \end{proof}
+  Therefore we can guarantee almost uniform samples from $E$ as long as $|E|2^{-E}$ is not small.
+  These correspond to samples from a distribution $r(\cdot)$ that is close to $p$ when accepted w.p. $A(\cdot )$,
+  which we now make precise:
+  \begin{proposition}\label{mainResult}
+    Let $Ar(x)$ be proportional to $A(x)r(x)$. Then $D(p||Ar)<\log \left( 1 + \frac{1 + 2^{ - \gamma}}{1 + 2^\Delta}\right)$ where
+    $\Delta = \log |E| - K$ and $\gamma = d - \log |X| - |x_*|$.
+  \end{proposition}
+  \begin{proof}
+      Define $c=\frac{1}{1 + 2^K/|E|}$.
+    \begin{align}
+      D(p||Ar)& = \sum_x p(x)\log \frac{p(x)\sum_y A(y)r(y)}{A(x)r(x)}\\
+      & = \sum_x p(x)\log \frac{A(x)q(x)}{\sum_y A(y)q(y)}\frac{\sum_y A(y)r(y)}{A(x)r(x)} \\ %\text{, as }q(x)A(x)\propto p(x)\\
+      & = \log \frac{\sum_x A(x)r(x)}{\sum_x A(x)q(x)} + \sum_x p(x)\log \frac{q(x)}{r(x)}\\
+      &  < \log \frac{\sum_x A(x)r(x)}{\sum_x A(x)q(x)} - \log c\label{lowerBound}
+    \end{align}
+    where~\ref{lowerBound} comes from Proposition~\ref{propositionLowerBound}.
+    We know that $A(x)\leq 1 = A(x_*)$, that $r(x) \geq c q(x)$, and $\sum_x r(x) = P(\text{mc} > 0)$.
+    Optimizing subject to these constraints,
+    \begin{align}
+      \sum_x A(x) r(x) &  < P(\text{mc} > 0) - \sum_{x\not= x_*} cq(x) + \sum_{x\not= x_*} cq(x)A(x)\\
+      & = P(\text{mc} > 0) + c \sum_{x} A(x) q(x) - c.
+    \end{align}
+    So the KL divergence is bounded above by
+    \begin{align}
+      D(p||Ar)&  < \log \left( c + \frac{P(\text{mc} > 0) -c }{\sum_x A(x)q(x)}\right) - \log c
+    \end{align}
+    The quantity $\sum_x A(x)q(x)$ is the probability of accepting a perfect sample from $q$,
+    which Proposition~\ref{acceptanceBound} lower bounds:
+    \begin{align}
+      D(p||Ar)&  < \log \left( c + (1 -c)(1 + 2^{ - \gamma})\right) - \log c\\
+      & = \log \left( \frac{1}{1 + 2^{ - \Delta}} + \frac{1 + 2^{ - \gamma}}{1 + 2^\Delta}\right)  + \log (1 + 2^{ - \Delta})
+    \end{align}
+    which for the sake of clarity we can weaken to% either
+    \begin{align}
+      D(p||Ar)&  < \log \left( 1 + \frac{1 + 2^{ - \gamma}}{1 + 2^\Delta}\right) . %< \frac{1}{\ln 2} \frac{1 + 2^{ - \gamma}}{1 + 2^\Delta}.
+    \end{align}
+  \end{proof}
+  So we can approximate the true distribution $p$ arbitrarily well.
+%  Here we depart from the Unigen and Uniwit families of approaches~\cite{chakraborty2014distribution,chakraborty2014balancing} which cannot guarantee arbitrarily close approximation, and align ourselves with PAWS~\cite{ermon2013embed} and related approaches that can prove analogously strong bounds.
+
+  Application of Proposition~\ref{mainResult} requires knowledge of $|X|$ and $|E|$, which are model counts that are in general difficult to compute exactly.
+  However, many approximate model counting schemes exist, which provide upper and lower bounds that hold with arbitrarily high probability.
+  We use Hybrid-MBound~\cite{gomes2006model} to upper bound $|X|$ and lower bound $|E|$,
+  giving lower bounds on the $\gamma$ and $\Delta$ parameters of Proposition~\ref{mainResult}
+  and thus an upper bound on the KL divergence. 
+
+  \begin{algorithm}[tb]
+   \caption{ProgramSample}
+   \label{mainAlgorithm}
+\begin{algorithmic}
+  \STATE {\bfseries Input:} Program space $X$, failure probability $\delta$, natural numbers $\Delta$, $\gamma$,
+  number of samples $N$
+  \STATE {\bfseries Output:} $N$ samples 
+  \STATE Set $|x_*| = \min_{x\in X} |x|$
+  \STATE Set $B_X = $ ApproximateUpperBoundModelCount($X$,$\delta/2$)
+  \STATE Set $d = \gamma + \log B_X + |x_* |$
+  \STATE Define $E = \{(x,A) \text{ }:\text{ } x\in X,  \bigwedge_{1\leq j \leq d}  |x|\geq j\implies A_j=1 \}$
+  \STATE Set $B_E = $ ApproximateLowerBoundModelCount($E$,$\delta/2$)
+  \STATE Set $K = \log B_E - \Delta$
+  \STATE Initialize samples $ = \varnothing$
+  \REPEAT
+  \STATE Sample $h$ uniformly from $\{0,1\}^{(d+n)\times K}$
+  \STATE Sample $b$ uniformly from $\{0,1\}^{K}$
+  \STATE Enumerate $S = \{ (x,A) \text{ where } h(x,A) = b \wedge x\in X\}$
+  \IF{$|S| > 0$}
+  \STATE Sample $(x,A)$ uniformly from $S$
+  \IF{Uniform$(0,1) < 2^{d - |x|}$}
+  \STATE samples $ = \text{samples}\cup \{x\}$
+  \ENDIF
+   \ENDIF
+   \UNTIL{$|\text{samples}| = N$}
+   \STATE {\bfseries return} samples
+\end{algorithmic}
+\end{algorithm}
+
+  \textbf{Efficient enumeration.}
+  
+
+  \begin{proposition}
+    Let $x\in X$ and $(x,A)\in E $ satisfy $h(a,A) = b$.  If $|x| \geq d$ then $(x,A)$ is the only surviving member of $E$ corresponding to $x$. Otherwise there are $2^{d - |x| - \text{rank}(g)}$ survivors where $g$ is the rightmost $d - |x|$ columns of $h$.
+  \end{proposition}
+  \begin{proof}
+    If $|x|\geq d$ then there is only one element of $E$ corresponding to $x$.
+    Otherwise,
+    any assignment to $A$ satisfying
+    \begin{equation}\label{eqmatrix}
+      b = \left( \begin{array}{ccccc}
+ &\vdots && \vdots& \\
+h_{x} & \vdots& h_{A} &\vdots& g \\
+ & \vdots& & \vdots& \end{array} \right) \left( \begin{array}{c}
+x \\
+A_{\leq |x|} \\
+A_{ > |x|}  \end{array} \right)
+      %b_j  + \sum_{i = 1}^n h_{ji}x_i  + \sum_{i = n+1}^{n+|x|}h_{ji}A_{i - n}= \sum_{i = n + |x| + 1}^{n + d} h_{ji}A_{i - n}
+    \end{equation}
+    satisfies the random hashing constraints, where we have partitioned the columns of $h$ into those multiplied into $x$, $A_{\leq|x|}$, and $A_{ > |x|}$ .
+    Because $(x,A)\in E$ the values of $x$ and $A_{\leq |x|}$ are fixed,
+    so we can define a new vector $c = b + h_x x + h_A A_{\leq |x|}$ and rewrite Eq.~\ref{eqmatrix} as
+    $c = g A_{ > |x|}$.
+    Let $r = \text{rank}(g)$.
+    Then there is a coordinate system where Eq.~\ref{eqmatrix} reads
+    \begin{equation}\label{coordinateTransform}
+      c = \left( \begin{array}{cccc}
+        1&&&\\
+        &\ddots&&\\
+        &&0&\\
+        &&&\ddots \end{array} \right) \left( \begin{array}{c}
+        A_{1+|x|} \\
+        \vdots\\
+        A_{1+|x|+r}\\
+        \vdots\end{array} \right)
+    \end{equation}
+    Eq.~\ref{coordinateTransform}     is satisfied iff, for all $1\leq j\leq r$, $A_{j+|x|} = c_j$.
+    For $j > r$ the entries of $A_{j+|x|} $ are unconstrained,
+    and so $2^{d  - |x| - r}$  satisfying values for $A$ exist.
+\end{proof}
+  
+
+  \subsection{Accuracy/Performance trade-off}
+  We now analyze the runtime of Alg.~\ref{mainAlgorithm},
+  using number of solver calls as a proxy for runtime.
+  Our main results are that (1) the amortized time/sample decreases as we increase the dimension of the embedding,
+  and (2) decreases as we increase the number of random constraints,
+  which introduces a trade-off between accuracy of the samples and speed of the sampling.
+
+  \begin{proposition}\label{proposition:tt}
+    The expected number of calls to the solver per sample is bounded above by $\frac{1 + 2^\Delta}{(1 + 2^{ - \gamma})^{-1}(1 + 2^{ - \Delta})^{-1} - 2^{ - \Delta}}.$
+  \end{proposition}
+  \begin{proof}
+    First upper bound the probability of failing, $P(\text{fail})$, to get a sample,
+    which could happen if $S$  is empty or if the sample from $S$ is rejected,
+    which is distributed according to $r$:
+    \begin{align}
+      P(\text{fail})& < P(\text{reject}) + P(\text{mc} = 0) \text{, union bound}\\
+      & < 1 - \frac{\sum_x A(x)q(x)}{1 + 2^K/|E|} + 2^K/|E| \text{, Prop.~\ref{propositionLowerBound}}\\
+      & < 1 - \frac{1}{(1 + 2^{ - \Delta})(1 + 2^{ - \gamma})} + 2^{ - \Delta}\text{, Prop.~\ref{acceptanceBound}}
+    \end{align}
+    The expected number of solver invocations per iteration is $< 1+E[\text{mc}] = 1 + |E|2^{-K} = 1 + 2^{\Delta}$
+    and the expected number of iterations is $1/P(\neg\text{failure})$.
+    Because the iterations are independent the expected number of solver invocations is just their product, which is the desired result.
+  \end{proof}
+  Proposition~\ref{proposition:tt} shows that the number of invocations to the solver grows exponentially in $\Delta$, while Proposition~\ref{mainResult} shows that the KL divergence from $p$ decays exponentially in $\Delta$.
+  Algorithm~\ref{mainAlgorithm} balances this trade-off through its preliminary model counting steps; see Fig.~\ref{heat}.
+  \begin{figure}
+    \includegraphics[width=7cm]{trade-off.png}
+    \caption{Accuracy (colored contours) vs Performance (monochrome cells) trade-off for a program synthesis problem; upper bounds plotted. Performance measured in expected solver invocations; accuracy measured in log KL divergence. Prop.~\ref{acceptanceBound} lower bounds the tilt of performant samplers, while  Prop.~\ref{propositionLowerBound} upper bounds $K$ to $O(d)$, forcing our sampler into the darker (faster) regions.  KL divergence falls off exponentially fast in $\Delta = O(d - K)$, (Prop.~\ref{mainResult}) while solver invocations grows exponentially in $\Delta$ (Prop.~\ref{proposition:tt})}\label{heat}
+    \end{figure}
+     
+\section{Experimental results}
+
+\subsection{Learning list manipulation algorithms}
+
+One goal of program synthesis is \emph{computer-aided programming}~\cite{solar2008program}, where a program induction system automatically generates executable code from either declarative specifications or examples of desired behavior.
+We evaluate our algorithm on computer-aided programming problems,
+and take as our goal to learn recursive routines for sorting, reversing, and counting list elements from input/output examples.
+
+We provide to the system primitives for simple arithmetic and comparison of numbers, construction and accessing of lists,
+the higher order function \verb|filter|, and the ability to recurse up to a fixed number of times.
+The program space is equivalent to the following grammar:
+\begin{Verbatim}[fontsize=\small]
+Program   ::= (if Predicate List
+                  (append RecursiveList
+                          RecursiveList
+                          RecursiveList))
+Predicate ::= (<= Number) | (>= Number)
+Number    ::= 0 | (1+ Number) | (1- Number)
+            | (length List) | (head List)
+List      ::= a | nil | (list Number)
+            | (tail List)
+            | (filter Predicate List)
+RecursiveList ::= List | (recurse List)
+\end{Verbatim}
+
+A description-length prior that penalizes longer programs allowed learning of recursive list manipulation routines (from production \verb|Program|) and a non-recursive count routine (from production \verb|Number|); see Fig.~\ref{listCurves},
+which show average accuracy on held out test data when trained on variable numbers of short randomly generated lists.
+
+For some of these program learning tasks the number of consistent programs is small enough that we can enumerate all of them, allowing us to compare our sampler with the ground-truth probabilities.
+Fig.~\ref{marginal} shows this comparison for a problem with 80 consistent programs.
+\begin{figure}
+  \includegraphics[width=0.5\textwidth]{list.png}
+  \caption{Performance of the program learner on list manipulation tasks. Trained on lists of length $\leq 3$.}
+  \label{listCurves}
+\end{figure}
+\begin{figure}
+  \includegraphics[width=0.4\textwidth]{probabilityPlot.png}
+  \caption{Sampling frequency vs. ground truth probability for 1000 runs of ProgramSample on a counting (see Fig.~\ref{listCurves}) task.}
+  \label{marginal}
+  \end{figure}
+
+
+\begin{table}[]
+\centering
+\caption{Average time to generate a sample measured in seconds. See Fig.~\ref{listCurves} and \ref{flashPerformance} for training set sizes.}
+\label{listTimes}
+\begin{tabular}{l|lll}
+        &      Large       &  Medium          &     Small \\\hline
+sort    & 1549\pm 155 & 905 \pm 58   & 463 \pm 65  \\
+reverse & 326\pm 42    & 141 \pm 18  &            \\
+count        &    $\leq 1$          &   $\leq 1$          &          $\leq 1$\\
+text edit&49\pm 3 &21 \pm 1 &84 \pm 3 
+\end{tabular}
+\end{table}
+\subsection{Programming by demonstration}
+We applied our program sampling algorithm to a suite of programming by demonstration problems within a text editing domain.
+This problem is timely, given the widespread use of the Flashfill program synthesis tool, which now ships by default in Microsoft Excel~\cite{real_world}.
+We modeled a subset of the Flashfill~\cite{Gulwani:2011:ASP:1926385.1926423} language using Sketch~\cite{solar2008program}  as a front-end to ProgramSample.
+Below is a grammar equivalent to our Sketch:
+\begin{verbatim}
+Program ::= Term | Program + Term
+Term    ::= String | substr(Pos,Pos)
+Pos     ::= Number | pos(String,String,Number)
+Number  ::= 0 | 1 | 2 | ... | -1 | -2 | ...
+String  ::= Character | Character + String
+Character ::= a | b | c | ...
+\end{verbatim}
+Because FlashFill's training set is not yet public, we drew and adapted text editing problems from~\cite{DBLP:conf/ecai/LinDETM14}, expanding their evaluation set to 19 problems, each with 5 training examples.
+Fig.~\ref{flashPerformance} evaluates the learner on held out test examples as a function of training set size.
+\begin{figure}
+  \includegraphics[width=0.5\textwidth]{fractionSolving.png}
+  \caption{Learning text edit operations by example. For each problem we sampled 100 programs conditioned on (1,2,3) input/output examples and evaluated their accuracy on all  5 examples; thus reported accuracies are averaged over both the problem and the sampled solution.}\label{flashPerformance}
+  \end{figure}
+\section{Discussion}
+\bibliography{main}
+\bibliographystyle{icml2016}
+
+\end{document} 
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was
+% created by Lise Getoor and Tobias Scheffer, it was slightly modified  
+% from the 2010 version by Thorsten Joachims & Johannes Fuernkranz, 
+% slightly modified from the 2009 version by Kiri Wagstaff and 
+% Sam Roweis's 2008 version, which is slightly modified from 
+% Prasad Tadepalli's 2007 version which is a lightly 
+% changed version of the previous year's version by Andrew Moore, 
+% which was in turn edited from those of Kristian Kersting and 
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.  

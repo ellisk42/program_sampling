@@ -1,0 +1,57 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: paper.aux
+The style file: icml2016.bst
+Database file #1: main.bib
+A bad cross reference---entry "DBLP:conf/ecai/LinDETM14"
+refers to entry "DBLP:conf/ecai/2014", which doesn't exist
+Warning--I didn't find a database entry for "DBLP:conf/ecai/2014"
+Warning--to sort, need author or key in crypto
+Warning--empty year in crypto
+Warning--empty booktitle in gomes2006model
+Warning--can't use both volume and number fields in gulwani2011automating
+Warning--can't use both volume and number fields in schkufza2013stochastic
+Warning--can't use both volume and number fields in singh2013automated
+Warning--can't use both volume and number fields in solar2006combinatorial
+You've used 29 entries,
+            2773 wiz_defined-function locations,
+            777 strings with 10685 characters,
+and the built_in function-call counts, 16610 in all, are:
+= -- 1552
+> -- 912
+< -- 29
++ -- 310
+- -- 278
+* -- 1299
+:= -- 2379
+add.period$ -- 113
+call.type$ -- 29
+change.case$ -- 177
+chr.to.int$ -- 26
+cite$ -- 66
+duplicate$ -- 812
+empty$ -- 1337
+format.name$ -- 310
+if$ -- 3665
+int.to.chr$ -- 4
+int.to.str$ -- 1
+missing$ -- 28
+newline$ -- 166
+num.names$ -- 114
+pop$ -- 399
+preamble$ -- 1
+purify$ -- 150
+quote$ -- 0
+skip$ -- 655
+stack$ -- 0
+substring$ -- 666
+swap$ -- 226
+text.length$ -- 23
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 314
+warning$ -- 7
+while$ -- 142
+width$ -- 0
+write$ -- 420
+(There was 1 error message)

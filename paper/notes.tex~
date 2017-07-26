@@ -1,0 +1,29 @@
+\documentclass{article}
+
+
+\begin{document}
+
+\section{High-level overview}
+
+We want to sample programs from a description length prior.
+Let $x$ be a program. Sample from
+\begin{equation}
+  P(x) = \frac{2^{-|x|}}{Z}
+\end{equation}
+Assume $|x|\leq n$ always, where $n$ is the number of SAT variables encoding the structure of the program.
+
+The approach will draw from two techniques: (1) constraint-solving techniques for program synthesis; and (2) uniform solution sampling using XOR constraints.
+
+The two most obvious approaches to this problem don't work:
+
+\begin{itemize}
+\item{Prefix codes}: Write down a prefix code for the space of allowed programs.
+  Uniformly sample values of all $n$ SAT variables encoding the program structure;
+  then the probability of sampling $x$ is proportional to $2^{n-|x|}$.
+\item{Embed \& Project}: Introduce $n$ auxiliary variables, $A$,
+  and add constraints $|x| > j\implies A_{j+1}$.
+  Uniformly sample solutions to $(x,A)$.
+  This is the technique introduced in ``Embed and Project'' (Stefano Ermon, 2013)
+  \end{itemize}
+
+\end{document}

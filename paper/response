@@ -1,0 +1,44 @@
+Review 3:
+
+
+We agree that our problem definition could confuse some readers: the
+paper (line 107) defines the problem as sampling from $p(x) =
+2^{-|x|}/Z$ where $x\in X$ only if the program $x$ satisfies some
+specification. This reviewer suggests $p(x)\propto 2^{-|x|} 1[x
+satisfies input/output specification]$, which we will change in our revision.
+This would make the connection between the prior ($2^{-|x|}$) and
+posterior more explicit.
+
+We thank reviewer 3 for suggesting a cleaner phrasing of our work's
+relationship to (Gomes et al). We could include a phrase such as "We
+improve the SAT-based sampling algorithms in (Gomes et al, Chakraborty
+et al, Ermon et al) by extending them to settings where the tilt is
+large. These large tilt distributions arise in many settings
+(citations here for various high-tilt problems), such as our framing
+of program induction: the sampling from conditional distributions over
+programs that produce observed behavior."
+
+We think that the reviewer's suggestion of a worked out example of a
+program learning task being translated to SAT is great. We could
+include this as a column in a revised version of the paper where we
+(1) define a grammar (ie, a sketch) over simple arithmetic
+expressions; (2) show how the grammar corresponds to a probability
+distribution over programs; (3) illustrate the conversion from the
+grammar to the SAT constraints; (4) diagram the embedding of the SAT
+solutions space that facilitates sampling. We can readily make these
+figures and make the requisite extra space in the paper by moving the
+less important proofs to a supplement.
+
+We found the work of FlashFill (Gulwani et al.) that reviewer 3 refers
+to inspiring, but our approach tackles a different class of program
+learning problems. Gulwani et al. builds a grammar constrained such
+that complete enumerative search of the solution space is tractable
+(solutions can be represented/searched efficiently in a version
+space). Here, we considered more general spaces of programs (like the
+recursive list manipulation procedures) where those techniques are not
+applicable.
+
+We suggest that Reviewer 3 misunderstood the role of rejection
+sampling in our algorithm in their "Significance - Justification";
+most of the heavy lifting in the search is done by the SAT solver, and
+in both theory and practice samples are accepted w.p. at least 1/2.

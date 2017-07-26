@@ -1,0 +1,210 @@
+\begin{thebibliography}{29}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[cry()]{crypto}
+Cryptominisat.
+\newblock \url{http://www.msoos.org/documentation/cryptominisat/}.
+
+\bibitem[Chakraborty et~al.(2014{\natexlab{a}})Chakraborty, Fremont, Meel,
+  Seshia, and Vardi]{chakraborty2014distribution}
+Chakraborty, Supratik, Fremont, Daniel~J, Meel, Kuldeep~S, Seshia, Sanjit~A,
+  and Vardi, Moshe~Y.
+\newblock Distribution-aware sampling and weighted model counting for sat.
+\newblock \emph{arXiv preprint arXiv:1404.2984}, 2014{\natexlab{a}}.
+
+\bibitem[Chakraborty et~al.(2014{\natexlab{b}})Chakraborty, Meel, and
+  Vardi]{chakraborty2014balancing}
+Chakraborty, Supratik, Meel, Kuldeep~S, and Vardi, Moshe~Y.
+\newblock Balancing scalability and uniformity in sat witness generator.
+\newblock In \emph{Proceedings of the 51st Annual Design Automation
+  Conference}, pp.\  1--6. ACM, 2014{\natexlab{b}}.
+
+\bibitem[Dechter et~al.(2013)Dechter, Malmaud, Adams, and
+  Tenenbaum]{Dechter:2013:BLV:2540128.2540316}
+Dechter, Eyal, Malmaud, Jon, Adams, Ryan~P., and Tenenbaum, Joshua~B.
+\newblock Bootstrap learning via modular concept discovery.
+\newblock In \emph{IJCAI}, pp.\  1302--1309. AAAI Press, 2013.
+\newblock ISBN 978-1-57735-633-2.
+\newblock URL \url{http://dl.acm.org/citation.cfm?id=2540128.2540316}.
+
+\bibitem[Ellis et~al.(2015)Ellis, Solar-Lezama, and
+  Tenenbaum]{ellis2015unsupervised}
+Ellis, Kevin, Solar-Lezama, Armando, and Tenenbaum, Josh.
+\newblock Unsupervised learning by program synthesis.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pp.\
+  973--981, 2015.
+
+\bibitem[Ermon et~al.(2012)Ermon, Gomes, and Selman]{ermon2012uniform}
+Ermon, Stefano, Gomes, Carla~P, and Selman, Bart.
+\newblock Uniform solution sampling using a constraint solver as an oracle.
+\newblock \emph{UAI}, 2012.
+
+\bibitem[Ermon et~al.(2013)Ermon, Gomes, Sabharwal, and Selman]{ermon2013embed}
+Ermon, Stefano, Gomes, Carla~P, Sabharwal, Ashish, and Selman, Bart.
+\newblock Embed and project: Discrete sampling with universal hashing.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pp.\
+  2085--2093, 2013.
+
+\bibitem[Gomes et~al.(2006{\natexlab{a}})Gomes, Sabharwal, and
+  Selman]{gomes2006model}
+Gomes, Carla~P, Sabharwal, Ashish, and Selman, Bart.
+\newblock Model counting: A new strategy for obtaining good bounds.
+\newblock 2006{\natexlab{a}}.
+
+\bibitem[Gomes et~al.(2006{\natexlab{b}})Gomes, Sabharwal, and
+  Selman]{gomes2006near}
+Gomes, Carla~P, Sabharwal, Ashish, and Selman, Bart.
+\newblock Near-uniform sampling of combinatorial spaces using xor constraints.
+\newblock In \emph{Advances In Neural Information Processing Systems}, pp.\
+  481--488, 2006{\natexlab{b}}.
+
+\bibitem[Graves et~al.(2014)Graves, Wayne, and Danihelka]{graves2014neural}
+Graves, Alex, Wayne, Greg, and Danihelka, Ivo.
+\newblock Neural turing machines.
+\newblock \emph{arXiv preprint arXiv:1410.5401}, 2014.
+
+\bibitem[Gulwani(2011{\natexlab{a}})]{Gulwani:2011:ASP:1926385.1926423}
+Gulwani, Sumit.
+\newblock Automating string processing in spreadsheets using input-output
+  examples.
+\newblock In \emph{POPL}, pp.\  317--330, New York, NY, USA,
+  2011{\natexlab{a}}. ACM.
+\newblock ISBN 978-1-4503-0490-0.
+\newblock \doi{10.1145/1926385.1926423}.
+\newblock URL \url{http://doi.acm.org/10.1145/1926385.1926423}.
+
+\bibitem[Gulwani(2011{\natexlab{b}})]{gulwani2011automating}
+Gulwani, Sumit.
+\newblock Automating string processing in spreadsheets using input-output
+  examples.
+\newblock In \emph{ACM SIGPLAN Notices}, volume~46, pp.\  317--330. ACM,
+  2011{\natexlab{b}}.
+
+\bibitem[Gulwani et~al.(2011)Gulwani, Jha, Tiwari, and
+  Venkatesan]{Gulwani:2011:SLP:1993498.1993506}
+Gulwani, Sumit, Jha, Susmit, Tiwari, Ashish, and Venkatesan, Ramarathnam.
+\newblock Synthesis of loop-free programs.
+\newblock In \emph{PLDI}, pp.\  62--73, New York, NY, USA, 2011. ACM.
+\newblock ISBN 978-1-4503-0663-8.
+\newblock \doi{10.1145/1993498.1993506}.
+\newblock URL \url{http://doi.acm.org/10.1145/1993498.1993506}.
+
+\bibitem[Gulwani et~al.(2015)Gulwani, Hernandez-Orallo, Kitzelmann, Muggleton,
+  Schmid, and Zorn]{real_world}
+Gulwani, Sumit, Hernandez-Orallo, Jose, Kitzelmann, Emanuel, Muggleton,
+  Stephen, Schmid, Ute, and Zorn, Ben.
+\newblock Inductive programming meets the real world.
+\newblock \emph{Commun. ACM}, 2015.
+
+\bibitem[Katz et~al.(2008)Katz, Goodman, Kersting, Kemp, and
+  Tenenbaum]{logical}
+Katz, Yarden, Goodman, Noah~D., Kersting, Kristian, Kemp, Charles, and
+  Tenenbaum, Joshua~B.
+\newblock Modeling semantic cognition as logical dimensionality reduction.
+\newblock In \emph{CogSci}, pp.\  71--76, 2008.
+
+\bibitem[Koza(1993)]{DBLP:books/daglib/0070933}
+Koza, John~R.
+\newblock \emph{Genetic programming - on the programming of computers by means
+  of natural selection}.
+\newblock Complex adaptive systems. MIT Press, 1993.
+\newblock ISBN 978-0-262-11170-6.
+
+\bibitem[Lake et~al.(2015)Lake, Salakhutdinov, and Tenenbaum]{lake2015human}
+Lake, Brenden~M, Salakhutdinov, Ruslan, and Tenenbaum, Joshua~B.
+\newblock Human-level concept learning through probabilistic program induction.
+\newblock \emph{Science}, 350\penalty0 (6266):\penalty0 1332--1338, 2015.
+
+\bibitem[Liang et~al.(2011)Liang, Jordan, and Klein]{liang11dcs}
+Liang, P., Jordan, M.~I., and Klein, D.
+\newblock Learning dependency-based compositional semantics.
+\newblock In \emph{Association for Computational Linguistics (ACL)}, pp.\
+  590--599, 2011.
+
+\bibitem[Liang et~al.(2010)Liang, Jordan, and Klein]{DBLP:conf/icml/LiangJK10}
+Liang, Percy, Jordan, Michael~I., and Klein, Dan.
+\newblock Learning programs: A hierarchical bayesian approach.
+\newblock In F{\"u}rnkranz, Johannes and Joachims, Thorsten (eds.),
+  \emph{ICML}, pp.\  639--646. Omnipress, 2010.
+\newblock ISBN 978-1-60558-907-7.
+
+\bibitem[Lin et~al.(2014)Lin, Dechter, Ellis, Tenenbaum, and
+  Muggleton]{DBLP:conf/ecai/LinDETM14}
+Lin, Dianhuan, Dechter, Eyal, Ellis, Kevin, Tenenbaum, Joshua~B., and
+  Muggleton, Stephen.
+\newblock Bias reformulation for one-shot function induction.
+\newblock In \emph{{ECAI} 2014 - 21st European Conference on Artificial
+  Intelligence, 18-22 August 2014, Prague, Czech Republic - Including
+  Prestigious Applications of Intelligent Systems {(PAIS} 2014)}, pp.\
+  525--530, 2014.
+\newblock \doi{10.3233/978-1-61499-419-0-525}.
+\newblock URL \url{http://dx.doi.org/10.3233/978-1-61499-419-0-525}.
+
+\bibitem[Menon et~al.(2013)Menon, Tamuz, Gulwani, Lampson, and
+  Kalai]{menon2013machine}
+Menon, Aditya, Tamuz, Omer, Gulwani, Sumit, Lampson, Butler, and Kalai, Adam.
+\newblock A machine learning framework for programming by example.
+\newblock In \emph{Proceedings of The 30th International Conference on Machine
+  Learning}, pp.\  187--195, 2013.
+
+\bibitem[Nori et~al.(2015)Nori, Ozair, Rajamani, and
+  Vijaykeerthy]{nori2015efficient}
+Nori, Aditya~V, Ozair, Sherjil, Rajamani, Sriram~K, and Vijaykeerthy, Deepak.
+\newblock Efficient synthesis of probabilistic programs.
+\newblock In \emph{Proceedings of the 36th ACM SIGPLAN Conference on
+  Programming Language Design and Implementation}, pp.\  208--217. ACM, 2015.
+
+\bibitem[Raychev et~al.(2016)Raychev, Bielik, Vechev, and
+  Krause]{raychev2016learning}
+Raychev, Veselin, Bielik, Pavol, Vechev, Martin, and Krause, Andreas.
+\newblock Learning programs from noisy data.
+\newblock In \emph{Proceedings of the 43rd Annual ACM SIGPLAN-SIGACT Symposium
+  on Principles of Programming Languages}, pp.\  761--774. ACM, 2016.
+
+\bibitem[Reed \& de~Freitas(2015)Reed and
+  de~Freitas]{DBLP:journals/corr/ReedF15}
+Reed, Scott and de~Freitas, Nando.
+\newblock Neural programmer-interpreters.
+\newblock \emph{CoRR}, abs/1511.06279, 2015.
+\newblock URL \url{http://arxiv.org/abs/1511.06279}.
+
+\bibitem[Schkufza et~al.(2013)Schkufza, Sharma, and
+  Aiken]{schkufza2013stochastic}
+Schkufza, Eric, Sharma, Rahul, and Aiken, Alex.
+\newblock Stochastic superoptimization.
+\newblock In \emph{ACM SIGARCH Computer Architecture News}, volume~41, pp.\
+  305--316. ACM, 2013.
+
+\bibitem[Singh et~al.(2013)Singh, Gulwani, and
+  Solar-Lezama]{singh2013automated}
+Singh, Rishabh, Gulwani, Sumit, and Solar-Lezama, Armando.
+\newblock Automated feedback generation for introductory programming
+  assignments.
+\newblock In \emph{ACM SIGPLAN Notices}, volume~48, pp.\  15--26. ACM, 2013.
+
+\bibitem[Solar~Lezama(2008)]{solar2008program}
+Solar~Lezama, Armando.
+\newblock \emph{Program Synthesis By Sketching}.
+\newblock PhD thesis, EECS Department, University of California, Berkeley, Dec
+  2008.
+\newblock URL
+  \url{http://www.eecs.berkeley.edu/Pubs/TechRpts/2008/EECS-2008-177.html}.
+
+\bibitem[Solar-Lezama et~al.(2006)Solar-Lezama, Tancau, Bodik, Seshia, and
+  Saraswat]{solar2006combinatorial}
+Solar-Lezama, Armando, Tancau, Liviu, Bodik, Rastislav, Seshia, Sanjit, and
+  Saraswat, Vijay.
+\newblock Combinatorial sketching for finite programs.
+\newblock In \emph{ACM Sigplan Notices}, volume~41, pp.\  404--415. ACM, 2006.
+
+\bibitem[Valiant \& Vazirani(1985)Valiant and Vazirani]{valiant1985np}
+Valiant, Leslie~G and Vazirani, Vijay~V.
+\newblock Np is as easy as detecting unique solutions.
+\newblock In \emph{Proceedings of the seventeenth annual ACM symposium on
+  Theory of computing}, pp.\  458--463. ACM, 1985.
+
+\end{thebibliography}

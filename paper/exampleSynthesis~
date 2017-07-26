@@ -1,0 +1,50 @@
+
+\begin{figure}
+  \centering
+  \subfloat[Sketch]{{\BUseVerbatim[fontsize=\footnotesize,fontfamily=courier]{ExampleSketch}}\label{booleanSketch}}\quad
+  \subfloat[Specification]{{\BUseVerbatim[fontsize=\footnotesize,fontfamily=courier]{ExampleSpecification}}\label{booleanSpecification}}\quad
+  \subfloat[Program space]{\begin{tikzpicture}[level distance=1.2cm, grow=down,
+    every node/.style={ thin},
+    edge from parent/.style={-latex, thin, draw}
+]
+      \node (P) {$P_1$}
+      child {node (Q) {$i$} edge from parent node[left] {$c^1_1\hphantom{i}$ }}
+      child {node (S) {nand} 
+    	child {node (e2) {$P_2$}
+        	child {node {$i$} edge from parent node[left] {$c^2_1\hphantom{i}$}}
+    		child {node (pp) {nand} edge from parent node[right] {$c^2_2$}}
+        }
+        child {node (e3) {$P_3$}}
+        edge from parent node[right] {$\hphantom{i}c_2^1$}
+    };
+    \path (S) -- coordinate[midway] (PQ) (e2);
+\path (S) -- coordinate[midway] (PR) (e3);
+\draw (PQ) to[bend right=22] (PR);
+\node (qq) [below] at (e3) {\vphantom{I}$\hdots\hdots$};
+\node (ss) [below] at (pp) {\vphantom{I}$\hdots\hdots$};
+  \end{tikzpicture}\label{booleanSpace}}\quad
+  \subfloat[Constraints from sketch]{\[ \begin{aligned}
+      &c_1^1\vee c_2^1\\
+      &\overline{c_1^1\wedge c_1^2}\\
+&      c_2^1\vee c_2^1\\
+ &     \overline{c_2^1\wedge c_2^2}\\
+&\cdots      \cdots
+    \end{aligned} \]\label{booleanExclusive}}\quad
+  \subfloat[Constraints from specification]{\[ \begin{aligned}
+      &i_1\Leftrightarrow 0\wedge P_1^{(i_1)}\Leftrightarrow 1\\
+      &i_2\Leftrightarrow 1\wedge P_1^{(i_2)}\Leftrightarrow 0\\
+      &c_1^1\Rightarrow (P_1^{(i_1)}\Leftrightarrow i_1)\wedge (P_1^{(i_2)}\Leftrightarrow i_2)\\
+      & c_2^1\Rightarrow (P_1^{(i_1)}\Leftrightarrow \overline{P_2^{(i_1)}\wedge P_3^{(i_2)}})\wedge\\
+&\hspace{0.9cm}      (P_1^{(i_2)}\Leftrightarrow \overline{P_2^{(i_2)}\wedge P_3^{(i_2)}})\\
+      &\cdots\cdots
+    \end{aligned} \]\label{booleanModel}}\quad
+  \subfloat[Constraint solution]{\[ \begin{aligned}
+    &  c_1^1 = 0, c_1^2 = 1\\
+     & c_1^2 = 1, c_2^2 = 0\\
+      &c_1^3 = 1, c_2^3 = 0\\
+      &\\
+      &\text{{\ttfamily Prog = nand(i, i)}}
+  \end{aligned} \]\label{booleanSolution}}
+  \caption{Synthesizing a program via sketching and constraint solving. {\ttfamily Typewriter font} refers to pieces of programs or sketches, while math font refers to pieces of a constraint satisfaction problem (a SAT formula).}
+  \label{booleanExample}
+\end{figure}

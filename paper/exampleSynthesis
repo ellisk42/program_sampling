@@ -1,0 +1,31 @@
+
+\begin{figure}
+  \centering
+  \subfloat[Sketch]{{\BUseVerbatim[fontsize=\footnotesize,fontfamily=courier]{ExampleSketch}}\label{booleanSketch}}\quad
+  \subfloat[Specification]{{\BUseVerbatim[fontsize=\footnotesize,fontfamily=courier]{ExampleSpecification}}\label{booleanSpecification}}\quad
+  \quad
+  \subfloat[Constraints from sketch]{\[ \begin{aligned}
+      &c_1^1\vee c_2^1\\
+      &\overline{c_1^1\wedge c_1^2}\\
+&      c_2^1\vee c_2^1\\
+ &     \overline{c_2^1\wedge c_2^2}\\
+&\cdots      \cdots
+    \end{aligned} \]\label{booleanExclusive}}\quad
+  \subfloat[Constraints from specification]{\[ \begin{aligned}
+      &i_1\Leftrightarrow 0\wedge P_1^{(i_1)}\Leftrightarrow 1\\
+      &i_2\Leftrightarrow 1\wedge P_1^{(i_2)}\Leftrightarrow 0\\
+      &c_1^1\Rightarrow (P_1^{(i_1)}\Leftrightarrow i_1)\wedge (P_1^{(i_2)}\Leftrightarrow i_2)\\
+      & c_2^1\Rightarrow (P_1^{(i_1)}\Leftrightarrow \overline{P_2^{(i_1)}\wedge P_3^{(i_2)}})\wedge\\
+&\hspace{0.9cm}      (P_1^{(i_2)}\Leftrightarrow \overline{P_2^{(i_2)}\wedge P_3^{(i_2)}})\\
+      &\cdots\cdots
+    \end{aligned} \]\label{booleanModel}}\quad
+  \subfloat[Constraint solution]{\[ \begin{aligned}
+    &  c_1^1 = 0, c_1^2 = 1\\
+     & c_1^2 = 1, c_2^2 = 0\\
+      &c_1^3 = 1, c_2^3 = 0\\
+      &\\
+      &\text{{\ttfamily Prog = nand(i, i)}}
+  \end{aligned} \]\label{booleanSolution}}
+  \caption{Synthesizing a program via sketching and constraint solving. {\ttfamily Typewriter font} refers to pieces of programs or sketches, while math font refers to pieces of a constraint satisfaction problem (a SAT formula).}
+  \label{booleanExample}
+\end{figure}

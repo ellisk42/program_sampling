@@ -1,0 +1,430 @@
+ellisk@fiibar:~/program_sampling/paper$ evince nips_2016.pdf &
+[1] 14696
+ellisk@fiibar:~/program_sampling/paper$ Gtk-Message: Failed to load module "overlay-scrollbar"
+
+** (evince:14696): WARNING **: Couldn't connect to accessibility bus: Failed to connect to socket /tmp/dbus-DJb2qOTPOo: Connection refused
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+** (evince:14696): WARNING **: Error setting file metadata: No such file or directory
+
+** (evince:14696): WARNING **: Error setting file metadata: No such file or directory
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+
+(evince:14696): Gtk-CRITICAL **: gtk_widget_show: assertion 'GTK_IS_WIDGET (widget)' failed
+1cm

@@ -1,0 +1,59 @@
+Masked Reviewer ID: 	Assigned_Reviewer_1
+Review: 	
+Question	 
+Clarity (Assess the clarity of the presentation and reproducibility of the results.)	Above Average
+Clarity - Justification	The writing is mostly fine.
+
+Please spell-check and proof-read!
+
+I'm not sure I understand the last paragraph of Section 3.2. Can you quantify the last three words "much more costly" by the size of the SAT instances generated? Speaking of generating SAT instances, at the beginning of Section 3 please state whether your SAT instances are generated from your sketches by exactly the tool in Solar-Lezama et al., 2006.
+Significance (Does the paper contribute a major breakthrough or an incremental advance?)	Above Average
+Significance - Justification	Although most of the technical development (Section 2) is concerned with making sampling practical, most of the experimental results (Section 3) seem concerned with how accurate the sampled programs (presumably correctly from the posterior) are, and the accuracy results in Figure 6 are rather disappointing. Doesn't this just mean that the prior used in this experiment is not so good, and shouldn't the experimental results focus more on how good the sampling algorithm is? As for evaluating the sampling algorithm, can you claim that Table 1 shows that your sampling algorithm is faster than ever on the given posteriors?
+
+In Figure 5, to compare MDL against C > 1, shouldn't at least the C shortest programs be used (so that a problem is "solved" if the correct joint prediction to the test cases is produced by any of the C shortest programs)?
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.)	Line 028 "approahes"
+Line 100 The comma should come after the citation.
+Line 201 "in, for example," should be deleted given that the following citations are parenthetical.
+Line 238 "]" should be ")"
+Lines 229,241 Please write $\lvert x_* \rvert - d$ for correct horizontal spacing.
+Line 245 Isn't the tilt bounded by $2^{d - \lvert x_* \rvert}$ rather?
+Line 310 "than" should be "then"
+Line 318 "probability sampling" should be "probability of sampling"
+Line 347 Where does the quantity $\lvert E \rvert 2^{-E}$ come from? Please explain.
+Line 404 "arbitrarily well" at the cost of what? Please recap.
+Line 411 What does "Application of Proposition 3" mean -- to set d and K? Please recap.
+Line 420 "that each" is hard to understand when "upper bound" and "lower bound" are used as verbs. And "each individually" is redundant. Better change "to upper bound $\lvert X \rvert$ and lower bound $\lvert E \rvert$ that each individually" to "to find an upper bound on $\lvert X \rvert$ and a lower bound on $\lvert E \rvert$ that each"
+Line 423 superfluous "."
+Line 442 I'm shocked to find that $\Delta$ and $\gamma$ are natural numbers. Why not other real numbers?
+In "XORSample'", "'" should be "$'$" instead.
+Overall Rating	Strong accept
+Reviewer confidence	Reviewer is knowledgeable
+Please acknowledge that you have read the author rebuttal. If your opinion has changed, please summarize the main reasons below.	I have read the author response.
+
+I agree with Reviewer 3 about line 107, and that "a tiny example of and perhaps an entire column devoted to how to transform a program and examples into a SAT problem" would help a lot.
+Masked Reviewer ID: 	Assigned_Reviewer_2
+Review: 	
+Question	 
+Clarity (Assess the clarity of the presentation and reproducibility of the results.)	Excellent (Easy to follow)
+Clarity - Justification	The paper is well written and the structure is clear.
+Significance (Does the paper contribute a major breakthrough or an incremental advance?)	Above Average
+Significance - Justification	The paper develops an algorithm to sample from the posterior distribution and implements in a system called PROGRAMSAMPLE. The focus is on efficiently sampling an already given hypothesis space, different from other literature work.
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.)	The PROGRAMSAMPLE requires that there not be too many programs consistent with the data. How can we check this in practice?
+Overall Rating	Strong accept
+Reviewer confidence	Reviewer's evaluation is an educated guess
+Masked Reviewer ID: 	Assigned_Reviewer_3
+Review: 	
+Question	 
+Clarity (Assess the clarity of the presentation and reproducibility of the results.)	Below Average
+Clarity - Justification	This paper is in an area that is quite interesting and the authors clearly know what they're talking about. I think, however, that there are some rather vexing terminology differences between whatever community the authors come from and, at least mine, but perhaps the machine learning community in general. For instance, line 107 is either wrong or extremely confusing. I don't believe the authors are interested in merely sampling from p(x) but rather p(x)I(prog satisfies input/output relationship when executed). The constraint is what makes this hard, sampling from p(x) would only require a nondeterministic generative interpretation of the grammar. This could be a field/terminology issue but I respectfully assert that it's not. It would have helped me a great deal to see a sentence something like "we improve on methods (Gomes et al) for using SAT solver in rejection sampling settings where the tilt (nicely defined btw) is large, for instance sampling from the conditional distribution of programs that produce observed behavior."
+
+Unfortunately, for me, and perhaps the ICML community, I don't have the time to read the entirety of Gomes et al (both) and Lezama's entire PhD thesis, although in both cases they seem extremely interesting, in order to really understand what's going. I think to really get this paper as it is written that would be necessary. This is because there is no hand-holding at all in terms of how one might take a program consisting of terms from either of the grammars provided, input-output pairs, and turn it into a SAT problem.
+
+I get the overall problem. I believe the authors know what they're talking about and probably got the proofs right (I didn't check them carefully), but I have a big issue with clarity. What would help tremendously is a tiny example of and perhaps an entire column devoted to how to transform a program and examples into a SAT problem. I get that it's a conference paper and there are serious space limitations but without such background I think it's too unclear what's going on.
+
+I am also confused by line 114 which talks about enumeration of solutions. It seems like the remainder of the paper is about using SAT solvers to find single or very small numbers of solutions in problems that are designed, more or less, to have one solution.
+Significance (Does the paper contribute a major breakthrough or an incremental advance?)	Above Average
+Significance - Justification	One should really read this score as NA. It could just as well be "below average." It would seem simultaneously to be the case that the work is fairly derivative relative to Gomes, however, high tilt distributions and the specific problem itself are very worth considering, even outside the given application domain. It would appear the the authors have done enough to address this particular specialization of the more general sampling problem to pass the conference significance threshold. The experimental results are fairly "small" but nonetheless interesting, however, I have some reservations about whether or not this general technique will end up scaling like, e.g. Gulwani. Rejection sampling is perhaps not the best strategy for program induction, no matter how good and fast SAT solvers become.
+Detailed comments. (Explain the basis for your ratings while providing constructive feedback.)	The paper is well written, grammatical, and of high quality. My primary criticism revolves around clarity (and was addressed in that section) and lack of background or examples that could make the paper accessible to a larger, more mainstream ML audience. I think the material is appropriate to ICML however I'm not sure what's left out of this conference paper is what can be safely left out in the ICML community.
+Overall Rating	Weak reject
+Reviewer confidence	Reviewer's evaluation is an educated guess

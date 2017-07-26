@@ -1,0 +1,625 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Jacobs Landscape Poster
+% LaTeX Template
+% Version 1.1 (14/06/14)
+%
+% Created by:
+% Computational Physics and Biophysics Group, Jacobs University
+% https://teamwork.jacobs-university.de:8443/confluence/display/CoPandBiG/LaTeX+Poster
+% 
+% Further modified by:
+% Nathaniel Johnston (nathaniel@njohnston.ca)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[final]{beamer}
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{etoolbox}
+\AtBeginEnvironment{algorithm}{%
+  \setlength{\columnwidth}{\linewidth}%
+}
+
+\usepackage[scale=1.24]{beamerposter} % Use the beamerposter package for laying out the poster
+\usepackage{tipa}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usetheme{confposter} % Use the confposter theme supplied with this template
+\usepackage{sidecap}
+\setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
+\setbeamercolor{block body}{fg=black,bg=white} % Colors of the body of blocks
+\setbeamercolor{block alerted title}{fg=white,bg=dblue!70} % Colors of the highlighted block titles
+\setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
+% Many more colors are available for use in beamerthemeconfposter.sty
+
+%-----------------------------------------------------------
+% Define the column widths and overall poster size
+% To set effective sepwid, onecolwid and twocolwid values, first choose how many columns you want and how much separation you want between columns
+% In this template, the separation width chosen is 0.024 of the paper width and a 4-column layout
+% onecolwid should therefore be (1-(# of columns+1)*sepwid)/# of columns e.g. (1-(4+1)*0.024)/4 = 0.22
+% Set twocolwid to be (2*onecolwid)+sepwid = 0.464
+% Set threecolwid to be (3*onecolwid)+2*sepwid = 0.708
+
+\newlength{\sepwid}
+\newlength{\onecolwid}
+\newlength{\twocolwid}
+\newlength{\threecolwid}
+\setlength{\paperwidth}{72in} % A0 width: 46.8in
+\setlength{\paperheight}{48in} % A0 height: 33.1in
+\setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
+\setlength{\onecolwid}{0.22\paperwidth} % Width of one column
+\setlength{\twocolwid}{0.464\paperwidth} % Width of two columns
+\setlength{\threecolwid}{0.708\paperwidth} % Width of three columns
+\setlength{\topmargin}{-0.5in} % Reduce the top margin size
+%-----------------------------------------------------------
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\beamer@@tmpl@headline}{wd=47in}{wd=71in}{}{}
+\makeatother
+
+\usepackage{graphicx}  % Required for including images
+\usepackage{verbatim}
+\usepackage{booktabs} % Top and bottom rules for tables
+
+\usepackage{wrapfig}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION 
+%----------------------------------------------------------------------------------------
+\usepackage{stmaryrd}
+\newcommand{\tuple}[1]{\ensuremath{\left \langle #1\right \rangle}}
+\newcommand{\sem}[1]{[\mkern-6mu[#1]\mkern-6mu]} %\newcommand{\sem}[1]{\llbracket #1\rrbracket}
+
+\usetikzlibrary{trees}
+\usetikzlibrary{fit}
+\usetikzlibrary{calc}
+\usetikzlibrary{bayesnet}
+
+\usepackage[normalem]{ulem}
+
+\title{Unsupervised Learning by Program Synthesis} % Poster title
+
+\author{Kevin Ellis, Armando Solar-Lezama, and Joshua B. Tenenbaum} % Author(s)
+
+\institute{Massachusetts Institute of Technology} % Institution(s)
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+\addtobeamertemplate{headline}{} 
+{\begin{tikzpicture}[remember picture, overlay]
+     \node [anchor=north east, inner sep=3cm]  at (current page.north east)
+           {\includegraphics[height=7cm]{csail.png}};
+                \node [anchor=north west, inner sep=3cm]  at (current page.north west)
+     {\includegraphics[height=5cm]{bcs.png}};
+\end{tikzpicture}}
+
+\addtobeamertemplate{block end}{}{\vspace*{2ex}} % White space under blocks
+\addtobeamertemplate{block alerted end}{}{\vspace*{2ex}} % White space under highlighted (alert) blocks
+
+\setlength{\belowcaptionskip}{2ex} % White space under figures
+\setlength\belowdisplayshortskip{2ex} % White space under equations
+
+\begin{frame}[t] % The whole poster is enclosed in one beamer frame
+
+\begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+\begin{column}{\onecolwid} % The first column
+
+%----------------------------------------------------------------------------------------
+%	OBJECTIVES
+%----------------------------------------------------------------------------------------
+
+\begin{alertblock}{Problem statement}
+  Discover latent structure in dataset,
+  where that structure takes the form of a  \emph{program}.
+  Examples of data$\to$program:
+  
+  
+\begin{itemize}
+\item Visual concepts:\\
+  \begin{tikzpicture}\centering
+    \node[draw,inner sep=1pt] at (0,0)
+    {\includegraphics[width=4.5cm]{results_problem_9/sample_1_0010.png}};
+    \node[draw,inner sep=1pt] at (5,0)
+    {\includegraphics[width=4.5cm]{results_problem_9/sample_1_0011.png}};
+     %\node[draw,inner sep=1pt] at (7,0)
+     %{\includegraphics[width=3cm]{results_problem_9/sample_1_0031.png}};
+     \draw[->,ultra thick](8,0) -- (10,0);
+     \node[draw,rounded corners] at (20,0)
+                   {\begin{aligned}
+                       &\mbox{goto}(\vec{r}_1,\theta_1); \mbox{ draw}(\mbox{shape}_1);\\
+                       &\mbox{move}(\ell_1,0^\circ); \mbox{ draw}(\mbox{shape}_1,\mbox{scale}_1);\\
+                       &\mbox{move}(\ell_1,0^\circ); \mbox{ draw}(\mbox{shape}_1,\mbox{scale}_1);
+                   \end{aligned}};
+\end{tikzpicture}
+ \item Linguistic rules:\\
+   \begin{tikzpicture}\centering
+     \node[draw] at (0,0) {
+     \begin{tabular}{l l l}
+/\textipa{k\ae ts}/ &/\textipa{dOrz}/ & /\textipa{tiT}/ \\
+/\textipa{Suz}/  & /\textipa{bUks}/ & \\
+/\textipa{hOrs@z}/  & /\textipa{ajz}/  &\\
+     \end{tabular}};
+     \draw[->,ultra thick](6,0) -- (8,0);
+     \node[draw,rounded corners] at (17,0)
+                   {\parbox{16cm}{
+if [ SIBILANT ]
+   (stem + /\textipa{@z}/)\\
+elseif [ VOICED ]
+   (stem + /\textipa{z}/)\\
+else
+   (stem + /\textipa{s}/)
+    }};
+\end{tikzpicture}
+ \item Multitask regression:\\
+   \begin{tikzpicture}\centering
+     \node[draw,inner sep=1pt] at (0,0)
+    {\includegraphics[width=11cm]{sins.png}};
+     \draw[->,ultra thick](6,0) -- (8,0);
+     \node[draw,rounded corners] at (17,0)
+                   {\parbox{16cm}{
+                       ($\lambda$ (amplitude phase)\\
+                       \hspace{0.5cm}($\lambda$ (x)\\
+                       amplitude $\times\sin (\mbox{x} + \mbox{phase}$)))
+    }};
+\end{tikzpicture}
+\end{itemize}
+
+%We treat the observed dataset as the output of a latent program run on latent inputs.
+In this work, we apply our methods to learning abstract visual concepts (eg, \emph{all in a line} or \emph{horizontally symmetric}) and to learning linguistic rules (eg, the rules that form verb inflections).
+
+\end{alertblock}
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Problem Framing}
+    The idea behind \textbf{unsupervised program synthesis} is to explain the observed data set as the output of an unknown program when run on unknown inputs.
+We do joint inference over the program and the program inputs,
+taking the maximally compressive solution. 
+Notation:
+\begin{itemize}
+\item Description length priors over programs $P_f(\cdot)$ (eg, linguistic rules)
+\item Priors over the inputs $P_I(\cdot)$ to $f$ (eg, stems)
+\item $N$ observations, $\{x_i\}_{i = 1}^N$ (eg, words)
+\item Noise model: $P_{x|z}(\cdot | \cdot)$, where $z_i\triangleq f(I_i)$
+\end{itemize}
+
+Minimize the description length:
+\begin{equation}\label{descriptionLength}
+ -\log P_f (f)-\sum_{i = 1}^N\Big( \log P_{x|z}(x_i|f(I_i)) +\log P_I (I_i) \Big)
+\end{equation}
+
+\vspace{2cm}
+\begin{tikzpicture}\centering
+      \node[latent] (f) at (0,0) {\normalsize program $f$};
+      \node[latent] (z) at (10,0) {\normalsize $z_i\triangleq f(I_i)$}; %
+      \node[obs] (x) at (20,0) {\normalsize datum $x_i$}; %
+      \node[latent] (o) at (10,-7) {\normalsize input $I_i$};
+      \edge[->] {f} {z};
+      \draw[->] (z) to node[fill=white,rotate = 270] {noise} (x);
+%      \edge[->] {z} {x};
+      \edge[->] {o} {z};
+      \plate {} {(z)(x)(o)} {$N$}
+\end{tikzpicture}
+
+\end{block}
+
+%------------------------------------------------
+
+\begin{block}{Our solution}
+%  The space of all programs is vast and often unamenable to the optimization methods used in much of machine learning.
+We extend two ideas from the program synthesis community to make search over programs tractable:
+
+\textbf{Sketching:} Manually provide a \emph{sketch}, or rough outline, of the program to be induced~\cite{solar2008program}.
+Our sketches are probabilistic context-free grammars.
+
+
+\textbf{Symbolic search:} %Much progress has been made in the engineering of general-purpose symbolic solvers for Satisfiability Modulo Theories (SMT) problems.
+We automatically translate our sketches into Satisfiability Modulo Theories (SMT) problems.
+%This is nontrivial because it involves converting the soft constraints of a probabilistic model
+%into the hard constraints accepted by SMT solvers.
+SMT problems are intractable in general, but often solved efficiently in practice, much like SAT problems.% due to the highly constrained nature of program synthesis which these solvers can exploit.
+\vspace{2cm}
+\begin{tikzpicture}\centering
+  \node (g) at (0,0) {\normalsize Sketch};
+  \node (n) at (10,-5) {\normalsize Noise model};
+  \node[draw,align=center] (u) at (10,0) {\normalsize Unsupervised\\Program\\Synthesis};
+  \node[draw,align=center] (s) at (20,0) {Synthesizer\\(SMT)};
+  \node (d) at (20,-5) {Data};
+  \node (p) at (30,0) {Program};
+  \draw[->] (u) to  (s);
+    \draw[->] (s) to  (p);
+  \draw[->] (d) to  (s);
+      \draw[->] (n) to  (u);
+      \draw[->] (g) to  (u);
+\end{tikzpicture}
+
+  \end{block}
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of the first column
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+\begin{column}{\twocolwid} % Begin a column which is two columns wide (column 2)
+
+\begin{columns}[t,totalwidth=\twocolwid] % Split up the two columns wide column
+
+\begin{column}{\onecolwid}\vspace{-.6in} % The first column within column 2 (column 2.1)
+
+%----------------------------------------------------------------------------------------
+%	MATERIALS
+%----------------------------------------------------------------------------------------
+
+
+  \begin{alertblock}{Why programs?}
+    Why might a learner represent knowledge as a program,
+    rather than the representations popular in much of machine learning,
+    such as a large matrix of weights or a graphical model?
+    Programs (probabilistic or deterministic)
+    excel at representing knowledge that is (1) symbolic; (2) compositional; or (3) higher-order.
+    We are motivated by the success of program induction
+    in both AI domains,
+    like semantic parsing and programming by demonstration,
+    and in cognitive modeling,
+    like intuitive theory learning~\cite{logical}.
+\end{alertblock}
+  
+\begin{block}{The synthesis algorithm}
+Unsupervised program synthesis is a domain-general framework for defining domain-specific program synthesis systems.
+For each domain, provide:
+\begin{itemize}
+\item{\emph{The sketch}}: Define the program primitives,
+  constrain the program space with a probabilistic context free grammar,
+  giving $P_f(\cdot)$. Example:
+  
+  \begin{align*}
+    E\to&\mathbb{Z} &\sem{z\in\mathbb{Z}} = z&\\
+    E\to&x &\sem{x}(I) = I&\\
+    E\to&E + E &\sem{E_1 + E_2}(I) = \sem{E_1}(I) +  \sem{E_2}(I)&
+  \end{align*}
+  Left: a grammar over expressions, $E$. Right: their denotations, where $\sem{\text{expression}}(\text{input}) = $ output of expression run on input
+\item{\emph{The noise model \& input prior}}: Define $\log P_{x|z}(\cdot | \cdot)$ and $\log P_I(\cdot)$
+%  to find description lengths $\{-\log P_{x|z}(x_i | \sem{f}(I_i))\}_{i = 1}^N$.
+ in terms of SMT primitives
+  (can include arithmetic operations, conditionals, local variables, etc.)
+\end{itemize}
+\centering\includegraphics[width=40cm]{encoding_screenshot.png}
+\end{block}
+\begin{block}{Pseudocode: Outer optimization loop}
+
+Minimize Eq.~\ref{descriptionLength} with an SMT solver in an inner loop:
+\begin{algorithm}[H] %[tb]
+   \label{optimization}
+\begin{algorithmic}
+  \STATE {\bfseries function UnsupervisedProgramSynthesis:}
+   \STATE {\bfseries Input:} Grammar $\mathcal{G}$, grammar start symbol $P$, denotation $\sem{\cdot}$, observations $\{x_i\}_{i = 1}^N$, noise model, prior over program input 
+   \STATE {\bfseries Output:} Program $f$, $N$ program inputs, description length $\ell$
+   \STATE // $I_i$ is an (unknown) program input the SMT solver will find
+   \STATE // Fresh variables unused in any existing formula
+   \STATE $I_1,I_2,\cdots,I_N = ${\bfseries FreshInputVariable()}
+   \STATE // Define hypothesis space and model program executions
+   \STATE // $l_f = $ program description length, $A = $ set of SMT constraints
+   \STATE $l_f,\{z_i\}_{i = 1}^N,A\leftarrow${\bfseries SMTEncoding}($\mathcal{G}, \sem{\cdot}, P,\{I_i\}_{i = 1}^N$)
+   \STATE // Compute total description length $\ell$
+   \STATE $\ell = ${\bfseries FreshRealVariable()}
+   \STATE $A\leftarrow A\cup \{\ell = l_f - \sum_i ( \log P(x_i|z_i) +  \log P(I_i) \}$
+   \WHILE{$A$ satisfiable according to SMT solver}
+   \STATE $\sigma\leftarrow \text{ a satisfying solution to }A$
+   \STATE $A\leftarrow A\cup \{ \ell < \sigma [\ell] \}$
+   \ENDWHILE
+   \STATE {\bfseries let} $f = \text{ unique program in $\mathcal{G}$ specified by $\sigma$}$
+   \STATE {\bfseries return} $f,\{\sigma[I_i]\}_{i = 1}^N,\sigma[\ell]$
+\end{algorithmic}
+\end{algorithm}
+\end{block}
+
+%\begin{block}{SMT Encoding}
+
+  
+%  \end{block}
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.1
+
+\begin{column}{\onecolwid}\vspace{-.6in} % The second column within column 2 (column 2.2)
+
+%----------------------------------------------------------------------------------------
+%	METHODS
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Domain: Visual concepts}
+  Humans can quickly learn many abstract visual concepts, often from few examples. 
+  Pairs of examples of twelve SVRT~\cite{fleuret2011comparing} concepts:
+
+    \vspace{0.5cm}
+%  \begin{figure}[h]\centering
+%  \begin{minipage}[b]{10cm}\centering
+    \begin{tikzpicture}\centering
+      \node at (13,8) {\uline{Concepts 1--6}};
+      \node [rotate = 90] at (-4,3) {\uline{Examples}};
+\node[draw,inner sep=1pt] at (27.5,0)
+{\includegraphics[width=4.5cm]{svrt/results_problem_8/sample_1_0009.png}};
+\node[draw,inner sep=1pt] at (27.5,4.5)
+{\includegraphics[width=4.5cm]{svrt/results_problem_8/sample_1_0051.png}};
+\node[draw,inner sep=1pt] at (22,0)
+{\includegraphics[width=4.5cm]{svrt/results_problem_20/sample_1_0009.png}};
+\node[draw,inner sep=1pt] at (22,4.5)
+{\includegraphics[width=4.5cm]{svrt/results_problem_20/sample_1_0051.png}};
+\node[draw,inner sep=1pt] at (16.5,0)
+{\includegraphics[width=4.5cm]{svrt/results_problem_10/sample_1_0009.png}};
+\node[draw,inner sep=1pt] at (16.5,4.5)
+{\includegraphics[width=4.5cm]{svrt/results_problem_10/sample_1_0051.png}};
+\node[draw,inner sep=1pt] at (11,0)
+{\includegraphics[width=4.5cm]{results_problem_16/sample_1_0009.png}};
+\node[draw,inner sep=1pt] at (11,4.5)
+{\includegraphics[width=4.5cm]{results_problem_16/sample_1_0051.png}};
+\node[draw,inner sep=1pt] at (5.5,0)
+{\includegraphics[width=4.5cm]{results_problem_3/sample_1_0009.png}};
+\node[draw,inner sep=1pt] at (5.5,4.5)
+{\includegraphics[width=4.5cm]{results_problem_3/sample_1_0051.png}};
+\node[draw,inner sep=1pt] at (0,0)
+{\includegraphics[width=4.5cm]{results_problem_9/sample_1_0010.png}};
+\node[draw,inner sep=1pt] at (0,4.5)
+{\includegraphics[width=4.5cm]{results_problem_9/sample_1_0011.png}};
+\end{tikzpicture}
+%\caption{Left: Pairs of examples of three SVRT concepts taken from \cite{fleuret2011comparing}. Right: the program we synthesize from the leftmost pair. This is a turtle program capable of drawing this pair of pictures and is parameterized by a set of latent variables: shape, distance, scale, initial position, initial orientation.}
+%\label{fig:squares}
+%\end{figure}
+
+    \vspace{0.5cm}
+%  \begin{figure}[h]\centering
+%  \begin{minipage}[b]{10cm}\centering
+    \begin{tikzpicture}\centering
+      \node at (13,8) {\uline{Concepts 7--12}};
+      \node [rotate = 90] at (-4,3) {\uline{Examples}};
+\node[draw,inner sep=1pt] at (27.5,0)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_18/sample_0_0009.png}};
+\node[draw,inner sep=1pt] at (27.5,4.5)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_18/sample_0_0051.png}};
+\node[draw,inner sep=1pt] at (22,0)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_21/sample_1_0009.png}};
+\node[draw,inner sep=1pt] at (22,4.5)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_21/sample_1_0051.png}};
+\node[draw,inner sep=1pt] at (16.5,0)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_22/sample_1_0009.png}};
+\node[draw,inner sep=1pt] at (16.5,4.5)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_22/sample_1_0051.png}};
+\node[draw,inner sep=1pt] at (11,0)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_16/sample_0_0009.png}};
+\node[draw,inner sep=1pt] at (11,4.5)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_16/sample_0_0051.png}};
+\node[draw,inner sep=1pt] at (5.5,0)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_7/sample_1_0009.png}};
+\node[draw,inner sep=1pt] at (5.5,4.5)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_7/sample_1_0051.png}};
+\node[draw,inner sep=1pt] at (0,0)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_6/sample_1_0010.png}};
+\node[draw,inner sep=1pt] at (0,4.5)
+{\includegraphics[width=4.5cm]{svrt/program_induction_data/results_problem_6/sample_1_0011.png}};
+\end{tikzpicture}
+    
+  Our system learns SVRT concepts by
+ synthesizing a program that
+  can draw example images within that concept. Learning occurs not from pixel-level input,
+  but from the output of an image parser:
+
+    \vspace{0.5cm}\begin{tikzpicture}
+    \node[draw,rounded corners](original) at (-1,0)
+         {\includegraphics[width=5cm]{unparsed.png}};
+         \node[draw,rounded corners](segmented) at (8,0)
+              {\includegraphics[width=5cm]{segmented.png}};
+              \draw[->,ultra thick](original.east) -- (segmented.west);
+              \node[draw,rounded corners](parsed) at (22,0)
+                   {\begin{aligned}
+                       &s_1 = \mbox{Shape}(\mbox{id} = 1,\mbox{scale} = 1,\\
+                       &\hspace{6.5cm}x = 10,y = 15)\\
+                       &s_2 = \mbox{Shape}(\mbox{id} = 2,\mbox{scale} = 1,\\
+                       &\hspace{6.5cm}x = 27,y = 54)\\
+                       &\mbox{borders}(s_1,s_2)
+                   \end{aligned}};
+                   \draw[->,ultra thick](segmented.east) -- (parsed.west);
+  \end{tikzpicture}
+
+%\if false
+    Program representation:
+    \begin{itemize}
+    \item Program inputs: shapes, coordinates, distances, angles, scales
+      \item Program output: Image parse
+      \item Constraints on program space: control a turtle, but...
+        \begin{itemize}
+        \item Restricted to alternatingly moving and drawning
+        \item No arithmetic on real variables
+        \item No rotation of shapes
+          %Movement: change coordinate/orientation, rotate, move forward, reflect over axis, perturb position. After drawing scene, assert topological constraints (e.g., which shapes contain/border which other shapes)
+        \end{itemize}
+        
+      \end{itemize}
+    %\fi
+
+    
+    \end{block}
+
+\begin{block}{Visual concepts: Classification performance}
+
+\hspace{2cm}\includegraphics[width=33cm]{../posterscatter_small.png}
+%  SVRT  concepts are given as supervised binary classification problems.
+
+Given a test image $t$ and a set of examples $E_1$ (resp. $E_2$) from class $C_1$ (resp. $C_2$),
+use  decision rule 
+$P_x(\{t\}\cup E_1)P_x(E_2)\mathop{\gtreqless}_{C_2}^{C_1} P_x(E_1)P_x(\{t\}\cup E_2)$.
+Approximate marginals w/ their MDL: so 4 synthesis problems.
+Like humans we learn from $\approx 6$ examples. Image features~\cite{fleuret2011comparing}, ConvNet, parse features trained on 10000, 2000,  6 examples.
+
+%Human accuracy: fraction of humans that learned the concept (0\% is chance level). Machine accuracy: classification accuracy on  held out examples: 50\% is chance level.% Dashed line is average accuracy.
+%Program synthesis: this work trained on 6 examples. ConvNet: A variant of LeNet5 trained on 2000 examples. Parse (Image) features: discriminative learners on features of parse (pixels) trained on 6 (10000) examples. Humans given an average of 6.27 examples and solve an average of 19.85 problems~\cite{fleuret2011comparing}.
+
+      \end{block}
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.2
+
+\end{columns} % End of the split of column 2 - any content after this will now take up 2 columns width
+
+
+%----------------------------------------------------------------------------------------
+
+\begin{columns}[t,totalwidth=\twocolwid] % Split up the two columns wide column again
+
+\begin{column}{\onecolwid} % The first column within column 2 (column 2.1)
+
+%----------------------------------------------------------------------------------------
+%	MATHEMATICAL SECTION
+%----------------------------------------------------------------------------------------
+
+
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.1
+
+\begin{column}{\onecolwid} % The second column within column 2 (column 2.2)
+
+%----------------------------------------------------------------------------------------
+%	RESULTS
+%----------------------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.2
+
+\end{columns} % End of the split of column 2
+
+\end{column} % End of the second column
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+\begin{column}{\onecolwid} % The third column
+
+%----------------------------------------------------------------------------------------
+%	CONCLUSION
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Domain: Linguistic rules}
+  Children  learn to inflect verbs
+  without explicit stem/inflection pairs (eg, without supervision).
+  Our system  synthesizes some linguistic rules, represented as programs that transform a stem into its inflected forms.
+  The learner's observed data consists of triples of $\tuple{\mbox{lexeme, tense, word}}$. For example,
+
+\vspace{1cm}\begin{tabular*}{34cm}{l|ccccc}
+Lexeme & Present & Past & 3rd Sing. Pres.  & Past Part. & Prog. \\\hline
+style&\textipa{staIl}&\textipa{staIld}&\textipa{staIlz}&\textipa{staIld}&\textipa{staIlIN}\\
+run&\textipa{r2n}&\textipa{r\ae n}&\textipa{r2nz}&\textipa{r2n}&\textipa{r2nIN}\\
+subscribe&\textipa{s@bskraIb}&\textipa{s@bskraIbd}&\textipa{s@bskraIbz}&\textipa{s@bskraIbd}&\textipa{s@bskraIbIN}\\
+rack&\textipa{r\ae k} &\textipa{r\ae kt}&\textipa{r\ae ks}&\textipa{r\ae kt}&\textipa{r\ae kIN} \\
+\end{tabular*}
+
+Each row of the above matrix is an observation ($x_i$'s, or program outputs). Program representation:
+\begin{itemize}
+\item Program input: the underlying stem (sequence of phonemes)
+  \item Program output: tuple of all inflections for a lexeme
+  \item Constraints on program space: standard phonological primitives, but...
+    \begin{itemize}
+    \item Has form: tuple of expressions, one for each tense.
+    \item Attend only to stem ending
+    \item Consider only suffixes
+    \end{itemize}
+  \end{itemize}
+
+The noise model permits exceptions  to learned rules (accommodating the irregulars). ``Rules-plus-exceptions'' model of the lexicon.
+\end{block}
+
+%----------------------------------------------------------------------------------------
+%	ADDITIONAL INFORMATION
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Linguistic rules: Model fitting}
+
+  \begin{tikzpicture}\centering
+\node[inner sep=1pt] at (07.5,0)
+{\includegraphics[width=17cm]{word_timing.png}};
+\node[inner sep=1pt] at (25,0)
+{\includegraphics[width=17cm]{screenshot.png}};
+
+\end{tikzpicture}
+
+
+
+%  To scale to a large lexicon (5000 lexemes), we trained our linguistic rule model using , sampling many small subsets of training data, fitting to the subset, and picking the best on the training data, learning the programs below.
+
+  
+  \begin{wrapfigure}{l}{20cm}  
+\vspace{-1.5cm}\includegraphics[width=19cm]{../average_soft.png} 
+  \end{wrapfigure}
+  Synthesis time w/ an SMT solver grows quickly with increased training data, so we fit our models with Random Sample Consensus (RANSAC), recovering the above programs w/ a lexicon of 5000 lexemes.
+
+  \vspace{2cm}
+\end{block}
+
+%----------------------------------------------------------------------------------------
+%	REFERENCES
+%----------------------------------------------------------------------------------------
+
+\setbeamercolor{block title}{fg=red,bg=white} % Change the block title color
+\begin{block}{References}
+
+  %\nocite{*} % Insert publications even if they are not cited in the poster
+  \renewcommand{\refname}{\vspace{-0.8em}}
+          \bibliographystyle{plain}
+          \bibliography{main}
+%\small{\bibliographystyle{plain}
+%\bibliography{main}}
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+%	ACKNOWLEDGEMENTS
+%----------------------------------------------------------------------------------------
+
+\setbeamercolor{block title}{fg=red,bg=white} % Change the block title color
+
+\begin{block}{Acknowledgements}
+
+\small{\rmfamily{We are grateful for discussions with Timothy O'Donnell, Brendan Lake, and Tejas Kulkarni.
+This material is based upon work supported by funding from NSF award SHF-1161775, from the Center for Minds, Brains and
+Machines (CBMM) funded by NSF STC award CCF-1231216,
+and from ARO MURI contract W911NF-08-1-0242.
+}} \\
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+%	CONTACT INFORMATION
+%----------------------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of the third column
+
+\end{columns} % End of all the columns in the poster
+
+\end{frame} % End of the enclosing frame
+
+\end{document}

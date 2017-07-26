@@ -1,0 +1,13 @@
+
+I just got off a plane; below are some comments I wrote during the flight. I'll try to send more later tonight, but they may come a little late.
+
+eg, -> e.g., or \textit{e.g.,}
+
+"We show our system learning counting routines" too many gerunds; rewrite to
+"Our system can learn couting routines and recursive..."
+
+"solver-basedtechniques" -> "solver-based techniques"
+
+The intro to section 2 is too dense. Starting from "We embed X in a higher dimensional space E, such that sampling uniformly from E corresponds to sampling from another distribution r(), whose fluctuations around q can be made arbitrarily small." Where did r() come from? The paragraph seems to be saying: "I want to sample from P, but P is hard because it has high tilt, so I will approximate with Q, but it's hard to sample from Q also, so we sample from R instead, and the way we sample from R is that we actually have a mapping f from E to X, such that sampling uniformly from E and then applying f will give us samples in X distributed according to R."
+I think a better way of explaining things is as follows:
+"Given a distribution P on a space X, it's always possible to define a higher dimensional space E and a mapping F:E->X such that sampling uniformly from E and applying F will give us P-distributed samples from X. When P has high tilt, however, sampling from X with such an approach will be extremely inefficient. Our approach instead is to define an F' such that uniform samples on E map to a distribution Q that is guaranteed to have low tilt, but whose KL divergence from P is low. The discrepancy between the distributions Q and P can be corrected through rejection sampling. Sampling uniformly from E is itself not trivial, but a variety of techniques exist to approximate uniform sampling by adding random project constraints to the set X (should this be E?). These techniques introduce approximation error that can be made arbitrarily small at the expense of lower efficiency. Fig. 2 illustrates this process." Then in the caption you explain that the first graph is P, the second graph is Q, the third one is the approximation to Q that you get from doing approximately uniform sampling, and the last graph is the distribution you will actually get after the rejection sampling correction.

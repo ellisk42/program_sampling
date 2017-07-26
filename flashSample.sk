@@ -64,6 +64,9 @@ str cstr([int n] , char[n] ch){
 // s = ...r1r2...
 // returns  ^ position
 // optionally skip over k occurrences
+// "3" is special because I encoded k in 2 bits
+// So if these bits are 11 (3 in decimal),
+// I pretend that this is 2's complement for -1, which means to return the last one.
 int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
   int saved;
   bit foundit = 0;

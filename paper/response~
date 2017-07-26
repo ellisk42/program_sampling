@@ -1,0 +1,12 @@
+
+Review 3:
+
+
+We agree that our problem definition could confuse the reader: the
+paper (line 107) defines the problem as sampling from $p(x) =
+2^{-|x|}/Z$ where $x\in X$ only if the program $x$ satisfies some
+specification. This reviewer suggests $p(x)\propto 2^{-|x|} 1[x
+satisfies specification]$, which we would change in our revision.
+This would make the connection between the prior ($2^{-|x|}$) and
+posterior more explicit.
+

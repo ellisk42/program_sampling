@@ -1,0 +1,53 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: nips_2016.aux
+The style file: unsrt.bst
+Database file #1: main.bib
+A bad cross reference---entry "DBLP:conf/ecai/LinDETM14"
+refers to entry "DBLP:conf/ecai/2014", which doesn't exist
+Warning--I didn't find a database entry for "DBLP:conf/ecai/2014"
+Warning--can't use both volume and number fields in singh2013automated
+Warning--can't use both volume and number fields in gulwani2011automating
+Warning--can't use both volume and number fields in schkufza2013stochastic
+You've used 25 entries,
+            1791 wiz_defined-function locations,
+            592 strings with 7699 characters,
+and the built_in function-call counts, 7720 in all, are:
+= -- 732
+> -- 279
+< -- 20
++ -- 102
+- -- 77
+* -- 439
+:= -- 1054
+add.period$ -- 83
+call.type$ -- 25
+change.case$ -- 23
+chr.to.int$ -- 0
+cite$ -- 28
+duplicate$ -- 413
+empty$ -- 773
+format.name$ -- 77
+if$ -- 1872
+int.to.chr$ -- 0
+int.to.str$ -- 25
+missing$ -- 24
+newline$ -- 127
+num.names$ -- 26
+pop$ -- 123
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 274
+stack$ -- 0
+substring$ -- 527
+swap$ -- 192
+text.length$ -- 20
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 3
+while$ -- 73
+width$ -- 27
+write$ -- 281
+(There was 1 error message)

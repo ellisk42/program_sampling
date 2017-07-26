@@ -1,0 +1,560 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+% \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading nips_2016
+%
+% to avoid loading the natbib package, add option nonatbib:
+% \usepackage[nonatbib]{nips_2016}
+
+
+\usepackage{dsfont}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+\usepackage[final]{nips_2016}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+
+\usepackage{listings}
+\usepackage{amsthm}
+% use Times
+\usepackage{times}
+% For figures
+\usepackage{graphicx} % more modern
+%\usepackage{epsfig} % less modern
+\usepackage{subfig} 
+\usepackage{fancyvrb}
+
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+\fvset{fontsize=\footnotesize}
+
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{wrapfig}
+\usepackage{tabularx}
+
+
+\usepackage{verbatim}
+ \usepackage{booktabs}
+ % For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tikz}
+% As of 2011, we use the hyperref package to produce hyperlinks in the
+% resulting PDF.  If this breaks your system, please commend out the
+% following usepackage line and replace \usepackage{icml2016} with
+% \usepackage[nohyperref]{icml2016} above.
+\usepackage{amsmath}
+\usepackage{hyperref}
+\DeclareMathOperator*{\argmin}{arg\,min} % thin space, limits underneath in displays
+\DeclareMathOperator{\argmin}{argmin} % no space, limits underneath in displays
+
+
+
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+\newcommand{\theSystem}{\textsc{ProgramSample}}
+
+\newcommand{\Expect}{\mathds{E}} %{{\rm I\kern-.3em E}}
+\newcommand{\Probability}{\mathds{P}} %{{\rm I\kern-.3em P}}
+
+\newtheorem{proposition}{Proposition}
+
+\newcommand\modt{\stackrel{\mathclap{\normalfont 2}}{\equiv}}
+
+
+\title{Supplement to: Sampling for Bayesian Program Learning}
+
+% The \author macro works with any number of authors. There are two
+% commands used to separate the names and addresses of multiple
+% authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to
+% break the lines. Using \AND forces a line break at that point. So,
+% if LaTeX puts 3 of 4 authors names on the first line, and the last
+% on the second line, try using \AND instead of \And before the third
+% author name.
+
+\author{
+Kevin Ellis \\
+Brain and Cognitive Sciences\\
+MIT\\
+%Pittsburgh, PA 15213 \\
+\texttt{ellisk@mit.edu} \\
+\And
+Armando Solar-Lezama \\
+  CSAIL\\
+MIT \\
+\texttt{asolar@csail.mit.edu} \\
+\And
+Joshua B. Tenenbaum \\
+Brain and Cognitive Sciences\\
+MIT\\
+\texttt{jbt@mit.edu} \\
+}
+
+\begin{document}
+% \nipsfinalcopy is no longer used
+
+\maketitle
+
+\section{Proofs}
+
+Due to space considerations we have included the proofs of our
+theoretical results here; see original paper for context.
+
+\begin{proposition}\label{acceptanceBound}
+  Let $x\in X$ be a sample from $q(\cdot )$. The probability of accepting $x$ is at least $\frac{1}{1 + |X|2^{\lvert x_* \rvert -d}}$ where $x_* = \argmin_x \lvert x \rvert $.
+\end{proposition}
+\begin{proof}
+  The probability of acceptance is $\sum_x q(x) A(x)$, or
+  \begin{equation}
+     \sum_x \frac{2^{-\lvert x \rvert }}{\sum_{x'}q(x')} = \frac{Z}{Z + \sum_{\lvert x \rvert  > d}(2^{-d} - 2^{-\lvert x \rvert }) } > \frac{1}{1 + |X|2^{-d}/Z}>\frac{1}{1 + |X|2^{\lvert x_* \rvert -d}}.
+    \end{equation}
+\end{proof}
+
+  \begin{proposition}\label{propositionLowerBound}
+    The probability of sampling $(x,y)$ is at least $\frac{1}{|E|}\times \frac{1}{1 + 2^K/|E|}$ and the probability of getting any sample at all is at least $1 - 2^{K}/|E|$.
+  \end{proposition}
+  \begin{proof}
+    The probability of sampling $(x,y)$, given that $(x,y)$ survives the $K$ constraints,
+    is $\frac{1}{\text{mc}}$, where $\text{mc}$ is the model count (\# of survivors).
+    The probability of $(x,y)$ surviving the $K$ constraints is $2^{-K}$ and is independent of whether any other element of $E$ survives the constraints~\cite{gomes2006near}.
+    So the probability of sampling $(x,y)$ is
+    \begin{align}
+      &      2^{-K}\sum_{i = 1}^{|E|} \Probability\left[ \text{mc} = i | (x,y) \text{ survives}\right] \frac{1}{i}\\
+      & = 2^{-K} \Expect\left[\frac{1}{\text{mc}} \vert (x,y) \text{ survives} \right] \\
+      &> 2^{-K} \frac{1}{\Expect[\text{mc}|(x,y) \text{ survives}]}\text{, Jensen's inequality}\\
+      &= 2^{-K} \frac{1}{1 + (|E|-1)2^{-K}}\text{, pairwise independence}\\
+      &> \frac{1}{|E|}\times \frac{1}{1 + 2^K/|E|}.
+      \end{align}
+    We fail to get a sample if $\text{mc} = 0$. We bound the probability of this event using Chebyshev's inequality: $\Expect [\text{mc}] = |E|2^{-K}>\text{Var}(\text{mc})$, so
+    \begin{align}
+      \Probability [\text{mc}= 0]&\leq \Probability [ |\text{mc}-\Expect [\text{mc}]|\geq \Expect [\text{mc}]]\\
+      &\leq \frac{\text{Var}(\text{mc})}{\Expect [\text{mc}]^2}<1/\Expect[\text{mc}] = 2^K/|E|.
+    \end{align}
+  \end{proof}
+
+    \begin{proposition}\label{mainResult}
+    Write $Ar(x)$ to mean the distribution  proportional to $A(x)r(x)$. Then $D(p||Ar)<\log \left( 1 + \frac{1 + 2^{ - \gamma}}{1 + 2^\Delta}\right)$ where
+    $\Delta = \log |E| - K$ and $\gamma = d - \log |X| - \lvert x_* \rvert $.
+  \end{proposition}
+  \begin{proof}
+      Define $c=\frac{1}{1 + 2^K/|E|}$. As $p(x)\propto A(x)q(x)$,
+    \begin{align}
+      D(p||Ar)& = \sum_x p(x)\log \frac{p(x)\sum_y A(y)r(y)}{A(x)r(x)}\\
+      & = \sum_x p(x)\log \frac{A(x)q(x)}{\sum_y A(y)q(y)}\frac{\sum_y A(y)r(y)}{A(x)r(x)} \\ %\text{, as }q(x)A(x)\propto p(x)\\
+      & = \log \frac{\sum_x A(x)r(x)}{\sum_x A(x)q(x)} + \sum_x p(x)\log \frac{q(x)}{r(x)}\\
+      &  < \log \frac{\sum_x A(x)r(x)}{\sum_x A(x)q(x)} - \log c\label{lowerBound}
+    \end{align}
+    where~\ref{lowerBound} comes from Proposition~\ref{propositionLowerBound}.
+    We know that $A(x)\leq 1 = A(x_*)$, that $r(x) \geq c q(x)$, and $\sum_x r(x) = \Probability [\text{mc} > 0 ]$.
+    Optimizing subject to these constraints,
+    \begin{align}
+      \sum_x A(x) r(x) &  < \Probability [\text{mc} > 0] - \sum_{x\not= x_*} cq(x) +\sum_{x\not= x_*} cq(x)A(x)\nonumber\\
+      & = \Probability [\text{mc} > 0 ] + c \sum_{x} A(x) q(x) - c.
+    \end{align}
+    So the KL divergence is bounded above by
+    \begin{align}
+      D(p||Ar)&  < \log \left( c + \frac{\Probability [\text{mc} > 0] -c }{\sum_x A(x)q(x)}\right) - \log c
+    \end{align}
+    The quantity $\sum_x A(x)q(x)$ is the probability of accepting a perfect sample from $q(\cdot )$,
+    which Proposition~\ref{acceptanceBound} lower bounds:
+    \begin{align}
+      D(p||Ar)&  < \log \left( c + (1 -c)(1 + 2^{ - \gamma})\right) - \log c\\
+      & = \log \left( \frac{1}{1 + 2^{ - \Delta}} + \frac{1 + 2^{ - \gamma}}{1 + 2^\Delta}\right)  + \log (1 + 2^{ - \Delta})
+    \end{align}
+    which for the sake of clarity we can weaken to% either
+    \begin{align}
+      D(p||Ar)&  < \log \left( 1 + \frac{1 + 2^{ - \gamma}}{1 + 2^\Delta}\right) . %< \frac{1}{\ln 2} \frac{1 + 2^{ - \gamma}}{1 + 2^\Delta}.
+    \end{align}
+  \end{proof}
+
+    
+  
+
+  \section{Accuracy/Runtime trade-off}
+
+  
+  We analyze the runtime of \theSystem{}
+  using number of solver calls as a proxy for runtime.
+  First, we observe that some solver invocations are redundant, as analyzed in Sec.~\ref{efficientEnumeration}.
+  Then we give a more thorough overview of how we navigate the trade-off between accuracy and runtime  (Sec.~\ref{efficiencyAnalysis}).
+  
+ 
+\subsection{Efficient enumeration}\label{efficientEnumeration}
+ The embedding $E$ introduces a symmetry into the solution space of the SAT formula, where one program (an $x$) corresponds to many points in the embedding (pairs $(x,y)$).
+  We more efficiently enumerate surviving members of $E$ by only enumerating unique surviving programs,
+  and then counting the corresponding members of $E$ implicitly through the following result:
+  \begin{proposition}\label{ranktheorem}
+    Let $x\in X$ and $(x,y)\in E $ satisfy $h(x,y) \modt b$.  If $\lvert x \rvert  \geq d$ then $(x,y)$ is the only surviving member of $E$ corresponding to $x$. Otherwise there are $2^{d - \lvert x \rvert  - \text{rank}(g)}$ survivors where $g$ is the rightmost $d - \lvert x \rvert $ columns of $h$.
+  \end{proposition}
+\begin{proof}
+    If $\lvert x \rvert \geq d$ then there is only one element of $E$ corresponding to $x$.
+    Otherwise,
+    any assignment to $y$ satisfying
+    \begin{equation}\label{eqmatrix}
+      b \modt \left( \begin{array}{ccccc}
+% &\vdots && \vdots& \\
+h_{x} & \vdots& h_{y} &\vdots& g %\\
+% & \vdots& & \vdots&
+      \end{array} \right) \left( \begin{array}{c}
+x \\
+y_{\leq \lvert x \rvert } \\
+y_{ > \lvert x \rvert }  \end{array} \right)
+      %b_j  + \sum_{i = 1}^n h_{ji}x_i  + \sum_{i = n+1}^{n+\lvert x \rvert }h_{ji}A_{i - n}= \sum_{i = n + \lvert x \rvert  + 1}^{n + d} h_{ji}A_{i - n}
+    \end{equation}
+    satisfies the random hashing constraints, where we have partitioned the columns of $h$ into those multiplied into $x$, $y_{\leq\lvert x \rvert }$, and $y_{ > \lvert x \rvert }$ .
+    Because $(x,y)\in E$ the values of $x$ and $y_{\leq \lvert x \rvert }$ are fixed,
+    so we can define a new vector $c \modt b + h_x x + h_y y_{\leq \lvert x \rvert }$ and rewrite Eq.~\ref{eqmatrix} as
+    $c = g y_{ > \lvert x \rvert }$.
+    Let $r = \text{rank}(g)$.
+    Then there is a coordinate system where Eq.~\ref{eqmatrix} reads
+    \begin{equation}\label{coordinateTransform}
+      c \modt \left( \begin{array}{cccc}
+        1&&&\\
+        &\ddots&&\\
+        &&0&\\
+        &&&\ddots \end{array} \right) \left( \begin{array}{c}
+        y_{1+\lvert x \rvert } \\
+        \vdots\\
+        y_{1+\lvert x \rvert +r}\\
+        \vdots\end{array} \right)
+    \end{equation}
+    Eq.~\ref{coordinateTransform}     is satisfied iff, for all $1\leq j\leq r$, $y_{j+\lvert x \rvert } = c_j$.
+    For $j > r$ the entries of $y_{j+\lvert x \rvert } $ are unconstrained,
+    and so $2^{d  - \lvert x \rvert  - r}$  satisfying values for $y$ exist.
+\end{proof}
+
+  This enumeration strategy helps when sampling from sharply peaked posteriors,
+  where there are few surviving programs; it also bounds the number of solver invocation to $|X|$.
+
+
+  \subsection{Balancing accuracy and runtime}\label{efficiencyAnalysis}
+
+  \begin{proposition}\label{proposition:tt}
+    The expected number of calls to the solver per sample is bounded above by $\frac{1 + 2^\Delta}{(1 + 2^{ - \gamma})^{-1}(1 + 2^{ - \Delta})^{-1} - 2^{ - \Delta}}.$
+  \end{proposition}
+  \begin{proof}
+    First upper bound the probability of failing, $\Probability [\text{fail}]$, to get a sample,
+    which could happen if $\mathcal{S}$  is empty or if the sample from $\mathcal{S}$ is rejected,
+    which is distributed according to $r(\cdot )$:
+    \begin{align}
+      \Probability [\text{fail}]& < \Probability [\text{reject}] + \Probability [\text{mc} = 0] \text{, union bound}\\
+      & < 1 - \frac{\sum_x A(x)q(x)}{1 + 2^K/|E|} + 2^K/|E| \text{, Prop.~\ref{propositionLowerBound}}\\
+      & < 1 - \frac{1}{(1 + 2^{ - \Delta})(1 + 2^{ - \gamma})} + 2^{ - \Delta}\text{, Prop.~\ref{acceptanceBound}}
+    \end{align}
+    The expected number of solver invocations per iteration is $< 1+E[\text{mc}] = 1 + |E|2^{-K} = 1 + 2^{\Delta}$
+    and the expected number of iterations is $1/\Probability [\neg\text{failure}] $.
+    Because the iterations are independent the expected number of solver invocations is just their product, which is the desired result.
+  \end{proof}
+
+  Proposition~\ref{proposition:tt} shows that the number of invocations to the solver grows exponentially in $\Delta$, while Proposition~\ref{mainResult} shows that the KL divergence from $p(\cdot )$ decays exponentially in $\Delta$.
+  Algorithm 1 navigates this trade-off through its preliminary model counting steps; see Fig.~\ref{heat}.
+  
+  \begin{figure}\centering
+    \includegraphics[width=10cm]{trade-off.png}
+    \caption{Accuracy (colored contours) vs Performance (monochrome cells) trade-off for a program synthesis problem; upper bounds plotted. Performance measured in expected solver invocations; accuracy measured in log KL divergence. Prop.~\ref{acceptanceBound} lower bounds the tilt of performant samplers, while  Prop.~\ref{propositionLowerBound} upper bounds $K$ to $O(d)$, forcing our sampler into the darker (faster) regions.  KL divergence falls off exponentially fast in $\Delta = O(d - K)$, (Prop.~\ref{mainResult}) while solver invocations grows exponentially in $\Delta$ (Prop.~\ref{proposition:tt}) but is bounded by $|X|$ (Prop.~\ref{ranktheorem}), shown in white.}\label{heat}
+\end{figure}
+  
+
+  \pagebreak
+
+  \section{Comparison to other approaches}
+
+  We compared with the PAWS~\cite{ermon2013embed} variant
+  described in the main paper. Like \theSystem and other sampling algorithms based on random parity constraints,
+  this algorithm comes with parameters that trade off performance with accuracy.
+  Our baseline is equivalent to setting the $b$ parameter of~\cite{ermon2013embed} to $1$,
+  which maximally prefers performance over accuracy.
+  
+
+  We also attempted a random projection baseline that does not use an
+  embedding. This alternative approach was actually the first we
+  tried, and as far as we know it is unpublished.  We now describe
+  this alternative baseline:
+  
+  Our prior over programs suggests a particularly simple sampling algorithm.
+  The prior is $\Probability (x)\propto 2^{-|x|}$, where $|x|$ is the number of bits
+  needed to specify the program $x$. So sampling uniformly over assignments to all bits
+  would also sample from our description length prior: let $n$ be the number of Boolean decision variables (bits) that specify the structure of the program. Then the probability of sampling a program $x$ is just
+  $\propto 2^{n-|x|} \propto 2^{-|x|}$.
+  Here we are now assuming that the mapping from Boolean decision variables to programs is many-to-one,
+  which contrasts with \theSystem, where the mapping is constrained to be one-to-one.
+  Uniform sampling of assignments to these Boolean decision variables can be accomplished
+  with random XOR constraints.
+
+  Because this approach avoids the need for any embedding of the
+  program space, one might think that it maybe would sample programs
+  faster in practice.  However, the number of random constraints $K$
+  needed in order to have $o(1)$ survivors is $n + \log Z - \log
+  o(1)\geq n - |x_*| - \log o(1)$.  So for very large $n$, which
+  occurs when we consider program spaces that might have long
+  programs, the number of constraints also becomes very large.  This
+  explosion in the number of constraints serves to further entangle
+  otherwise independent Boolean decision variables.  In practice we
+  found that this baseline causes our solver to timeout after an hour
+  on highly-tilted program induction problems (text edit/counting), to
+  also timeout on our reversing problems (which are intermediate in
+  their tilt), and to only produce any samples before the timeout on
+  our easiest sorting problem (learning from 5 examples).
+  This pattern of errors is diagnostic of the phenomena we attempt to remedy --
+  namely, the \emph{easiest} program induction problem (counting) became intractable with the naive application of these techniques! Studying
+  these failures led to the development of \theSystem.
+    
+  A new solver-aided scheme for weighted model counting is introduced
+  in~\cite{chakraborty2015weighted}. Like PAWS or \theSystem, the main
+  idea is to reduce a weighted counting or sampling problem to and
+  unweighted problem in a higher dimensional space. Although it has
+  not yet been tried as far as we know, the counting scheme
+  in~\cite{chakraborty2015weighted} might be adapted to a sampling
+  algorithm which could also efficiently sample from our posteriors
+  over programs.
+  
+  \section{Text edit problems}
+  We drew program learning problems
+  from~\cite{DBLP:conf/ecai/LinDETM14} and adapted them to our subset
+  of FlashFill. Below are the problems we tested on. We systematically
+  used either the first one, two, or three input/output examples 
+  as training data and the remaining as test data.
+  After each program learning problem we show the program learned from the first three examples,
+  followed by its description length measured in bits.
+  
+\centering\begin{tabular}{l|r}
+      Input & Output \\\hline
+``My name is John.''& ``John''\\
+ ``My name is Bill.''& ``Bill''\\
+ ``My name is May.''& ``May''\\
+ ``My name is Mary.'' &``Mary''\\
+ ``My name is Josh.''& ``Josh''
+\end{tabular}
+
+Program: \texttt{SubString(Pos([' '],[],2),-2)}. 20 bits.
+\vspace{1cm}  
+  
+
+\begin{tabular}{l|r}
+  Input & Output \\\hline
+  ``james'' &``james.''\\
+  ``charles'' & ``charles.''\\
+  ``thomas'' & ``thomas.''\\
+  ``paul'' & ``paul.''\\
+  ``chris'' & ``chris.''
+\end{tabular}
+
+Program: \verb|Append(SubString(0,-1),Const(['.']))|. 22 bits.
+	 \vspace{1cm}
+
+
+\begin{tabular}{l|r}
+  Input & Output \\\hline
+  ``don steve g.'' &``dsg''\\
+  ``Kevin Jason Mat'' &``KJM''\\
+  ``Jose Larry S'' &``JLS''\\
+  ``Arthur Joe Juan'' &``AJJ''\\
+  ``Raymond F. Timothy'' &``RFT''
+\end{tabular}
+
+Program: \texttt{Append(Append(SubString(0,1),SubString(Pos([' '],[],0),Pos([' '],[],0))),SubString(Pos([' '],[],3),Pos([' '],[],1)))}. 55 bits.
+\vspace{1cm}
+
+
+
+\begin{tabular}{l|r}
+ Input & Output \\\hline
+``brent.hard@ho'' &``brent hard''\\
+ ``matt.ra@yaho'' &``matt ra''\\
+ ``jim.james@har'' &``jim james''\\
+ ``ruby.clint@g'' &``ruby clint''\\
+  ``josh.smith@g'' &``josh smith''
+\end{tabular}
+
+Program: \texttt{Append(Append(SubString(0,Pos([],['.'],3)),Const([' '])),SubString(Pos(['.'],[],0),Pos([],['@'],0)))}. 57 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``John DOE 3 Data [TS]865-000-0000 - - 453442-00 06-23-2009'' &``865-000-0000''\\
+ ``A FF MARILYN 30'S 865-000-0030 - 4535871-00 07-07-2009'' &``865-000-0030''\\
+ ``A GEDA-MARY 100MG 865-001-0020 - - 5941-00 06-23-2009'' &``865-001-0020''\\
+ ``Sue DME 42 [ST]865-003-0100 -- 5555-99 08-22-2010'' &``865-003-0100''\\
+  ``Edna DEECS [SSID] 865-001-0003 --23954-11 09-01-2010'' &``865-001-0003''
+\end{tabular}
+
+Program: \texttt{Append(Const(['8']),SubString(Pos(['8'],[],0),Pos([],[' ', '-'],0)))}. 44 bits.
+	 \vspace{1cm}
+
+
+\begin{tabular}{l|r}Input & Output \\\hline
+  ``Company/Code/index.html'' &``Company/Code/''\\
+  ``Company/Docs/Spec/specs.doc'' &``Company/Docs/Spec/''\\
+  ``Work/Presentations/talk.ppt'' &``Work/Presentations/''\\
+  ``Work/Records/2010/January.dat'' &``Work/Records/2010/''\\
+  ``Proj/Numerical/Simulators/NBody/nbody.c'' &``Proj/Numerical/Simulators/NBody/''
+\end{tabular}
+
+Program: \texttt{SubString(0,Pos(['/'],[],3))}. 20 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``hi'' &``hi hi''\\
+ ``bye'' &``hi bye''\\
+ ``adios'' &``hi adios''\\
+ ``joe'' &``hi joe''\\
+ ``icml'' &``hi icml''
+\end{tabular}
+
+Program: \texttt{Append(Const(['h', 'i', ' ']),SubString(0,-1))}. 34 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``Oege de Moor'' &``Oege de Moor''\\
+ ``Kathleen Fisher AT&T Labs'' &``Kathleen Fisher AT&T Labs''\\
+ ``Microsoft Research'' &``Microsoft Research''\\
+ ``John Morse Institute'' &``John Morse Institute''\\
+ ``Jennifer Smith Law Firm'' &``Jennifer Smith Law Firm''
+\end{tabular}
+
+Program: \texttt{SubString(0,-1)}. 12 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``1/21/2001'' &``01''\\
+ ``22.02.2002'' &``02''\\
+ ``2003-23-03'' &``03''\\
+ ``21/1/2001'' &``01''\\
+ ``5/5/1987'' &``87''
+\end{tabular}
+
+Program: \texttt{SubString(-3,-1)}. 12 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``Eyal Dechter'' &``Dechter, Eyal''\\
+ ``Joshua B. Tenenbaum'' &``Tenenbaum, Joshua B.''\\
+ ``Stephen H. Muggleton'' &``Muggleton, Stephen H.''\\
+ ``Kevin Ellis'' &``Ellis, Kevin''\\
+ ``Dianhuan Lin'' &``Lin, Dianhuan''
+\end{tabular}
+
+Program: \texttt{Append(Append(SubString(Pos([' '],[],3),-1),Const([',', ' '])),SubString(0,Pos([],[' '],3)))}. 55 bits.
+	
+
+\begin{tabular}{l|r}Input & Output \\\hline
+  ``12/31/13'' &``12.31''\\
+  ``1/23/2009'' &``1.23''\\
+  ``4/12/2023'' &``4.12''\\
+  ``6/23/15'' &``6.23''\\
+  ``7/15/2015'' &``7.15''
+\end{tabular}
+
+Program: \texttt{Append(Append(SubString(0,Pos([],['/'],0)),Const(['.'])),SubString(Pos(['/'],[],0),Pos([],['/'],3)))}. 57 bits.
+	 \vspace
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``Three <2: vincent> Jeff'' &``(2: vincent)''\\
+ ``Don Kyle <3: ricky> virgil'' &``(3: ricky)''\\
+ ``herbert is <2: marion> morris'' &``(2: marion)''\\
+ ``fransisco eduardo <1: apple trees>'' &``(1: apple trees)''\\
+ ``country music <9: refrigerator>'' &``(9: refrigerator)''
+\end{tabular}
+
+Program: \texttt{Append(Append(Const(['(']),SubString(Pos(['<'],[],3),Pos([],['>'],3))),Const([')']))}. 47 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+  ``3113 Greenfield Ave., Los Angeles, CA 90034'' &``Los Angeles''\\
+  ``43 St. Margaret St. #1, Dorchester, MA 02125'' &``Dorchester''\\
+  ``43 Vassar St. 46-4053, Cambridge, MA 02139'' &``Cambridge''\\
+  ``47 Foskett St. #2, Cambridge, MA 02144'' &``Cambridge''\\
+  ``3 Ames St., Portland, OR 02142'' &``Portland''
+\end{tabular}
+
+Program: \texttt{SubString(Pos([',', ' '],[],0),Pos([],[','],3))}. 34 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+  ``Verlene Ottley  '' &``V.O''\\
+  ``Oma Cornelison  '' &``O.C''\\
+  ``Marin Lorentzen  '' &``M.L''\\
+  ``Annita Nicely  '' &``A.N''\\
+  ``Joanie Faas  '' &``J.F''
+\end{tabular}
+
+Program: \texttt{Append(Append(SubString(0,0),Const(['.'])),SubString(Pos([' '],[],0),Pos([' '],[],0)))}. 43 bits.
+
+
+\begin{tabular}{l|r}Input & Output \\\hline
+  ``Agripina Kuehner  '' &``Hi Agripina!''\\
+  ``Brittany Alarcon  '' &``Hi Brittany!''\\
+  ``Adelia Swindell  '' &``Hi Adelia!''\\
+  ``Marcie Michalak  '' &``Hi Marcie!''\\
+  ``Eugena Eurich  '' &``Hi Eugena!''
+\end{tabular}
+
+Program: \texttt{Append(Append(Const(['H', 'i', ' ']),SubString(0,Pos([],[' '],0))),Const(['!']))}. 51 bits.
+	 \vspace{1cm}
+
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``#include <stdio.h>'' &``stdio''\\
+ ``#include <malloc.h>'' &``malloc''\\
+ ``#include <stdlib.h>'' &``stdlib''\\
+ ``#include <sys.h>'' &``sys''\\
+ ``#include <os.h>'' &``os''
+\end{tabular}
+
+Program: \texttt{SubString(Pos(['<'],[],3),-4)}. 20 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``aa'' &	   ``aaa''\\
+ ``abc'' &	   ``abcc''\\
+ ``xyz'' &	   ``xyzz''\\
+ ``4'' &	   ``44''\\
+ ``john'' &   ``johnn''
+\end{tabular}
+
+Program: \texttt{Append(SubString(0,-1),SubString(-2,-1))}. 24 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+  ``3113 Greenfield Ave., LA, CA 90034'' &``3113''\\
+  ``43 St. Margaret St. #1, Dorchester, MA 02125'' &``43''\\
+  ``43 Vassar St. 46-4053, Cambridge, MA 02139'' &``43''\\
+  ``47 Foskett St. #2, Cambridge, MA 02144'' &``47''\\
+  ``3 Ames St., Portland, OR 02142'' & 	``3''
+\end{tabular}
+
+Program: \texttt{SubString(0,Pos([],[' '],0))}. 20 bits.
+	 \vspace{1cm}
+
+\begin{tabular}{l|r}Input & Output \\\hline
+``aa'' &	   ``aaaa''\\
+ ``abc'' &	   ``abcabc''\\
+ ``xyz'' &	   ``xyzxyz''\\
+ ``4'' &	   ``44''\\
+ ``john'' &   ``johnjohn''
+\end{tabular}
+
+Program: \texttt{Append(SubString(0,-1),SubString(0,-1))}. 24 bits.
+	 \vspace{1cm}
+
+  \bibliographystyle{unsrt}
+{\small \bibliography{main}}
+
+
+
+  
+
+\end{document}

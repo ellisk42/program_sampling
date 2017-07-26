@@ -1,0 +1,143 @@
+\begin{thebibliography}{10}
+
+\bibitem{graves2014neural}
+Alex Graves, Greg Wayne, and Ivo Danihelka.
+\newblock Neural turing machines.
+\newblock {\em arXiv:1410.5401}, 2014.
+
+\bibitem{DBLP:journals/corr/ReedF15}
+Scott Reed and Nando de~Freitas.
+\newblock Neural programmer-interpreters.
+\newblock {\em CoRR}, abs/1511.06279, 2015.
+
+\bibitem{lake2015human}
+Brenden~M Lake, Ruslan Salakhutdinov, and Joshua~B Tenenbaum.
+\newblock Human-level concept learning through probabilistic program induction.
+\newblock {\em Science}, 350(6266):1332--1338, 2015.
+
+\bibitem{DBLP:conf/icml/LiangJK10}
+Percy Liang, Michael~I. Jordan, and Dan Klein.
+\newblock Learning programs: A hierarchical bayesian approach.
+\newblock In Johannes F{\"u}rnkranz and Thorsten Joachims, editors, {\em ICML},
+  pages 639--646. Omnipress, 2010.
+
+\bibitem{menon2013machine}
+Aditya Menon, Omer Tamuz, Sumit Gulwani, Butler Lampson, and Adam Kalai.
+\newblock A machine learning framework for programming by example.
+\newblock In {\em ICML}, pages 187--195, 2013.
+
+\bibitem{solar2008program}
+Armando Solar~Lezama.
+\newblock {\em Program Synthesis By Sketching}.
+\newblock PhD thesis, EECS Department, University of California, Berkeley, Dec
+  2008.
+
+\bibitem{ermon2013embed}
+Stefano Ermon, Carla~P Gomes, Ashish Sabharwal, and Bart Selman.
+\newblock Embed and project: Discrete sampling with universal hashing.
+\newblock In {\em Advances in Neural Information Processing Systems}, pages
+  2085--2093, 2013.
+
+\bibitem{jha2010oracle}
+Susmit Jha, Sumit Gulwani, Sanjit~A Seshia, and Ashish Tiwari.
+\newblock Oracle-guided component-based program synthesis.
+\newblock In {\em ICSE}, volume~1, pages 215--224. IEEE, 2010.
+
+\bibitem{gomes2006near}
+Carla~P Gomes, Ashish Sabharwal, and Bart Selman.
+\newblock Near-uniform sampling of combinatorial spaces using xor constraints.
+\newblock In {\em Advances In Neural Information Processing Systems}, pages
+  481--488, 2006.
+
+\bibitem{AAAI148364}
+Supratik Chakraborty, Daniel Fremont, Kuldeep Meel, Sanjit Seshia, and Moshe
+  Vardi.
+\newblock Distribution-aware sampling and weighted model counting for sat.
+\newblock In {\em AAAI Conference on Artificial Intelligence}, 2014.
+
+\bibitem{chakraborty2013scalable}
+Supratik Chakraborty, Kuldeep~S Meel, and Moshe~Y Vardi.
+\newblock A scalable and nearly uniform generator of sat witnesses.
+\newblock In {\em International Conference on Computer Aided Verification},
+  pages 608--623. Springer, 2013.
+
+\bibitem{valiant1985np}
+Leslie~G Valiant and Vijay~V Vazirani.
+\newblock Np is as easy as detecting unique solutions.
+\newblock In {\em Proceedings of the seventeenth annual ACM symposium on Theory
+  of computing}, pages 458--463. ACM, 1985.
+
+\bibitem{gomes2006model}
+Carla~P Gomes, Ashish Sabharwal, and Bart Selman.
+\newblock Model counting: A new strategy for obtaining good bounds.
+\newblock In {\em AAAI Conference on Artificial Intelligence}, 2006.
+
+\bibitem{ermon2014low}
+Stefano Ermon, Carla Gomes, Ashish Sabharwal, and Bart Selman.
+\newblock Low-density parity constraints for hashing-based discrete
+  integration.
+\newblock In {\em ICML}, pages 271--279, 2014.
+
+\bibitem{achlioptas2015stochastic}
+Dimitris Achlioptas and Pei Jiang.
+\newblock Stochastic integration via errorcorrecting codes.
+\newblock {\em UAI}, 2015.
+
+\bibitem{singh2013automated}
+Rishabh Singh, Sumit Gulwani, and Armando Solar-Lezama.
+\newblock Automated feedback generation for introductory programming
+  assignments.
+\newblock In {\em ACM SIGPLAN Notices}, volume~48, pages 15--26. ACM, 2013.
+
+\bibitem{crypto}
+Cryptominisat.
+\newblock \url{http://www.msoos.org/documentation/cryptominisat/}.
+
+\bibitem{gulwani2011automating}
+Sumit Gulwani.
+\newblock Automating string processing in spreadsheets using input-output
+  examples.
+\newblock In {\em ACM SIGPLAN Notices}, volume~46, pages 317--330. ACM, 2011.
+
+\bibitem{DBLP:conf/ecai/LinDETM14}
+Dianhuan Lin, Eyal Dechter, Kevin Ellis, Joshua~B. Tenenbaum, and Stephen
+  Muggleton.
+\newblock Bias reformulation for one-shot function induction.
+\newblock In {\em {ECAI} 2014}, pages 525--530, 2014.
+
+\bibitem{raychev2016learning}
+Veselin Raychev, Pavol Bielik, Martin Vechev, and Andreas Krause.
+\newblock Learning programs from noisy data.
+\newblock In {\em POPL}, pages 761--774. ACM, 2016.
+
+\bibitem{ellis2015unsupervised}
+Kevin Ellis, Armando Solar-Lezama, and Josh Tenenbaum.
+\newblock Unsupervised learning by program synthesis.
+\newblock In {\em Advances in Neural Information Processing Systems}, pages
+  973--981, 2015.
+
+\bibitem{DBLP:books/daglib/0070933}
+John~R. Koza.
+\newblock {\em Genetic programming - on the programming of computers by means
+  of natural selection}.
+\newblock Complex adaptive systems. MIT Press, 1993.
+
+\bibitem{schkufza2013stochastic}
+Eric Schkufza, Rahul Sharma, and Alex Aiken.
+\newblock Stochastic superoptimization.
+\newblock In {\em ACM SIGARCH Computer Architecture News}, volume~41, pages
+  305--316. ACM, 2013.
+
+\bibitem{liang11dcs}
+P.~Liang, M.~I. Jordan, and D.~Klein.
+\newblock Learning dependency-based compositional semantics.
+\newblock In {\em Association for Computational Linguistics (ACL)}, pages
+  590--599, 2011.
+
+\bibitem{logical}
+Yarden Katz, Noah~D. Goodman, Kristian Kersting, Charles Kemp, and Joshua~B.
+  Tenenbaum.
+\newblock Modeling semantic cognition as logical dimensionality reduction.
+\newblock In {\em CogSci}, pages 71--76, 2008.
+
+\end{thebibliography}
